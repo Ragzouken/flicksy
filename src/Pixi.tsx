@@ -34,7 +34,7 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
       return (0xFF << 24) | (r << 16) | (g << 8) | (b);
     }
 
-    base.plot((x, y) => rgb2num(x / 8 * 256, 0, y / 8 * 256));
+    base.plot((x, y) => rgb2num(x / 8 * 255, Math.random() * 255, y / 8 * 255));
     base.update();
 
     this.pixi.stage.addChild(sprite);
