@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as Pixi from 'pixi.js';
+import { MTexture } from "./MTexture";
 
 interface IMainProps {}
 interface IMainState {}
@@ -23,17 +24,25 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
     this.container.appendChild(this.pixi.view);
     this.pixi.start();
 
-    const graphic = new Pixi.Graphics();
-    graphic.beginFill(0xFF00FF);
-    graphic.drawRect(-8, -8, 16, 16);
-    graphic.endFill();
+    const base = new MTexture(8, 8);
+    const tex = new Pixi.Texture(base.base);
+    const sprite = new Pixi.Sprite(tex);
+    sprite.scale = new Pixi.Point(64, 64);
 
-    this.pixi.stage.addChild(graphic);
+    function rgb2num(r: number, g: number, b: number)
+    {
+      return (0xFF << 24) | (r << 16) | (g << 8) | (b);
+    }
+
+    base.plot((x, y) => rgb2num(x / 8 * 256, 0, y / 8 * 256));
+    base.update();
+
+    this.pixi.stage.addChild(sprite);
 
     this.pixi.stage.interactive = true;
     this.pixi.ticker.add(delta => 
     {
-        graphic.x = Math.sin(delta) * 100;
+        
     });
   }
   
