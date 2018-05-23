@@ -32,13 +32,67 @@ export class MTexture
     {
         const width = this.data.width;
         const height = this.data.height;
+        const pixels = this.buf32;
 
         for (let y = 0; y < height; ++y)
         {
             for (let x = 0; x < width; ++x)
             {
-                this.buf32[y * width + x] = func(x, y);
+                pixels[y * width + x] = func(x, y);
             } 
+        }
+
+        this.data.data.set(this.buf8);
+        this.context.putImageData(this.data, 0, 0);
+    }
+
+    public line(x0: number, y0: number, x1: number, y1: number, color: number)
+    {
+        const steep = Math.abs(y1 - y0) > Math.abs(x1 - x0);
+
+        if (steep)
+        {
+            [x0, y0] = [y0, x0];
+            [x1, y1] = [y1, x1];
+        }
+
+        const reverse = x0 > x1;
+
+        if (reverse)
+        {
+            [x0, x1] = [x1, x0];
+            [y0, y1] = [y1, y0];
+        }
+
+        const dx = (x1 - x0);
+        const dy = Math.abs(y1 - y0);
+
+        const ystep = (y0 < y1 ? 1 : -1);
+
+        let err = Math.floor(dx / 2);
+        let y = y0;
+
+        const width = this.data.width;
+        const pixels = this.buf32;
+
+        for (let x = x0; x <= x1; ++x)
+        {
+            if (steep)
+            {
+                pixels[x * width + y] = color;
+            }
+            else
+            {
+                pixels[y * width + x] = color;
+            }
+
+            err -= dy;
+
+            if (err < 0)
+            {
+                y += ystep;
+                err += dx;
+            }
         }
 
         this.data.data.set(this.buf8);

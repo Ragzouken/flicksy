@@ -34,7 +34,8 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
       return (0xFF << 24) | (r << 16) | (g << 8) | (b);
     }
 
-    base.plot((x, y) => rgb2num(x / 8 * 255, Math.random() * 255, y / 8 * 255));
+    //base.plot((x, y) => rgb2num(x / 8 * 255, Math.random() * 255, y / 8 * 255));
+    base.line(0, 0, 7, 1, rgb2num(0, 255, 0));
     base.update();
 
     this.pixi.stage.addChild(sprite);
@@ -42,7 +43,7 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
     this.pixi.stage.interactive = true;
     this.pixi.ticker.add(delta => 
     {
-        
+
     });
   }
   
