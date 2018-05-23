@@ -46,6 +46,14 @@ export class MTexture
         this.context.putImageData(this.data, 0, 0);
     }
 
+    public getPixel(x: number, y: number)
+    {
+        const width = this.data.width;
+        const pixels = this.buf32;
+
+        return pixels[y * width + x];
+    }
+
     public line(x0: number, y0: number, x1: number, y1: number, color: number)
     {
         const steep = Math.abs(y1 - y0) > Math.abs(x1 - x0);
@@ -73,17 +81,24 @@ export class MTexture
         let y = y0;
 
         const width = this.data.width;
+        const height = this.data.height;
         const pixels = this.buf32;
 
         for (let x = x0; x <= x1; ++x)
         {
             if (steep)
             {
-                pixels[x * width + y] = color;
+                if (x >= 0 && x < height && y >= 0 && y < width)
+                {
+                    pixels[x * width + y] = color;
+                }
             }
             else
             {
-                pixels[y * width + x] = color;
+                if (x >= 0 && x < width && y >= 0 && y < height)
+                {
+                    pixels[y * width + x] = color;
+                }
             }
 
             err -= dy;
