@@ -18,14 +18,14 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
 
   private setup(): void
   {
-    this.pixi = new Pixi.Application(512, 512);
+    this.pixi = new Pixi.Application(256, 256);
     this.container.appendChild(this.pixi.view);
     this.pixi.start();
 
     const base = new MTexture(8, 8);
     const tex = new Pixi.Texture(base.base);
     const sprite = new Pixi.Sprite(tex);
-    sprite.scale = new Pixi.Point(64, 64);
+    sprite.scale = new Pixi.Point(32, 32);
 
     //let orig: Pixi.Point?;
     let prevDrag: Pixi.Point | null;
@@ -79,10 +79,25 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
 
     this.pixi.stage.addChild(sprite);
 
+    const resize = () =>
+    {
+      const w = document.documentElement.clientWidth;    
+      const h = document.documentElement.clientHeight;    
+      //this part resizes the canvas but keeps ratio the same    
+      this.pixi.renderer.view.style.width = w + "px";    
+      this.pixi.renderer.view.style.height = h + "px";    
+      //this part adjusts the ratio:    
+      this.pixi.renderer.resize(w,h);
+
+      const min = Math.min(w, h);
+      const scale = min / 8;
+      sprite.scale = new Pixi.Point(scale, scale);
+    };
+
     this.pixi.stage.interactive = true;
     this.pixi.ticker.add(delta => 
     {
-
+      resize();
     });
   }
 

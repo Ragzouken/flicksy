@@ -9,8 +9,6 @@ export class MTexture
     public readonly canvas: HTMLCanvasElement;
 
     public readonly data: ImageData;
-    public readonly buff: ArrayBuffer;
-    public readonly buf8: Uint8ClampedArray;
     public readonly buf32: Uint32Array;
 
     public constructor(width: number, height: number)
@@ -23,9 +21,7 @@ export class MTexture
         this.base = new BaseTexture(this.canvas, SCALE_MODES.NEAREST);
         
         this.data = this.context.createImageData(width, height);
-        this.buff = new ArrayBuffer(this.data.data.length);
-        this.buf8 = new Uint8ClampedArray(this.buff);
-        this.buf32 = new Uint32Array(this.buff); 
+        this.buf32 = new Uint32Array(this.data.data.buffer); 
     }
 
     public plot(func: PlotFunction): void
@@ -42,7 +38,6 @@ export class MTexture
             } 
         }
 
-        this.data.data.set(this.buf8);
         this.context.putImageData(this.data, 0, 0);
     }
 
@@ -110,7 +105,6 @@ export class MTexture
             }
         }
 
-        this.data.data.set(this.buf8);
         this.context.putImageData(this.data, 0, 0);
     }
 
