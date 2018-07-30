@@ -28,15 +28,30 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
     sprite.scale = new Pixi.Point(32, 32);
 
     //let orig: Pixi.Point?;
+    let dragType: "draw" | "move" | null;
     let prevDrag: Pixi.Point | null;
+    let dragBase: Pixi.Point;
     const green = rgb2num(0, 255, 0);
     const black = rgb2num(0,   0, 0);
 
     let color = green;
 
+    function add(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.ObservablePoint)
+    {
+      return new Pixi.Point(a.x + b.x, a.y + b.y);
+    }
+
+    function sub(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.ObservablePoint)
+    {
+      return new Pixi.Point(a.x - b.x, a.y - b.y);
+    }
+
     this.pixi.stage.on("pointerdown", (event: Pixi.interaction.InteractionEvent) => 
     {
+      dragType = (event.data.button == 0) ? "draw" : "move";
       prevDrag = event.data.getLocalPosition(sprite);
+      
+      dragBase = sub(sprite.position, event.data.getLocalPosition(this.pixi.stage));
 
       const x = Math.floor(prevDrag.x);
       const y = Math.floor(prevDrag.y);
@@ -52,16 +67,31 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
 
       base.line(x, y, x, y, color);
       base.update();
+
+      event.stopPropagation();
     });
+
+    this.pixi.view.oncontextmenu = function (e) 
+    {
+      e.preventDefault();
+    };
 
     this.pixi.stage.on("pointermove", (event: Pixi.interaction.InteractionEvent) => {
       if (!prevDrag) return;
 
       const m = event.data.getLocalPosition(sprite);
-      base.line(Math.floor(prevDrag.x), Math.floor(prevDrag.y), 
-                Math.floor(m.x),        Math.floor(m.y), 
-                color);
-      base.update();
+
+      if (dragType == "draw")
+      {
+        base.line(Math.floor(prevDrag.x), Math.floor(prevDrag.y), 
+                  Math.floor(m.x),        Math.floor(m.y), 
+                  color);
+        base.update();
+      }
+      else
+      {
+        sprite.position = add(dragBase, event.data.getLocalPosition(this.pixi.stage));
+      }
 
       prevDrag = m;
     });
@@ -73,9 +103,9 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
       return ((0xFF << 24) | (r << 16) | (g << 8) | (b)) >>> 0;
     }
 
-    //base.plot((x, y) => rgb2num(x / 8 * 255, Math.random() * 255, y / 8 * 255));
+    base.plot((x, y) => rgb2num(x / 8 * 255, Math.random() * 255, y / 8 * 255));
     //base.line(0, 0, 7, 1, rgb2num(0, 255, 0));
-    //base.update();
+    base.update();
 
     this.pixi.stage.addChild(sprite);
 
@@ -89,9 +119,9 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
       //this part adjusts the ratio:    
       this.pixi.renderer.resize(w,h);
 
-      const min = Math.min(w, h);
-      const scale = min / 8;
-      sprite.scale = new Pixi.Point(scale, scale);
+      //const min = Math.min(w, h);
+      //const scale = min / 8;
+      //sprite.scale = new Pixi.Point(scale, scale);
     };
 
     this.pixi.stage.interactive = true;
