@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as Pixi from 'pixi.js';
 import { MTexture } from "./MTexture";
+import { Drawing } from "./Drawing";
 
 interface IMainProps {}
 interface IMainState {}
@@ -15,26 +16,87 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
     super(props);
   }
 
-
   private setup(): void
   {
     this.pixi = new Pixi.Application(256, 256);
     this.container.appendChild(this.pixi.view);
     this.pixi.start();
 
-    const base = new MTexture(8, 8);
-    const tex = new Pixi.Texture(base.base);
-    const sprite = new Pixi.Sprite(tex);
-    sprite.scale = new Pixi.Point(32, 32);
+    let stage = this.pixi.stage;
+    stage.scale = new Pixi.Point(4, 4);
+
+    addDrawing(128, 128);
+    addDrawing(32, 32);
+    addDrawing(64, 64);
 
     //let orig: Pixi.Point?;
     let dragType: "draw" | "move" | null;
-    let prevDrag: Pixi.Point | null;
     let dragBase: Pixi.Point;
-    const green = rgb2num(0, 255, 0);
-    const black = rgb2num(0,   0, 0);
+    let draggedDrawing: Drawing | null;
+    let prevDraw = new Pixi.Point(0, 0);
+    let color = rgb2num(255, 0, 255);
 
-    let color = green;
+    function startDrawing(drawing: Drawing, event: Pixi.interaction.InteractionEvent)
+    {
+      if (draggedDrawing != null)
+      {
+        stopDragging();
+      }
+
+      draggedDrawing = drawing;
+      dragType = "draw";
+      prevDraw = event.data.getLocalPosition(drawing.sprite);
+    }
+
+    function stopDragging()
+    {
+      draggedDrawing = null;
+    }
+
+    function startDragging(drawing: Drawing, event: Pixi.interaction.InteractionEvent)
+    {
+      if (draggedDrawing != null)
+      {
+        stopDragging();
+      }
+
+      draggedDrawing = drawing;
+      dragType = "move";
+      prevDraw = event.data.getLocalPosition(drawing.sprite);
+      dragBase = sub(drawing.sprite.position, event.data.getLocalPosition(stage));
+    }
+
+    function addDrawing(width: number, height: number)
+    {
+      const drawing = new Drawing();
+      const base = new MTexture(width, height);
+      drawing.texture = base;
+      const tex = new Pixi.Texture(base.base);
+      const sprite = new Pixi.Sprite(tex);
+      drawing.sprite = sprite;
+      stage.addChild(sprite);
+
+      base.plot((x, y) => rgb2num(0, Math.random() * 128, 0));
+      base.update()
+
+      sprite.interactive = true;
+      //sprite.hitArea = new Pixi.Rectangle(0, 0, width, height);
+      sprite.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
+      {
+        if (event.data.button == 2)
+        {
+          startDragging(drawing, event);
+          event.stopPropagation();
+        }
+        else
+        {
+          startDrawing(drawing, event);
+          event.stopPropagation();
+        }
+      });
+
+      return drawing;
+    }
 
     function add(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.ObservablePoint)
     {
@@ -46,6 +108,7 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
       return new Pixi.Point(a.x - b.x, a.y - b.y);
     }
 
+    /*
     this.pixi.stage.on("pointerdown", (event: Pixi.interaction.InteractionEvent) => 
     {
       dragType = (event.data.button == 0) ? "draw" : "move";
@@ -70,44 +133,44 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
 
       event.stopPropagation();
     });
+    */
 
     this.pixi.view.oncontextmenu = function (e) 
     {
       e.preventDefault();
     };
 
-    this.pixi.stage.on("pointermove", (event: Pixi.interaction.InteractionEvent) => {
-      if (!prevDrag) return;
-
-      const m = event.data.getLocalPosition(sprite);
-
+    this.pixi.stage.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
+    {
+      if (draggedDrawing == null) return;
+      
       if (dragType == "draw")
       {
-        base.line(Math.floor(prevDrag.x), Math.floor(prevDrag.y), 
+        const base = draggedDrawing.texture;
+        const m = event.data.getLocalPosition(draggedDrawing.sprite);
+
+        base.line(Math.floor(prevDraw.x), Math.floor(prevDraw.y), 
                   Math.floor(m.x),        Math.floor(m.y), 
                   color);
         base.update();
-      }
-      else
-      {
-        sprite.position = add(dragBase, event.data.getLocalPosition(this.pixi.stage));
-      }
 
-      prevDrag = m;
+        prevDraw = m;
+      }
+      else if (draggedDrawing != null)
+      {
+        draggedDrawing.sprite.position = add(dragBase, event.data.getLocalPosition(this.pixi.stage));
+      }
     });
 
-    document.onpointerup = () => prevDrag = null;
+    document.onpointerup = () => 
+    {
+      stopDragging();
+    }
 
     function rgb2num(r: number, g: number, b: number)
     {
       return ((0xFF << 24) | (r << 16) | (g << 8) | (b)) >>> 0;
     }
-
-    base.plot((x, y) => rgb2num(x / 8 * 255, Math.random() * 255, y / 8 * 255));
-    //base.line(0, 0, 7, 1, rgb2num(0, 255, 0));
-    base.update();
-
-    this.pixi.stage.addChild(sprite);
 
     const resize = () =>
     {
