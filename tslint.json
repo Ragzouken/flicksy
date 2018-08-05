@@ -7,6 +7,8 @@
   },
 
   "rules": {
-    "no-unused-variable": false
+    "no-unused-variable": false,
+    "no-bitwise": false,
+    "no-console": false
   }
 }
