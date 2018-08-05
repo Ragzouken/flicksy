@@ -23,11 +23,11 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
     this.pixi.start();
 
     let stage = this.pixi.stage;
-    stage.scale = new Pixi.Point(4, 4);
+    stage.scale = new Pixi.Point(8, 8);
 
-    addDrawing(128, 128);
     addDrawing(32, 32);
-    addDrawing(64, 64);
+    addDrawing(8, 8);
+    addDrawing(16, 16);
 
     //let orig: Pixi.Point?;
     let dragType: "draw" | "move" | null;
@@ -68,12 +68,14 @@ export class PixiComponent extends React.Component<IMainProps, IMainState>
 
     function addDrawing(width: number, height: number)
     {
-      const drawing = new Drawing();
       const base = new MTexture(width, height);
-      drawing.texture = base;
       const tex = new Pixi.Texture(base.base);
       const sprite = new Pixi.Sprite(tex);
-      drawing.sprite = sprite;
+
+      const poo = "";
+
+      const drawing = new Drawing(base, sprite);
+
       stage.addChild(sprite);
 
       base.plot((x, y) => rgb2num(0, Math.random() * 128, 0));
