@@ -9,8 +9,73 @@ const pixi = new Pixi.Application();
 document.getElementById("root")!.appendChild(pixi.view);
 pixi.start();
 
+function rgb2num(r: number, g: number, b: number)
+{
+  return ((0xFF << 24) | (b << 16) | (g << 8) | (r)) >>> 0;
+}
+
+function randomInt(min: number, max: number){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function floor(point: Pixi.Point)
+{
+  return new Pixi.Point(Math.floor(point.x), Math.floor(point.y));
+}
+
+let brushColor = rgb2num(255, 0, 255);
+let brushSize = 1;
+let brush = new MTexture(3, 3);
+
+function doPalette()
+{
+  const palette = document.getElementById("palette")!;
+  
+  for (let i = 0; i < palette.children.length; ++i)
+  {
+    const cell = palette.children[i];
+    const button = cell.children[0];
+    const r = randomInt(0, 255);
+    const g = randomInt(0, 255);
+    const b = randomInt(0, 255);
+    const c = rgb2num(r, g, b);
+    button.setAttribute("style", `background-color: rgb(${r},${g},${b});`);
+    button.addEventListener("click", () => 
+    {
+      brushColor = c;
+      makeCircleBrush(brushSize, brushColor);
+    })
+  }
+}
+
+function doBrushes()
+{
+  const brushes = document.getElementById("brushes")!;
+  
+  for (let i = 0; i < brushes.children.length; ++i)
+  {
+    const cell = brushes.children[i];
+    const button = cell.children[0];
+    button.addEventListener("click", () => 
+    {
+      brushSize = i + 1;
+      makeCircleBrush(brushSize, brushColor);
+      console.log(brushSize);
+    })
+  }
+}
+
+function makeCircleBrush(circumference: number, color: number)
+{
+  brush = new MTexture(circumference, circumference);
+  brush.circleTest(color);
+}
+
 function setup()
 {
+    doPalette();
+    doBrushes();
+
     const stage = pixi.stage;
     stage.scale = new Pixi.Point(8, 8);
 
@@ -22,7 +87,6 @@ function setup()
     let dragBase: Pixi.Point;
     let draggedDrawing: Drawing | null;
     let prevDraw = new Pixi.Point(0, 0);
-    const color = rgb2num(255, 0, 255);
 
     function startDrawing(drawing: Drawing, event: Pixi.interaction.InteractionEvent)
     {
@@ -63,6 +127,8 @@ function setup()
       const drawing = new Drawing(base, sprite);
 
       stage.addChild(sprite);
+
+      sprite.position = new Pixi.Point(randomInt(0, 96), randomInt(0, 96));
 
       base.plot((x, y) => rgb2num(0, Math.random() * 128, 0));
       base.update()
@@ -136,27 +202,29 @@ function setup()
         const base = draggedDrawing.texture;
         const m = event.data.getLocalPosition(draggedDrawing.sprite);
 
+        /*
         base.line(Math.floor(prevDraw.x), Math.floor(prevDraw.y), 
                   Math.floor(m.x),        Math.floor(m.y), 
                   color);
+        */
+        
+        base.sweepTest(Math.floor(prevDraw.x), Math.floor(prevDraw.y), 
+                  Math.floor(m.x),        Math.floor(m.y), 
+                  brush);
+                  
         base.update();
 
         prevDraw = m;
       }
       else if (draggedDrawing != null)
       {
-        draggedDrawing.sprite.position = add(dragBase, event.data.getLocalPosition(pixi.stage));
+        draggedDrawing.sprite.position = floor(add(dragBase, event.data.getLocalPosition(pixi.stage)));
       }
     });
 
     document.onpointerup = () => 
     {
       stopDragging();
-    }
-
-    function rgb2num(r: number, g: number, b: number)
-    {
-      return ((0xFF << 24) | (r << 16) | (g << 8) | (b)) >>> 0;
     }
 
     const resize = () =>
@@ -168,8 +236,6 @@ function setup()
       pixi.renderer.view.style.height = h + "px";    
       // this part adjusts the ratio:    
       pixi.renderer.resize(w,h);
-
-      console.log(w + " " + h);
     };
 
     pixi.stage.interactive = true;

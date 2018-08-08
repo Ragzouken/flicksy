@@ -9,6 +9,7 @@
   "rules": {
     "no-unused-variable": false,
     "no-bitwise": false,
-    "no-console": false
+    "no-console": false,
+    "prefer-for-of": false
   }
 }

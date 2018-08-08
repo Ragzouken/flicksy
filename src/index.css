@@ -11,3 +11,76 @@ canvas
   width: 100%;
   height: 100%;
 }
+
+#info
+{
+  color: white;
+  position: absolute;
+
+  left: 32px;
+  top: 32px;
+
+  width: 256px;
+}
+
+#palette
+{
+  position: absolute;
+  
+  display: grid;
+  padding: 4px;
+  grid-gap: 4px;
+  grid-template-columns: repeat(4, 1fr);
+
+  left: 32px;
+  top: 512px;
+
+  background-color: mediumaquamarine;
+}
+
+#palette > div
+{
+  width: 32px;
+  height: 32px;
+
+  background-color: pink;
+}
+
+#palette > div > button
+{
+  width: 100%;
+  height: 100%;
+  background-color: greenyellow;
+  border: 2px solid #4CAF50;
+}
+
+#brushes
+{
+  position: absolute;
+  
+  display: grid;
+  padding: 4px;
+  grid-gap: 4px;
+  grid-template-columns: repeat(4, 1fr);
+
+  left: 32px;
+  top: 384px;
+
+  background-color: mediumaquamarine;
+}
+
+#brushes > div
+{
+  width: 32px;
+  height: 32px;
+
+  background-color: pink;
+}
+
+#brushes > div > button
+{
+  width: 100%;
+  height: 100%;
+  background-color: greenyellow;
+  border: 2px solid #4CAF50;
+}
