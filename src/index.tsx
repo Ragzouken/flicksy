@@ -1,5 +1,6 @@
 import './index.css';
 
+import * as localForage from 'localforage';
 import * as Pixi from 'pixi.js';
 
 import { Drawing } from './Drawing';
@@ -79,9 +80,23 @@ function setup()
     const stage = pixi.stage;
     stage.scale = new Pixi.Point(8, 8);
 
-    addDrawing(32, 32);
+    const d = addDrawing(32, 32);
     addDrawing(8, 8);
     addDrawing(16, 16);
+
+    localForage.getItem("test").then(data => {
+      if (data instanceof Uint8ClampedArray)
+      {
+        d.texture.data.data.set(data);
+        d.texture.context.putImageData(d.texture.data, 0, 0);
+        d.texture.update();
+      }
+    });
+
+    document.getElementById("save")!.addEventListener("click", () =>
+    {
+      localForage.setItem("test", d.texture.context.getImageData(0, 0, 32, 32).data);
+    });
 
     let dragType: "draw" | "move" | null;
     let dragBase: Pixi.Point;

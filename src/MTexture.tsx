@@ -24,6 +24,12 @@ export class MTexture
         this.buf32 = new Uint32Array(this.data.data.buffer); 
     }
 
+    public fetch(): void
+    {
+        const data = this.context.getImageData(0, 0, this.data.width, this.data.height);
+        this.data.data.set(data.data);
+    }
+
     public plot(func: PlotFunction): void
     {
         const width = this.data.width;

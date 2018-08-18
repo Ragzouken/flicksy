@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@types/pixi.js": "^4.7.3",
+    "localforage": "^1.7.2",
     "pixi.js": "^4.7.3",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
@@ -14,9 +14,10 @@
     "build": "react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
-    "publish": "react-scripts-ts build && butler push ./build candle/bitsy-sketch:web"
+    "publish": "react-scripts-ts build && butler push ./build candle/flicksy:web"
   },
   "devDependencies": {
+    "@types/pixi.js": "^4.7.3",
     "@types/jest": "^22.2.3",
     "@types/node": "^10.1.2",
     "@types/react": "^16.3.14",
