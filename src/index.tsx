@@ -3,6 +3,7 @@ import './index.css';
 import * as localForage from 'localforage';
 import * as Pixi from 'pixi.js';
 
+import { DrawingBoard } from './DrawingBoard';
 import { Drawing } from './Drawing';
 import { MTexture } from './MTexture';
 
