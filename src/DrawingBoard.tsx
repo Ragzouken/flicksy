@@ -10,6 +10,18 @@ class PinnedDrawing
 /** A named collection of Drawings arranged spatially */
 export class DrawingBoard
 {
+    public guid: string;
     public name: string;
-    public pinnedDrawings: PinnedDrawing[];
+    public pinnedDrawings: PinnedDrawing[] = [];
+
+    public PinDrawing(drawing: Drawing, position: Point): PinnedDrawing
+    {
+        const pin = new PinnedDrawing
+        pin.drawing = drawing;
+        pin.position = position;
+
+        this.pinnedDrawings.push(pin);
+
+        return pin;
+    }
 }

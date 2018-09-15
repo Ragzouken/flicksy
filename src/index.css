@@ -12,10 +12,14 @@ canvas
   height: 100%;
 }
 
+.panel
+{
+  position: absolute;
+}
+
 #info
 {
   color: white;
-  position: absolute;
 
   left: 32px;
   top: 32px;
@@ -23,10 +27,23 @@ canvas
   width: 256px;
 }
 
+#menu
+{
+  left: 32px;
+  top: 256px;
+
+  width: 256px;
+
+  color: white;
+}
+
+#menu > input
+{
+  width: 64px;
+}
+
 #palette
 {
-  position: absolute;
-  
   display: grid;
   padding: 4px;
   grid-gap: 4px;
@@ -56,8 +73,6 @@ canvas
 
 #brushes
 {
-  position: absolute;
-  
   display: grid;
   padding: 4px;
   grid-gap: 4px;
@@ -71,8 +86,8 @@ canvas
 
 #brushes > div
 {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
 
   background-color: pink;
 }

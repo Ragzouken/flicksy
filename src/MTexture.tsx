@@ -1,10 +1,11 @@
-import { BaseTexture, SCALE_MODES } from "pixi.js";
+import { BaseTexture, Texture, SCALE_MODES } from "pixi.js";
 
 export type PlotFunction = (x: number, y: number) => number;
 
 export class MTexture
 {
     public readonly base: BaseTexture;
+    public readonly texture: Texture;
     public readonly context: CanvasRenderingContext2D;
     public readonly canvas: HTMLCanvasElement;
 
@@ -19,7 +20,8 @@ export class MTexture
     
         this.context = this.canvas.getContext("2d")!;
         this.base = new BaseTexture(this.canvas, SCALE_MODES.NEAREST);
-        
+        this.texture = new Texture(this.base);
+
         this.data = this.context.createImageData(width, height);
         this.buf32 = new Uint32Array(this.data.data.buffer); 
     }
@@ -184,7 +186,11 @@ export class MTexture
         this.context.putImageData(this.data, 0, 0);
     }
 
-    public sweepTest(x0: number, y0: number, x1: number, y1: number, brush: MTexture)
+    public sweepTest(x0: number, 
+                     y0: number, 
+                     x1: number, 
+                     y1: number, 
+                     brush: MTexture)
     {
         const steep = Math.abs(y1 - y0) > Math.abs(x1 - x0);
         const xoff = Math.floor(brush.data.width / 2);
