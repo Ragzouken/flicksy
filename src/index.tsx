@@ -116,7 +116,46 @@ function createBlankPinnedDrawing(board: DrawingBoard,
 }
 
 let stage: Pixi.Container;
-let board = new DrawingBoard();
+let activeBoard = new DrawingBoard();
+
+interface PinData
+{
+    "position": number[];
+    "size": number[];
+    "data": Uint8ClampedArray;
+}
+
+interface BoardData
+{
+    "guid": string;
+    "name": string;
+    "pins": PinData[];
+}
+
+function BoardToDataObject(board: DrawingBoard): BoardData
+{
+    const object: BoardData = {
+        "guid": "",
+        "name": board.name,
+        "pins": [],
+    };
+
+    for (let pin of board.pinnedDrawings)
+    {
+        const texture = pin.drawing.texture;
+        const data = texture.context.getImageData(0, 0, texture.data.width, texture.data.height).data;
+
+        const pin_ = {
+            "position": [pin.drawing.sprite.position.x, pin.drawing.sprite.position.y],
+            "size": [texture.data.width, texture.data.height],
+            "data": data,
+        };
+
+        object.pins.push(pin_);
+    }
+
+    return object;
+}
 
 function setup()
 {
@@ -127,20 +166,52 @@ function setup()
     stage = pixi.stage;
     stage.scale = new Pixi.Point(8, 8);
 
-    const d = addDrawing(32, 32);
+    function loadBoard(data: BoardData)
+    {
+        const board = new DrawingBoard();
+        board.guid = data.guid;
+        board.name = data.name;
 
-    localForage.getItem("test").then(data => {
+        for (let pindata of data.pins)
+        {
+            const pin = createBlankPinnedDrawing(board, 
+                                                 pindata.size[0], 
+                                                 pindata.size[1],
+                                                 new Pixi.Point(pindata.position[0], pindata.position[1]));
+
+            pin.texture.data.data.set(pindata.data);
+            pin.texture.context.putImageData(pin.texture.data, 0, 0);
+            pin.texture.update();
+
+            addDrawing(pin);
+        }
+
+        activeBoard = board;
+    }
+
+    localForage.getItem<BoardData>("test2").then(board => 
+    {
+        if (board)
+        {
+            loadBoard(board);
+        }
+        else
+        {
+            activeBoard = createBlankDrawingBoard();
+        }
+
+        /*
       if (data instanceof Uint8ClampedArray)
       {
         d.texture.data.data.set(data);
         d.texture.context.putImageData(d.texture.data, 0, 0);
         d.texture.update();
-      }
+      }*/
     });
 
     document.getElementById("save")!.addEventListener("click", () =>
     {
-      localForage.setItem("test", d.texture.context.getImageData(0, 0, 32, 32).data);
+        localForage.setItem("test2", BoardToDataObject(activeBoard));
     });
 
     let dragType: "draw" | "move" | null;
@@ -178,6 +249,25 @@ function setup()
       dragBase = sub(drawing.sprite.position, event.data.getLocalPosition(stage));
     }
 
+    function addDrawing(drawing: Drawing)
+    {
+        stage.addChild(drawing.sprite);
+    
+        drawing.sprite.interactive = true;
+        drawing.sprite.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
+        {
+            if (event.data.button === 2)
+            {
+            startDragging(drawing, event);
+            event.stopPropagation();
+            }
+            else
+            {
+            startDrawing(drawing, event);
+            event.stopPropagation();
+            }
+        });
+    }
 
     function setupMenu()
     {
@@ -191,58 +281,10 @@ function setup()
             const width = +widthUI.options[widthUI.selectedIndex].value;
             const height = +heightUI.options[heightUI.selectedIndex].value;
     
-            const drawing = createBlankPinnedDrawing(board, width, height, position);
+            const drawing = createBlankPinnedDrawing(activeBoard, width, height, position);
     
-            stage.addChild(drawing.sprite);
-    
-            drawing.sprite.interactive = true;
-            drawing.sprite.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
-            {
-                if (event.data.button === 2)
-                {
-                startDragging(drawing, event);
-                event.stopPropagation();
-                }
-                else
-                {
-                startDrawing(drawing, event);
-                event.stopPropagation();
-                }
-            });
+            addDrawing(drawing);
         });
-    }
-
-    function addDrawing(width: number, height: number)
-    {
-      const base = new MTexture(width, height);
-      const tex = new Pixi.Texture(base.base);
-      const sprite = new Pixi.Sprite(tex);
-
-      const drawing = new Drawing(base, sprite);
-
-      stage.addChild(sprite);
-
-      sprite.position = new Pixi.Point(randomInt(0, 96), randomInt(0, 96));
-
-      base.plot((x, y) => rgb2num(0, Math.random() * 128, 0));
-      base.update()
-
-      sprite.interactive = true;
-      sprite.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
-      {
-        if (event.data.button === 2)
-        {
-          startDragging(drawing, event);
-          event.stopPropagation();
-        }
-        else
-        {
-          startDrawing(drawing, event);
-          event.stopPropagation();
-        }
-      });
-
-      return drawing;
     }
 
     function add(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.ObservablePoint)
