@@ -32,6 +32,23 @@ export class MTexture
         this.data.data.set(data.data);
     }
 
+    public fill(color: number): void
+    {
+        const width = this.data.width;
+        const height = this.data.height;
+        const pixels = this.buf32;
+
+        for (let y = 0; y < height; ++y)
+        {
+            for (let x = 0; x < width; ++x)
+            {
+                pixels[y * width + x] = color;
+            } 
+        }
+
+        this.context.putImageData(this.data, 0, 0);
+    }
+
     public plot(func: PlotFunction): void
     {
         const width = this.data.width;

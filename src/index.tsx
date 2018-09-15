@@ -107,7 +107,7 @@ function createBlankPinnedDrawing(board: DrawingBoard,
     sprite.position = position;
 
     const drawing = new Drawing(base, sprite);
-    base.plot((x, y) => rgb2num(255, 255, 255, 32));
+    base.fill(rgb2num(255, 255, 255, 32));
     base.update()
 
     board.PinDrawing(drawing, position);
@@ -337,12 +337,6 @@ function setup()
       {
         const base = draggedDrawing.texture;
         const m = event.data.getLocalPosition(draggedDrawing.sprite);
-
-        /*
-        base.line(Math.floor(prevDraw.x), Math.floor(prevDraw.y), 
-                  Math.floor(m.x),        Math.floor(m.y), 
-                  color);
-        */
         
         if (erasing)
         {
@@ -350,8 +344,8 @@ function setup()
         }
 
         base.sweepTest(Math.floor(prevDraw.x), Math.floor(prevDraw.y), 
-                        Math.floor(m.x),        Math.floor(m.y), 
-                        brush);
+                       Math.floor(m.x),        Math.floor(m.y), 
+                       brush);
         
         base.context.globalCompositeOperation = "source-over";
         base.update();
