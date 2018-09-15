@@ -2,6 +2,8 @@ import './index.css';
 
 import * as localForage from 'localforage';
 import * as Pixi from 'pixi.js';
+import * as JSZip from 'jszip'
+import * as FileSaver from 'file-saver'
 
 import { DrawingBoard } from './DrawingBoard';
 import { Drawing } from './Drawing';
@@ -212,6 +214,34 @@ function setup()
     document.getElementById("save")!.addEventListener("click", () =>
     {
         localForage.setItem("test2", BoardToDataObject(activeBoard));
+    });
+
+    function padLeft(text:string, padChar:string, size:number): string {
+        return (String(padChar).repeat(size) + text).substr( (size * -1), size) ;
+    }
+
+    document.getElementById("download")!.addEventListener("click", () =>
+    {
+        const zip = new JSZip();
+        const drawings = zip.folder("drawings");
+        let i = 0;
+
+        for (let pin of activeBoard.pinnedDrawings)
+        {
+            const name = padLeft(i.toString(), "0", 2) + ".png";
+            const url = pin.drawing.texture.canvas.toDataURL("image/png");
+            const data = url.substring(22);
+
+            drawings.file(name, data, {base64: true});
+
+            i += 1;
+        }
+
+        zip.generateAsync({type: "blob"})
+           .then(function(content) 
+        {
+            FileSaver.saveAs(content, "drawings.zip");
+        });
     });
 
     let dragType: "draw" | "move" | null;
