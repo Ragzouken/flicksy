@@ -109,8 +109,13 @@ function createBlankPinnedDrawing(board: DrawingBoard,
     sprite.position = position;
 
     const drawing = new Drawing(base, sprite);
-    base.fill(rgb2num(255, 255, 255, 32));
+    base.fill(0);
     base.update()
+
+    const border = new Pixi.Graphics();
+    border.lineStyle(.125, 0xFF0000);
+    border.drawRect(-.5, -.5, width + 1, height + 1);
+    sprite.addChild(border);
 
     board.PinDrawing(drawing, position);
 
