@@ -1,7 +1,7 @@
 import { Point } from "pixi.js"
 import { Drawing } from "./Drawing"
 
-class PinnedDrawing
+export class PinnedDrawing
 {
     public position: Point;
     public drawing: Drawing;
