@@ -12,28 +12,32 @@ canvas
   height: 100%;
 }
 
-.panel
+#drawing-name
 {
-  position: absolute;
+    width: 96px;
+}
+
+#sidebar
+{
+    position: absolute;
+    left: 32px;
+    top: 32px;
 }
 
 #info
 {
   color: white;
-
-  left: 32px;
-  top: 32px;
-
   width: 256px;
+}
+
+.panel
+{
+    margin: 8px;
 }
 
 #menu
 {
-  left: 32px;
-  top: 256px;
-
   width: 256px;
-
   color: white;
 }
 
@@ -49,16 +53,13 @@ canvas
   grid-gap: 4px;
   grid-template-columns: repeat(4, 1fr);
 
-  left: 32px;
-  top: 512px;
-
   background-color: mediumaquamarine;
 }
 
 #palette > div
 {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
 
   background-color: pink;
 }
@@ -79,9 +80,6 @@ canvas
   padding: 4px;
   grid-gap: 4px;
   grid-template-columns: repeat(4, 1fr);
-
-  left: 32px;
-  top: 384px;
 
   background-color: mediumaquamarine;
 }

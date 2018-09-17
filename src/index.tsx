@@ -113,10 +113,20 @@ function createBlankPinnedDrawing(board: DrawingBoard,
     base.update()
 
     const border = new Pixi.Graphics();
-    border.lineStyle(.125, 0xFF0000);
+    border.lineStyle(.125, 0xFFFFFF);
     border.drawRect(-.5, -.5, width + 1, height + 1);
+    border.alpha = 0.25;
     sprite.addChild(border);
 
+    const highlight = new Pixi.Graphics();
+    highlight.lineStyle(.5, 0xFFFFFF);
+    highlight.drawRect(-.5, -.5, width + 1, height + 1);
+    highlight.alpha = 0.5;
+    sprite.addChild(highlight);
+    drawing.highlight = highlight;
+    highlight.visible = false;
+
+    drawing.name = `drawing ${board.pinnedDrawings.length}`;
     board.PinDrawing(drawing, position);
 
     return drawing;
@@ -128,6 +138,9 @@ let activeBoard = new DrawingBoard();
 interface PinData
 {
     "position": number[];
+    
+    // actually drawing
+    "name": string;
     "size": number[];
     "data": Uint8ClampedArray;
 }
@@ -153,6 +166,7 @@ function BoardToDataObject(board: DrawingBoard): BoardData
         const data = texture.context.getImageData(0, 0, texture.data.width, texture.data.height).data;
 
         const pin_ = {
+            "name": pin.drawing.name,
             "position": [pin.drawing.sprite.position.x, pin.drawing.sprite.position.y],
             "size": [texture.data.width, texture.data.height],
             "data": data,
@@ -164,6 +178,83 @@ function BoardToDataObject(board: DrawingBoard): BoardData
     return object;
 }
 
+function rename()
+{
+    const drawing = getSelectedDrawing();
+    const name = document.getElementById("drawing-name")! as HTMLInputElement;
+
+    if (drawing)
+    {
+        drawing.name = name.value;
+
+        refreshDropdown();
+    }
+}
+
+function delete_()
+{
+    const drawing = getSelectedDrawing();
+
+    if (drawing)
+    {
+        const index = activeBoard.pinnedDrawings.findIndex(pin => pin.drawing == drawing);
+        const pin = activeBoard.pinnedDrawings[index];
+        
+        stage.removeChild(pin.drawing.sprite);
+        activeBoard.pinnedDrawings.splice(index, 1);
+
+        refreshDropdown();
+    }
+}
+
+function getSelectedDrawing(): Drawing | undefined
+{
+    const dropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
+
+    if (dropdown.selectedIndex < 0) return undefined;
+
+    return activeBoard.pinnedDrawings[dropdown.selectedIndex].drawing;
+}
+
+function refreshName()
+{
+    const drawing = getSelectedDrawing();
+    const name = document.getElementById("drawing-name")! as HTMLInputElement;
+
+    for (let pin of activeBoard.pinnedDrawings)
+    {
+        pin.drawing.highlight.visible = false;
+    }
+
+    if (drawing)
+    {
+        name.value = drawing.name;
+        
+        drawing.highlight.visible = true;
+    }
+}
+
+function refreshDropdown()
+{
+    const dropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
+
+    while (dropdown.lastChild)
+    {
+        dropdown.removeChild(dropdown.lastChild);
+    }
+
+    for (let pin of activeBoard.pinnedDrawings)
+    {
+        const option = document.createElement("option");
+        option.value = activeBoard.pinnedDrawings.indexOf(pin).toString();
+        option.text = pin.drawing.name;
+
+        dropdown.appendChild(option);
+    }
+
+    refreshName();
+}
+
 function setup()
 {
     doPalette();
@@ -173,6 +264,15 @@ function setup()
     stage = pixi.stage;
     stage.scale = new Pixi.Point(8, 8);
 
+    const dropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
+    dropdown.addEventListener("change", () =>
+    {
+        refreshName();
+    });
+
+    (document.getElementById("rename-drawing-button")! as HTMLButtonElement).addEventListener("click", rename);
+    (document.getElementById("delete-drawing-button")! as HTMLButtonElement).addEventListener("click", delete_);
+
     function loadBoard(data: BoardData)
     {
         const board = new DrawingBoard();
@@ -181,19 +281,22 @@ function setup()
 
         for (let pindata of data.pins)
         {
-            const pin = createBlankPinnedDrawing(board, 
-                                                 pindata.size[0], 
-                                                 pindata.size[1],
-                                                 new Pixi.Point(pindata.position[0], pindata.position[1]));
+            const drawing = createBlankPinnedDrawing(board, 
+                                                     pindata.size[0], 
+                                                     pindata.size[1],
+                                                     new Pixi.Point(pindata.position[0], pindata.position[1]));
 
-            pin.texture.data.data.set(pindata.data);
-            pin.texture.context.putImageData(pin.texture.data, 0, 0);
-            pin.texture.update();
+            if (pindata.name) drawing.name = pindata.name;
+            drawing.texture.data.data.set(pindata.data);
+            drawing.texture.context.putImageData(drawing.texture.data, 0, 0);
+            drawing.texture.update();
 
-            addDrawing(pin);
+            addDrawing(drawing);
         }
 
         activeBoard = board;
+
+        refreshDropdown();
     }
 
     localForage.getItem<BoardData>("test2").then(board => 
@@ -233,7 +336,7 @@ function setup()
 
         for (let pin of activeBoard.pinnedDrawings)
         {
-            const name = padLeft(i.toString(), "0", 2) + ".png";
+            const name = pin.drawing.name + ".png";
             const url = pin.drawing.texture.canvas.toDataURL("image/png");
             const data = url.substring(22);
 
@@ -293,15 +396,17 @@ function setup()
         {
             if (event.data.button === 2)
             {
-            startDragging(drawing, event);
-            event.stopPropagation();
+                startDragging(drawing, event);
+                event.stopPropagation();
             }
             else
             {
-            startDrawing(drawing, event);
-            event.stopPropagation();
+                startDrawing(drawing, event);
+                event.stopPropagation();
             }
         });
+
+        refreshDropdown();
     }
 
     function setupMenu()

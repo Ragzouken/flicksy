@@ -12,6 +12,7 @@ export class DrawingBoard
 {
     public guid: string;
     public name: string;
+    
     public pinnedDrawings: PinnedDrawing[] = [];
 
     public PinDrawing(drawing: Drawing, position: Point): PinnedDrawing

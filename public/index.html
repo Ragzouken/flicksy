@@ -26,54 +26,59 @@
       You need to enable JavaScript to run this app.
     </noscript>
     <div id="root"></div>
-    <div id="info" class="panel">
-      <p>hello this is a little test</p>
-      <p>right-click to drag drawings around, left-click to drag the pencil, click the palette to change color</p>
-      <p><button id="save">save</button></p>
-      <p><button id="download">download all</button></p>
-    </div>
-    <div id="menu" class="panel">
-      <select id="create-drawing-width">
-        <option value="16">16px</option>
-        <option value="24">24px</option>
-        <option value="32">32px</option>
-        <option value="48">48px</option>
-        <option value="64">64px</option>
-      </select>
-      x
-      <select id="create-drawing-height">
-        <option value="16">16px</option>
-        <option value="24">24px</option>
-        <option value="32">32px</option>
-        <option value="48">48px</option>
-        <option value="64">64px</option>
-      </select>
-      =>
-      <button id="create-drawing-button">add drawing</button>
-    </div>
-    <div id="palette" class="panel">
-      <div><button>X</button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-      <div><button></button></div>
-    </div>
-    <div id="brushes" class="panel">
-      <div><button>1px</button></div>
-      <div><button>2px</button></div>
-      <div><button>3px</button></div>
-      <div><button>4px</button></div>
+    <div id="sidebar">
+        <div id="info" class="panel">
+            <p>hello this is a little test</p>
+            <p>right-click to drag drawings around, left-click to drag the pencil, click the palette to change color</p>
+            <p><button id="save">save</button></p>
+            <p><button id="download">download all</button></p>
+            <p>
+                <select id="select-drawing"></select> => <button id="delete-drawing-button">delete</button>
+                <br>
+                <input id="drawing-name"> => <button id="rename-drawing-button">rename</button>
+            </p>
+        </div>
+        <div id="menu" class="panel">
+            <select id="create-drawing-width">
+                <option value="24">24px</option>
+                <option value="32">32px</option>
+                <option value="48">48px</option>
+                <option value="64">64px</option>
+            </select>
+            x
+            <select id="create-drawing-height">
+                <option value="24">24px</option>
+                <option value="32">32px</option>
+                <option value="48">48px</option>
+                <option value="64">64px</option>
+            </select>
+            =>
+            <button id="create-drawing-button">add drawing</button>
+        </div>
+        <div id="palette" class="panel">
+            <div><button>X</button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+            <div><button></button></div>
+        </div>
+        <div id="brushes" class="panel">
+            <div><button>1px</button></div>
+            <div><button>2px</button></div>
+            <div><button>3px</button></div>
+            <div><button>4px</button></div>
+        </div>
     </div>
     <!--
       This HTML file is a template.
