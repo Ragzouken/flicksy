@@ -66,7 +66,7 @@ export default class DrawingBoardsApp
 
     private clear(): void
     {
-        Array.from(this.pinViews.values()).forEach(view => view.destroy());
+        this.pinViews.forEach(view => view.destroy());
         this.pinViews.clear();
     }
 
@@ -76,10 +76,10 @@ export default class DrawingBoardsApp
         this.select(this.selected);
     }
 
-    public select(pin: PinnedDrawing): void
+    public select(pin: PinnedDrawing | undefined): void
     {
         this.selected = pin;
-        this.pinViews[pin].select();
+        this.pinViews.forEach(view => view.setSelected(view.pin == pin));
     }
 
     public setDrawingBoard(board: DrawingBoard): void
