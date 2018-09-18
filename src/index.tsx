@@ -103,28 +103,10 @@ function createBlankPinnedDrawing(board: DrawingBoard,
                                   position: Pixi.Point): Drawing
 {
     const base = new MTexture(width, height);
-    const sprite = new Pixi.Sprite(base.texture);
 
-    // TODO: move this (sprite shouldn't be part of drawings)
-    sprite.position = position;
-
-    const drawing = new Drawing(base, sprite);
+    const drawing = new Drawing(base);
     base.fill(0);
     base.update()
-
-    const border = new Pixi.Graphics();
-    border.lineStyle(.125, 0xFFFFFF);
-    border.drawRect(-.5, -.5, width + 1, height + 1);
-    border.alpha = 0.25;
-    sprite.addChild(border);
-
-    const highlight = new Pixi.Graphics();
-    highlight.lineStyle(.5, 0xFFFFFF);
-    highlight.drawRect(-.5, -.5, width + 1, height + 1);
-    highlight.alpha = 0.5;
-    sprite.addChild(highlight);
-    drawing.highlight = highlight;
-    highlight.visible = false;
 
     drawing.name = `drawing ${board.pinnedDrawings.length}`;
     board.PinDrawing(drawing, position);
@@ -133,7 +115,6 @@ function createBlankPinnedDrawing(board: DrawingBoard,
 }
 
 let stage: Pixi.Container;
-let activeBoard = new DrawingBoard();
 
 interface PinData
 {
@@ -167,7 +148,7 @@ function BoardToDataObject(board: DrawingBoard): BoardData
 
         const pin_ = {
             "name": pin.drawing.name,
-            "position": [pin.drawing.sprite.position.x, pin.drawing.sprite.position.y],
+            "position": [pin.position.x, pin.position.y],
             "size": [texture.data.width, texture.data.height],
             "data": data,
         };
@@ -197,11 +178,9 @@ function delete_()
 
     if (drawing)
     {
-        const index = activeBoard.pinnedDrawings.findIndex(pin => pin.drawing == drawing);
-        const pin = activeBoard.pinnedDrawings[index];
-        
-        stage.removeChild(pin.drawing.sprite);
-        activeBoard.pinnedDrawings.splice(index, 1);
+        const index = app.activeBoard.pinnedDrawings.findIndex(pin => pin.drawing == drawing);
+        app.activeBoard.pinnedDrawings.splice(index, 1);
+        app.refresh();
 
         refreshDropdown();
     }
@@ -213,7 +192,7 @@ function getSelectedDrawing(): Drawing | undefined
 
     if (dropdown.selectedIndex < 0) return undefined;
 
-    return activeBoard.pinnedDrawings[dropdown.selectedIndex].drawing;
+    return app.activeBoard.pinnedDrawings[dropdown.selectedIndex].drawing;
 }
 
 function refreshName()
@@ -221,21 +200,16 @@ function refreshName()
     const drawing = getSelectedDrawing();
     const name = document.getElementById("drawing-name")! as HTMLInputElement;
 
-    for (let pin of activeBoard.pinnedDrawings)
-    {
-        pin.drawing.highlight.visible = false;
-    }
-
     if (drawing)
     {
         name.value = drawing.name;
-        
-        drawing.highlight.visible = true;
     }
 }
 
 function refreshDropdown()
 {
+    console.log("REFRESH DROPDOWN");
+
     const dropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
 
     while (dropdown.lastChild)
@@ -243,13 +217,20 @@ function refreshDropdown()
         dropdown.removeChild(dropdown.lastChild);
     }
 
-    for (let pin of activeBoard.pinnedDrawings)
+    console.log(app.activeBoard.pinnedDrawings.length);
+
+    for (let pin of app.activeBoard.pinnedDrawings)
     {
         const option = document.createElement("option");
-        option.value = activeBoard.pinnedDrawings.indexOf(pin).toString();
+        option.value = app.activeBoard.pinnedDrawings.indexOf(pin).toString();
         option.text = pin.drawing.name;
 
         dropdown.appendChild(option);
+    }
+
+    if (app.selected)
+    {
+        dropdown.selectedIndex = app.activeBoard.pinnedDrawings.indexOf(app.selected);
     }
 
     refreshName();
@@ -296,9 +277,7 @@ function setup()
             drawing.texture.update();
         }
 
-        activeBoard = board;
-
-        app.setDrawingBoard(activeBoard);
+        app.setDrawingBoard(board);
 
         refreshDropdown();
     }
@@ -311,7 +290,7 @@ function setup()
         }
         else
         {
-            activeBoard = createBlankDrawingBoard();
+            app.setDrawingBoard(createBlankDrawingBoard());
         }
 
         /*
@@ -325,7 +304,7 @@ function setup()
 
     document.getElementById("save")!.addEventListener("click", () =>
     {
-        localForage.setItem("test2", BoardToDataObject(activeBoard));
+        localForage.setItem("test2", BoardToDataObject(app.activeBoard));
     });
 
     function padLeft(text:string, padChar:string, size:number): string {
@@ -338,7 +317,7 @@ function setup()
         const drawings = zip.folder("drawings");
         let i = 0;
 
-        for (let pin of activeBoard.pinnedDrawings)
+        for (let pin of app.activeBoard.pinnedDrawings)
         {
             const name = pin.drawing.name + ".png";
             const url = pin.drawing.texture.canvas.toDataURL("image/png");
@@ -368,14 +347,10 @@ function setup()
             const width = +widthUI.options[widthUI.selectedIndex].value;
             const height = +heightUI.options[heightUI.selectedIndex].value;
     
-            const drawing = createBlankPinnedDrawing(activeBoard, width, height, position);
+            createBlankPinnedDrawing(app.activeBoard, width, height, position);
             app.refresh();
+            refreshDropdown();
         });
-    }
-
-    function sub(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.ObservablePoint)
-    {
-      return new Pixi.Point(a.x - b.x, a.y - b.y);
     }
 
     pixi.view.oncontextmenu = (e) => 

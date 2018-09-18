@@ -66,6 +66,8 @@ class PinnedDrawingView
 
 export default class DrawingBoardsApp
 {
+    public get activeBoard(): DrawingBoard { return this.drawingBoard }
+
     private pixi: Pixi.Application;
     private container: Pixi.Container;
 

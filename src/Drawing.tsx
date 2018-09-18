@@ -6,13 +6,9 @@ export class Drawing
     public name: string = "unnamed drawing";
 
     public readonly texture: MTexture;
-    public readonly sprite: Pixi.Sprite;
 
-    public highlight: Pixi.DisplayObject;
-
-    constructor(texture: MTexture, sprite: Pixi.Sprite)
+    constructor(texture: MTexture)
     {
         this.texture = texture;
-        this.sprite = sprite;
     }
 }
