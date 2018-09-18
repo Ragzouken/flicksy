@@ -84,14 +84,6 @@ function makeCircleBrush(circumference: number, color: number): MTexture
     return brush;
 }
 
-function createBlankDrawingBoard(): DrawingBoard
-{
-    let board = new DrawingBoard();
-    board.name = "default board";
-
-    return board;
-}
-
 function rename()
 {
     const drawing = getSelectedDrawing();
@@ -171,39 +163,34 @@ function setup()
     (document.getElementById("rename-drawing-button")! as HTMLButtonElement).addEventListener("click", rename);
     (document.getElementById("delete-drawing-button")! as HTMLButtonElement).addEventListener("click", delete_);
 
-    function loadBoard(data: DrawingBoardData)
+    localForage.getItem<DrawingBoardData>("test4").then(boardData => 
     {
         const board = new DrawingBoard();
-        board.fromData(data);
+
+        if (boardData)
+        {
+            board.fromData(boardData);
+        }
+        else
+        {   
+            board.name = "default board";
+        }
 
         app.setDrawingBoard(board);
 
         refreshDropdown();
-    }
-
-    localForage.getItem<DrawingBoardData>("test3").then(board => 
-    {
-        if (board)
-        {
-            loadBoard(board);
-        }
-        else
-        {
-            app.setDrawingBoard(createBlankDrawingBoard());
-        }
     });
 
     document.getElementById("save")!.addEventListener("click", () =>
     {
-        localForage.setItem("test3", app.activeBoard.toData());
+        localForage.setItem("test4", app.activeBoard.toData());
     });
 
     document.getElementById("download")!.addEventListener("click", () =>
     {
         const zip = new JSZip();
         const drawings = zip.folder("drawings");
-        let i = 0;
-
+        
         for (let pin of app.activeBoard.pinnedDrawings)
         {
             const name = pin.drawing.name + ".png";
@@ -211,8 +198,6 @@ function setup()
             const data = url.substring(22);
 
             drawings.file(name, data, {base64: true});
-
-            i += 1;
         }
 
         zip.generateAsync({type: "blob"})
