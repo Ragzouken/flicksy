@@ -3,6 +3,21 @@ import * as Pixi from 'pixi.js';
 import { Drawing } from './Drawing'; 
 import { DrawingBoard, PinnedDrawing } from './DrawingBoard';
 
+function add(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.ObservablePoint)
+{
+  return new Pixi.Point(a.x + b.x, a.y + b.y);
+}
+
+function sub(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.ObservablePoint)
+{
+  return new Pixi.Point(a.x - b.x, a.y - b.y);
+}
+
+function floor(point: Pixi.Point)
+{
+  return new Pixi.Point(Math.floor(point.x), Math.floor(point.y));
+}
+
 class PinnedDrawingView
 {
     public readonly pin: PinnedDrawing;
@@ -55,6 +70,12 @@ export default class DrawingBoardsApp
     private pinViews = new Map<PinnedDrawing, PinnedDrawingView>();
     private drawingBoard: DrawingBoard;
 
+    private dragType: "draw" | "move" | undefined;
+    private dragOrigin: Pixi.Point;
+    private draggedPin: PinnedDrawingView | undefined;
+    
+    private selectDropdown: HTMLSelectElement;
+
     public selected: PinnedDrawing | undefined;
 
     public constructor(pixi: Pixi.Application)
@@ -62,6 +83,20 @@ export default class DrawingBoardsApp
         this.pixi = pixi;
         this.container = new Pixi.Container();
         this.pixi.stage.addChild(this.container);
+
+        this.selectDropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
+        this.selectDropdown.addEventListener("change", () =>
+        {
+            let pin: PinnedDrawing | undefined;
+            const index = this.selectDropdown.selectedIndex;
+
+            if (index >= 0)
+            {
+                pin = this.drawingBoard.pinnedDrawings[index];
+            }
+
+            this.select(pin);
+        });
     }
 
     private clear(): void
@@ -87,12 +122,70 @@ export default class DrawingBoardsApp
         this.clear();
         this.drawingBoard = board;
         
+        while (this.selectDropdown.lastChild)
+        {
+            this.selectDropdown.removeChild(this.selectDropdown.lastChild);
+        }
+
         for (let pin of board.pinnedDrawings)
         {
             const view = new PinnedDrawingView(pin);
 
+            view.sprite.interactive = true;
+            view.sprite.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
+            {
+                if (event.data.button === 2)
+                {
+                    this.startDragging(view, event);
+                    event.stopPropagation();
+                }
+                else
+                {
+                    this.startDrawing(view, event);
+                    event.stopPropagation();
+                }
+            });
+
             this.container.addChild(view.sprite);
             this.pinViews.set(pin, view);
+
+            const option = document.createElement("option");
+            option.text = pin.drawing.name;
+            option.value = board.pinnedDrawings.indexOf(pin).toString();
         }
+    }
+
+    private stopDragging(): void
+    {
+        this.dragType = undefined;
+        this.draggedPin = undefined;
+    }
+
+    private startDragging(view: PinnedDrawingView, event: Pixi.interaction.InteractionEvent): void
+    {
+        if (this.draggedPin != undefined)
+        {
+            this.stopDragging();
+        }
+
+        this.draggedPin = view;
+        this.dragType = "move";
+        this.dragOrigin = sub(view.sprite.position, event.data.getLocalPosition(this.container));
+    }
+
+    public updateDragging(event: Pixi.interaction.InteractionEvent): void
+    {
+        if (this.dragType == "move" && this.draggedPin)
+        {
+            const position = floor(add(this.dragOrigin, event.data.getLocalPosition(this.container)));
+
+            this.draggedPin.pin.position = position;
+            this.draggedPin.sprite.position = position;
+        }
+    }
+
+    private startDrawing(view: PinnedDrawingView, event: Pixi.interaction.InteractionEvent): void
+    {
+
     }
 }

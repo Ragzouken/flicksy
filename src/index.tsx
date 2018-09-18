@@ -5,7 +5,8 @@ import * as Pixi from 'pixi.js';
 import * as JSZip from 'jszip'
 import * as FileSaver from 'file-saver'
 
-import { DrawingBoard } from './DrawingBoard';
+import DrawingBoardsApp from './DrawingBoardsApp'
+import { DrawingBoard, PinnedDrawing } from './DrawingBoard';
 import { Drawing } from './Drawing';
 import { MTexture } from './MTexture';
 
@@ -264,6 +265,8 @@ function setup()
     stage = pixi.stage;
     stage.scale = new Pixi.Point(8, 8);
 
+    const app = new DrawingBoardsApp(pixi);
+
     const dropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
     dropdown.addEventListener("change", () =>
     {
@@ -387,6 +390,11 @@ function setup()
       dragBase = sub(drawing.sprite.position, event.data.getLocalPosition(stage));
     }
 
+    function addPinnedDrawing(drawing: PinnedDrawing)
+    {
+
+    }
+
     function addDrawing(drawing: Drawing)
     {
         stage.addChild(drawing.sprite);
@@ -471,6 +479,8 @@ function setup()
 
     pixi.stage.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
     {
+        app.updateDragging(event);
+
       if (draggedDrawing == null) { return; }
       
       if (dragType === "draw")
