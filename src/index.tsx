@@ -30,7 +30,6 @@ function floor(point: Pixi.Point)
 
 let brushColor = rgb2num(255, 0, 255);
 let brushSize = 1;
-let brush = new MTexture(3, 3);
 
 const white = rgb2num(255, 255, 255, 255);
 
@@ -58,9 +57,9 @@ function doPalette()
         button.setAttribute("style", `background-color: rgb(${r},${g},${b});`);
         button.addEventListener("click", () => 
         {
-            erasing = (c == 0);
+            app.erasing = (c == 0);
             brushColor = c;
-            makeCircleBrush(brushSize, brushColor);
+            app.brush = makeCircleBrush(brushSize, brushColor);
         })
     }
 }
@@ -76,18 +75,18 @@ function doBrushes()
     button.addEventListener("click", () => 
     {
         brushSize = i + 1;
-        makeCircleBrush(brushSize, brushColor);
+        app.brush = makeCircleBrush(brushSize, brushColor);
         console.log(brushSize);
     })
   }
 }
 
-let erasing = false;
-
-function makeCircleBrush(circumference: number, color: number)
+function makeCircleBrush(circumference: number, color: number): MTexture
 {
-    brush = new MTexture(circumference, circumference);
+    const brush = new MTexture(circumference, circumference);
     brush.circleTest(color == 0 ? white : color);
+
+    return brush;
 }
 
 function createBlankDrawingBoard(): DrawingBoard
@@ -256,6 +255,8 @@ function refreshDropdown()
     refreshName();
 }
 
+let app: DrawingBoardsApp;
+
 function setup()
 {
     doPalette();
@@ -265,7 +266,7 @@ function setup()
     stage = pixi.stage;
     stage.scale = new Pixi.Point(8, 8);
 
-    const app = new DrawingBoardsApp(pixi);
+    app = new DrawingBoardsApp(pixi);
 
     const dropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
     dropdown.addEventListener("change", () =>
@@ -293,11 +294,11 @@ function setup()
             drawing.texture.data.data.set(pindata.data);
             drawing.texture.context.putImageData(drawing.texture.data, 0, 0);
             drawing.texture.update();
-
-            addDrawing(drawing);
         }
 
         activeBoard = board;
+
+        app.setDrawingBoard(activeBoard);
 
         refreshDropdown();
     }
@@ -355,68 +356,6 @@ function setup()
         });
     });
 
-    let dragType: "draw" | "move" | null;
-    let dragBase: Pixi.Point;
-    let draggedDrawing: Drawing | null;
-    let prevDraw = new Pixi.Point(0, 0);
-
-    function startDrawing(drawing: Drawing, event: Pixi.interaction.InteractionEvent)
-    {
-      if (draggedDrawing != null)
-      {
-        stopDragging();
-      }
-
-      draggedDrawing = drawing;
-      dragType = "draw";
-      prevDraw = event.data.getLocalPosition(drawing.sprite);
-    }
-
-    function stopDragging()
-    {
-      draggedDrawing = null;
-    }
-
-    function startDragging(drawing: Drawing, event: Pixi.interaction.InteractionEvent)
-    {
-      if (draggedDrawing != null)
-      {
-        stopDragging();
-      }
-
-      draggedDrawing = drawing;
-      dragType = "move";
-      prevDraw = event.data.getLocalPosition(drawing.sprite);
-      dragBase = sub(drawing.sprite.position, event.data.getLocalPosition(stage));
-    }
-
-    function addPinnedDrawing(drawing: PinnedDrawing)
-    {
-
-    }
-
-    function addDrawing(drawing: Drawing)
-    {
-        stage.addChild(drawing.sprite);
-    
-        drawing.sprite.interactive = true;
-        drawing.sprite.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
-        {
-            if (event.data.button === 2)
-            {
-                startDragging(drawing, event);
-                event.stopPropagation();
-            }
-            else
-            {
-                startDrawing(drawing, event);
-                event.stopPropagation();
-            }
-        });
-
-        refreshDropdown();
-    }
-
     function setupMenu()
     {
         const createUI = document.getElementById("create-drawing-button")!;
@@ -430,47 +369,14 @@ function setup()
             const height = +heightUI.options[heightUI.selectedIndex].value;
     
             const drawing = createBlankPinnedDrawing(activeBoard, width, height, position);
-    
-            addDrawing(drawing);
+            app.refresh();
         });
-    }
-
-    function add(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.ObservablePoint)
-    {
-      return new Pixi.Point(a.x + b.x, a.y + b.y);
     }
 
     function sub(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.ObservablePoint)
     {
       return new Pixi.Point(a.x - b.x, a.y - b.y);
     }
-
-    /*
-    this.pixi.stage.on("pointerdown", (event: Pixi.interaction.InteractionEvent) => 
-    {
-      dragType = (event.data.button == 0) ? "draw" : "move";
-      prevDrag = event.data.getLocalPosition(sprite);
-      
-      dragBase = sub(sprite.position, event.data.getLocalPosition(this.pixi.stage));
-
-      const x = Math.floor(prevDrag.x);
-      const y = Math.floor(prevDrag.y);
-
-      if (base.getPixel(x, y) == green)
-      {
-        color = black;
-      }
-      else
-      {
-        color = green;
-      }
-
-      base.line(x, y, x, y, color);
-      base.update();
-
-      event.stopPropagation();
-    });
-    */
 
     pixi.view.oncontextmenu = (e) => 
     {
@@ -480,38 +386,7 @@ function setup()
     pixi.stage.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
     {
         app.updateDragging(event);
-
-      if (draggedDrawing == null) { return; }
-      
-      if (dragType === "draw")
-      {
-        const base = draggedDrawing.texture;
-        const m = event.data.getLocalPosition(draggedDrawing.sprite);
-        
-        if (erasing)
-        {
-            base.context.globalCompositeOperation = "destination-out";
-        }
-
-        base.sweepTest(Math.floor(prevDraw.x), Math.floor(prevDraw.y), 
-                       Math.floor(m.x),        Math.floor(m.y), 
-                       brush);
-        
-        base.context.globalCompositeOperation = "source-over";
-        base.update();
-
-        prevDraw = m;
-      }
-      else if (draggedDrawing != null)
-      {
-        draggedDrawing.sprite.position = floor(add(dragBase, event.data.getLocalPosition(pixi.stage)));
-      }
     });
-
-    document.onpointerup = () => 
-    {
-      stopDragging();
-    }
 
     const resize = () =>
     {

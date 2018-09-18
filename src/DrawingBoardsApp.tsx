@@ -2,6 +2,8 @@ import * as Pixi from 'pixi.js';
 
 import { Drawing } from './Drawing'; 
 import { DrawingBoard, PinnedDrawing } from './DrawingBoard';
+import { timingSafeEqual } from 'crypto';
+import { MTexture } from './MTexture';
 
 function add(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.ObservablePoint)
 {
@@ -72,7 +74,11 @@ export default class DrawingBoardsApp
 
     private dragType: "draw" | "move" | undefined;
     private dragOrigin: Pixi.Point;
+    private dragPrev: Pixi.Point;
     private draggedPin: PinnedDrawingView | undefined;
+
+    public brush: MTexture;
+    public erasing: boolean;
     
     private selectDropdown: HTMLSelectElement;
 
@@ -83,6 +89,8 @@ export default class DrawingBoardsApp
         this.pixi = pixi;
         this.container = new Pixi.Container();
         this.pixi.stage.addChild(this.container);
+
+        document.onpointerup = () => this.stopDragging();
 
         this.selectDropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
         this.selectDropdown.addEventListener("change", () =>
@@ -163,10 +171,7 @@ export default class DrawingBoardsApp
 
     private startDragging(view: PinnedDrawingView, event: Pixi.interaction.InteractionEvent): void
     {
-        if (this.draggedPin != undefined)
-        {
-            this.stopDragging();
-        }
+        this.stopDragging();
 
         this.draggedPin = view;
         this.dragType = "move";
@@ -182,10 +187,44 @@ export default class DrawingBoardsApp
             this.draggedPin.pin.position = position;
             this.draggedPin.sprite.position = position;
         }
+        else if (this.dragType == "draw" && this.draggedPin)
+        {
+            const base = this.draggedPin.pin.drawing.texture;
+            const m = event.data.getLocalPosition(this.draggedPin.sprite);
+
+            this.draw(this.dragPrev, m, base);
+
+            this.dragPrev = m;
+        }
     }
 
     private startDrawing(view: PinnedDrawingView, event: Pixi.interaction.InteractionEvent): void
     {
+        this.stopDragging();
 
+        this.draggedPin = view;
+        this.dragType = "draw";
+        this.dragPrev = event.data.getLocalPosition(view.sprite);
+    }
+
+    private draw(prev: Pixi.Point, 
+                 next: Pixi.Point,
+                 canvas: MTexture): void
+    {
+        if (this.erasing)
+        {
+            canvas.context.globalCompositeOperation = "destination-out";
+        }
+        else
+        {
+            canvas.context.globalCompositeOperation = "source-over";
+        }
+
+        canvas.sweepTest(Math.floor(prev.x), Math.floor(prev.y), 
+                         Math.floor(next.x), Math.floor(next.y), 
+                         this.brush);
+
+        canvas.context.globalCompositeOperation = "source-over";
+        canvas.update();
     }
 }
