@@ -1,4 +1,16 @@
-import { DrawingBoard } from './DrawingBoard';
+
+import * as uuid from 'uuid/v4';
+import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
+
+export interface FlicksyProjectData
+{
+    guid: string;
+    name: string;
+
+    flicksyVersion: string;
+
+    drawingBoards: DrawingBoardData[];
+}
 
 export class FlicksyProject
 {
@@ -8,4 +20,14 @@ export class FlicksyProject
     public flicksyVersion: string;
 
     public drawingBoards: DrawingBoard[];
+
+    public toData(): FlicksyProjectData
+    {
+        return {
+            guid: this.guid,
+            name: this.name,
+            flicksyVersion: this.flicksyVersion,
+            drawingBoards: this.drawingBoards.map(board => board.toData()),
+        };
+    }
 }

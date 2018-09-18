@@ -6,7 +6,7 @@ import * as JSZip from 'jszip'
 import * as FileSaver from 'file-saver'
 
 import DrawingBoardsApp from './DrawingBoardsApp'
-import { DrawingBoard, PinnedDrawing } from './DrawingBoard';
+import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
 import { Drawing } from './Drawing';
 import { MTexture } from './MTexture';
 
@@ -92,66 +92,6 @@ function createBlankDrawingBoard(): DrawingBoard
     return board;
 }
 
-function createBlankPinnedDrawing(board: DrawingBoard, 
-                                  width: number, 
-                                  height: number,
-                                  position: Pixi.Point): Drawing
-{
-    const base = new MTexture(width, height);
-
-    const drawing = new Drawing(base);
-    base.fill(0);
-    base.update()
-
-    drawing.name = `drawing ${board.pinnedDrawings.length}`;
-    board.PinDrawing(drawing, position);
-
-    return drawing;
-}
-
-interface PinData
-{
-    "position": number[];
-    
-    // actually drawing
-    "name": string;
-    "size": number[];
-    "data": Uint8ClampedArray;
-}
-
-interface BoardData
-{
-    "guid": string;
-    "name": string;
-    "pins": PinData[];
-}
-
-function BoardToDataObject(board: DrawingBoard): BoardData
-{
-    const object: BoardData = {
-        "guid": "",
-        "name": board.name,
-        "pins": [],
-    };
-
-    for (let pin of board.pinnedDrawings)
-    {
-        const texture = pin.drawing.texture;
-        const data = texture.context.getImageData(0, 0, texture.data.width, texture.data.height).data;
-
-        const pin_ = {
-            "name": pin.drawing.name,
-            "position": [pin.position.x, pin.position.y],
-            "size": [texture.data.width, texture.data.height],
-            "data": data,
-        };
-
-        object.pins.push(pin_);
-    }
-
-    return object;
-}
-
 function rename()
 {
     const drawing = getSelectedDrawing();
@@ -231,31 +171,17 @@ function setup()
     (document.getElementById("rename-drawing-button")! as HTMLButtonElement).addEventListener("click", rename);
     (document.getElementById("delete-drawing-button")! as HTMLButtonElement).addEventListener("click", delete_);
 
-    function loadBoard(data: BoardData)
+    function loadBoard(data: DrawingBoardData)
     {
         const board = new DrawingBoard();
-        board.guid = data.guid;
-        board.name = data.name;
-
-        for (let pindata of data.pins)
-        {
-            const drawing = createBlankPinnedDrawing(board, 
-                                                     pindata.size[0], 
-                                                     pindata.size[1],
-                                                     new Pixi.Point(pindata.position[0], pindata.position[1]));
-
-            if (pindata.name) drawing.name = pindata.name;
-            drawing.texture.data.data.set(pindata.data);
-            drawing.texture.context.putImageData(drawing.texture.data, 0, 0);
-            drawing.texture.update();
-        }
+        board.fromData(data);
 
         app.setDrawingBoard(board);
 
         refreshDropdown();
     }
 
-    localForage.getItem<BoardData>("test2").then(board => 
+    localForage.getItem<DrawingBoardData>("test3").then(board => 
     {
         if (board)
         {
@@ -265,24 +191,12 @@ function setup()
         {
             app.setDrawingBoard(createBlankDrawingBoard());
         }
-
-        /*
-      if (data instanceof Uint8ClampedArray)
-      {
-        d.texture.data.data.set(data);
-        d.texture.context.putImageData(d.texture.data, 0, 0);
-        d.texture.update();
-      }*/
     });
 
     document.getElementById("save")!.addEventListener("click", () =>
     {
-        localForage.setItem("test2", BoardToDataObject(app.activeBoard));
+        localForage.setItem("test3", app.activeBoard.toData());
     });
-
-    function padLeft(text:string, padChar:string, size:number): string {
-        return (String(padChar).repeat(size) + text).substr( (size * -1), size) ;
-    }
 
     document.getElementById("download")!.addEventListener("click", () =>
     {
@@ -320,7 +234,14 @@ function setup()
             const width = +widthUI.options[widthUI.selectedIndex].value;
             const height = +heightUI.options[heightUI.selectedIndex].value;
     
-            createBlankPinnedDrawing(app.activeBoard, width, height, position);
+            const base = new MTexture(width, height);
+            const drawing = new Drawing(base);
+            base.fill(0);
+            base.update()
+        
+            drawing.name = `drawing ${app.activeBoard.pinnedDrawings.length}`;
+            app.activeBoard.PinDrawing(drawing, position);
+
             refreshDropdown();
         });
     }

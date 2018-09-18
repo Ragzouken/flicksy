@@ -3,6 +3,7 @@ import { MTexture } from "./MTexture";
 
 export class Drawing
 {
+    public uuid: string;
     public name: string = "unnamed drawing";
 
     public readonly texture: MTexture;
