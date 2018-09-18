@@ -23,11 +23,6 @@ function randomInt(min: number, max: number){
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function floor(point: Pixi.Point)
-{
-  return new Pixi.Point(Math.floor(point.x), Math.floor(point.y));
-}
-
 let brushColor = rgb2num(255, 0, 255);
 let brushSize = 1;
 
@@ -114,8 +109,6 @@ function createBlankPinnedDrawing(board: DrawingBoard,
     return drawing;
 }
 
-let stage: Pixi.Container;
-
 interface PinData
 {
     "position": number[];
@@ -180,8 +173,6 @@ function delete_()
     {
         const index = app.activeBoard.pinnedDrawings.findIndex(pin => pin.drawing == drawing);
         app.activeBoard.pinnedDrawings.splice(index, 1);
-        app.refresh();
-
         refreshDropdown();
     }
 }
@@ -208,25 +199,7 @@ function refreshName()
 
 function refreshDropdown()
 {
-    console.log("REFRESH DROPDOWN");
-
     const dropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
-
-    while (dropdown.lastChild)
-    {
-        dropdown.removeChild(dropdown.lastChild);
-    }
-
-    console.log(app.activeBoard.pinnedDrawings.length);
-
-    for (let pin of app.activeBoard.pinnedDrawings)
-    {
-        const option = document.createElement("option");
-        option.value = app.activeBoard.pinnedDrawings.indexOf(pin).toString();
-        option.text = pin.drawing.name;
-
-        dropdown.appendChild(option);
-    }
 
     if (app.selected)
     {
@@ -234,6 +207,7 @@ function refreshDropdown()
     }
 
     refreshName();
+    app.refresh();
 }
 
 let app: DrawingBoardsApp;
@@ -244,8 +218,7 @@ function setup()
     doBrushes();
     setupMenu();
 
-    stage = pixi.stage;
-    stage.scale = new Pixi.Point(8, 8);
+    pixi.stage.scale = new Pixi.Point(8, 8);
 
     app = new DrawingBoardsApp(pixi);
 
@@ -343,12 +316,11 @@ function setup()
     
         createUI.addEventListener("click", () =>
         {
-            const position = new Pixi.Point(randomInt(8, 96), randomInt(8, 96));
+            const position = new Pixi.Point(randomInt(48, 128), randomInt(2, 96));
             const width = +widthUI.options[widthUI.selectedIndex].value;
             const height = +heightUI.options[heightUI.selectedIndex].value;
     
             createBlankPinnedDrawing(app.activeBoard, width, height, position);
-            app.refresh();
             refreshDropdown();
         });
     }

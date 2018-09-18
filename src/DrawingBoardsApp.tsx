@@ -1,8 +1,6 @@
 import * as Pixi from 'pixi.js';
 
-import { Drawing } from './Drawing'; 
 import { DrawingBoard, PinnedDrawing } from './DrawingBoard';
-import { timingSafeEqual } from 'crypto';
 import { MTexture } from './MTexture';
 
 function add(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.ObservablePoint)
@@ -20,42 +18,54 @@ function floor(point: Pixi.Point)
   return new Pixi.Point(Math.floor(point.x), Math.floor(point.y));
 }
 
+/** Manages the pixi state for displaying a PinnedDrawing */
 class PinnedDrawingView
 {
+    /** The pinned drawing that this view corresponds to */
     public readonly pin: PinnedDrawing;
+    /** The Pixi.Sprite for displaying the drawing content */
     public readonly sprite: Pixi.Sprite;
+    /** The Pixi.Graphics for displaying the drawing border */
     public readonly border: Pixi.Graphics;
+    /** The Pixi.Graphics for displaying the selection highlight */
     public readonly select: Pixi.Graphics;
 
     public constructor(pin: PinnedDrawing)
     {
         this.pin = pin;
+        
+        // create the sprite and move it to the pin position
         this.sprite = new Pixi.Sprite(pin.drawing.texture.texture);
         this.sprite.position = pin.position;
 
         const width = pin.drawing.texture.data.width;
         const height = pin.drawing.texture.data.height;
 
+        // create the border as a child of the sprite
         this.border = new Pixi.Graphics();
         this.border.lineStyle(.125, 0xFFFFFF);
         this.border.drawRect(-.5, -.5, width + 1, height + 1);
         this.border.alpha = 0.25;
         this.sprite.addChild(this.border);
 
+        // create the selection highlight as a child of the spirte
         this.select = new Pixi.Graphics();
         this.select.lineStyle(.5, 0xFFFFFF);
         this.select.drawRect(-.5, -.5, width + 1, height + 1);
         this.select.alpha = 0.5;
         this.sprite.addChild(this.select);
         
+        // turn off the selection highlight by default
         this.setSelected(false);
     }
 
+    /** Set whether this view should display the selection highlight or not */
     public setSelected(selected: boolean)
     {
         this.select.visible = selected;
     }
 
+    /** Destroy the contained pixi state */
     public destroy(): void
     {
         this.sprite.destroy();
@@ -115,18 +125,21 @@ export default class DrawingBoardsApp
         this.pinViews.clear();
     }
 
+    /** Resynchronise this display to the data in the underlying DrawingBoard */
     public refresh(): void
     {
         this.setDrawingBoard(this.drawingBoard);
         this.select(this.selected);
     }
 
+    /** Switch the currently selected pin, or select nothing if undefined */
     public select(pin: PinnedDrawing | undefined): void
     {
         this.selected = pin;
         this.pinViews.forEach(view => view.setSelected(view.pin == pin));
     }
 
+    /** Replace the DrawingBoard that should be displayed */
     public setDrawingBoard(board: DrawingBoard): void
     {
         this.clear();
@@ -162,6 +175,8 @@ export default class DrawingBoardsApp
             const option = document.createElement("option");
             option.text = pin.drawing.name;
             option.value = board.pinnedDrawings.indexOf(pin).toString();
+
+            this.selectDropdown.appendChild(option);
         }
     }
 
@@ -180,6 +195,10 @@ export default class DrawingBoardsApp
         this.dragOrigin = sub(view.sprite.position, event.data.getLocalPosition(this.container));
     }
 
+    /** 
+     * Update the dragging (pin moving or pin drawing) based on a mouse 
+     * movement event
+     */
     public updateDragging(event: Pixi.interaction.InteractionEvent): void
     {
         if (this.dragType == "move" && this.draggedPin)
