@@ -4,11 +4,13 @@ import * as localForage from 'localforage';
 import * as Pixi from 'pixi.js';
 import * as JSZip from 'jszip'
 import * as FileSaver from 'file-saver'
+import * as uuid from 'uuid/v4'
 
 import DrawingBoardsApp from './DrawingBoardsApp'
 import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
 import { Drawing } from './Drawing';
 import { MTexture } from './MTexture';
+import { FlicksyProject } from './FlicksyProject';
 
 const pixi = new Pixi.Application();
 document.getElementById("root")!.appendChild(pixi.view);
@@ -142,6 +144,7 @@ function refreshDropdown()
     app.refresh();
 }
 
+let project: FlicksyProject;
 let app: DrawingBoardsApp;
 
 function setup()
@@ -165,11 +168,15 @@ function setup()
 
     localForage.getItem<DrawingBoardData>("test4").then(boardData => 
     {
+        project = new FlicksyProject();
+        project.name = "unnamed project";
+        project.uuid = uuid();
+
         const board = new DrawingBoard();
 
         if (boardData)
         {
-            board.fromData(boardData);
+            board.fromData(boardData, project);
         }
         else
         {   
@@ -218,12 +225,8 @@ function setup()
             const position = new Pixi.Point(randomInt(48, 128), randomInt(2, 96));
             const width = +widthUI.options[widthUI.selectedIndex].value;
             const height = +heightUI.options[heightUI.selectedIndex].value;
-    
-            const base = new MTexture(width, height);
-            const drawing = new Drawing(base);
-            base.fill(0);
-            base.update()
-        
+
+            const drawing = project.createDrawing(width, height);
             drawing.name = `drawing ${app.activeBoard.pinnedDrawings.length}`;
             app.activeBoard.PinDrawing(drawing, position);
 

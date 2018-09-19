@@ -2,24 +2,27 @@ import * as uuid from 'uuid/v4'
 
 import { Point } from "pixi.js"
 import { MTexture } from "./MTexture"
+
+import { FlicksyProject } from './FlicksyProject';
 import { Drawing } from "./Drawing"
 
 export interface PinnedDrawingData
 {
-    "position": number[];
-    
+    position: number[];
+    drawing?: string;
+
     // actually drawing
-    "uuid": string;
-    "name": string;
-    "size": number[];
-    "data": Uint8ClampedArray;
+    uuid: string;
+    name: string;
+    size: number[];
+    data: Uint8ClampedArray;
 }
 
 export interface DrawingBoardData
 {
-    "uuid": string;
-    "name": string;
-    "pins": PinnedDrawingData[];
+    uuid: string;
+    name: string;
+    pins: PinnedDrawingData[];
 }
 
 export class PinnedDrawing
@@ -27,19 +30,38 @@ export class PinnedDrawing
     public position: Point;
     public drawing: Drawing;
 
-    public fromData(data: PinnedDrawingData): PinnedDrawing
+    public fromData(data: PinnedDrawingData, project: FlicksyProject): PinnedDrawing
     {
         this.position = new Point(data.position[0], data.position[1]);
         
-        const base = new MTexture(data.size[0], data.size[1]);
-        base.data.data.set(data.data);
-        base.context.putImageData(base.data, 0, 0);
-        base.update();
+        if (data.drawing)
+        {
+            const drawing = project.drawings.find(drawing => drawing.uuid == data.drawing);
 
-        const drawing = new Drawing(base);
-        drawing.name = data.name;
-        drawing.uuid = data.uuid || uuid();
-        this.drawing = drawing;
+            if (drawing)
+            {
+                this.drawing = drawing;
+            }
+            else
+            {
+                console.log(`could not load drawing of uuid ${data.drawing}`);
+            }
+        }
+
+        if (!this.drawing)
+        {
+            const base = new MTexture(data.size[0], data.size[1]);
+            base.data.data.set(data.data);
+            base.context.putImageData(base.data, 0, 0);
+            base.update();
+
+            const drawing = new Drawing();
+            drawing.texture = base;
+            drawing.name = data.name;
+            drawing.uuid = data.uuid || uuid();
+            this.drawing = drawing;
+            project.drawings.push(drawing);
+        }
 
         return this;
     }
@@ -76,11 +98,11 @@ export class DrawingBoard
         return pin;
     }
 
-    public fromData(data: DrawingBoardData): DrawingBoard
+    public fromData(data: DrawingBoardData, project: FlicksyProject): DrawingBoard
     {
         this.uuid = data.uuid || uuid();
         this.name = data.name || "unnanmed board";
-        this.pinnedDrawings = data.pins.map(pin => (new PinnedDrawing()).fromData(pin));
+        this.pinnedDrawings = data.pins.map(pin => (new PinnedDrawing()).fromData(pin, project));
 
         return this;
     }
