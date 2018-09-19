@@ -9,13 +9,7 @@ import { Drawing } from "./Drawing"
 export interface PinnedDrawingData
 {
     position: number[];
-    drawing?: string;
-
-    // actually drawing
-    uuid: string;
-    name: string;
-    size: number[];
-    data: Uint8ClampedArray;
+    drawing: string;
 }
 
 export interface DrawingBoardData
@@ -48,21 +42,6 @@ export class PinnedDrawing
             }
         }
 
-        if (!this.drawing)
-        {
-            const base = new MTexture(data.size[0], data.size[1]);
-            base.data.data.set(data.data);
-            base.context.putImageData(base.data, 0, 0);
-            base.update();
-
-            const drawing = new Drawing();
-            drawing.texture = base;
-            drawing.name = data.name;
-            drawing.uuid = data.uuid || uuid();
-            this.drawing = drawing;
-            project.drawings.push(drawing);
-        }
-
         return this;
     }
 
@@ -70,11 +49,7 @@ export class PinnedDrawing
     {
         return {
             position: [this.position.x, this.position.y],
-
-            name: this.drawing.name,
-            uuid: this.drawing.uuid,
-            size: [this.drawing.texture.data.width, this.drawing.texture.data.height],
-            data: this.drawing.texture.data.data,
+            drawing: this.drawing.uuid,
         };
     }
 }

@@ -10,7 +10,7 @@ import DrawingBoardsApp from './DrawingBoardsApp'
 import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
 import { Drawing } from './Drawing';
 import { MTexture } from './MTexture';
-import { FlicksyProject } from './FlicksyProject';
+import { FlicksyProject, FlicksyProjectData } from './FlicksyProject';
 
 const pixi = new Pixi.Application();
 document.getElementById("root")!.appendChild(pixi.view);
@@ -166,24 +166,18 @@ function setup()
     (document.getElementById("rename-drawing-button")! as HTMLButtonElement).addEventListener("click", rename);
     (document.getElementById("delete-drawing-button")! as HTMLButtonElement).addEventListener("click", delete_);
 
-    localForage.getItem<DrawingBoardData>("test4").then(boardData => 
+    localForage.getItem<FlicksyProjectData>("v1-test").then(projectData => 
     {
         project = new FlicksyProject();
         project.name = "unnamed project";
         project.uuid = uuid();
-
-        const board = new DrawingBoard();
-
-        if (boardData)
+        
+        if (projectData)
         {
-            board.fromData(boardData, project);
-        }
-        else
-        {   
-            board.name = "default board";
+            project.fromData(projectData);
         }
 
-        app.setDrawingBoard(board);
+        app.setDrawingBoard(project.drawingBoards[0]);
 
         refreshDropdown();
     });
@@ -191,6 +185,7 @@ function setup()
     document.getElementById("save")!.addEventListener("click", () =>
     {
         localForage.setItem("test4", app.activeBoard.toData());
+        localForage.setItem("v1-test", project.toData());
     });
 
     document.getElementById("download")!.addEventListener("click", () =>
@@ -212,6 +207,14 @@ function setup()
         {
             FileSaver.saveAs(content, "drawings.zip");
         });
+    });
+
+    document.getElementById("download-data")!.addEventListener("click", () =>
+    {
+        const json = JSON.stringify(project.toData());
+        const blob = new Blob([json], {type: "application/json"});
+
+        FileSaver.saveAs(blob, "project.json");
     });
 
     function setupMenu()

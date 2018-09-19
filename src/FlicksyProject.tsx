@@ -23,7 +23,7 @@ export class FlicksyProject
     public flicksyVersion: string;
 
     public drawings: Drawing[] = [];
-    public drawingBoards: DrawingBoard[];
+    public drawingBoards: DrawingBoard[] = [];
 
     public fromData(data: FlicksyProjectData): FlicksyProject
     {
