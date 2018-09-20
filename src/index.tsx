@@ -6,12 +6,10 @@ import * as JSZip from 'jszip'
 import * as FileSaver from 'file-saver'
 import * as uuid from 'uuid/v4'
 
-import { postGist } from './gists'
 import { base64ToUint8, uint8ToBase64 } from './Base64'
 
 import DrawingBoardsApp from './DrawingBoardsApp'
-import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
-import { Drawing } from './Drawing';
+import { DrawingBoard } from './DrawingBoard';
 import { MTexture } from './MTexture';
 import { FlicksyProject, FlicksyProjectData } from './FlicksyProject';
 
@@ -28,10 +26,10 @@ function randomInt(min: number, max: number){
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-let brushColor = rgb2num(255, 0, 255);
+let brushColor = 0xFF00FF;
 let brushSize = 1;
 
-const white = rgb2num(255, 255, 255, 255);
+const white = 0xFFFFFF;
 
 function doPalette()
 {
@@ -89,64 +87,6 @@ function makeCircleBrush(circumference: number, color: number): MTexture
     return brush;
 }
 
-function rename()
-{
-    const drawing = getSelectedDrawing();
-    const name = document.getElementById("drawing-name")! as HTMLInputElement;
-
-    if (drawing)
-    {
-        drawing.name = name.value;
-
-        refreshDropdown();
-    }
-}
-
-function delete_()
-{
-    const drawing = getSelectedDrawing();
-
-    if (drawing)
-    {
-        const index = app.activeBoard.pinnedDrawings.findIndex(pin => pin.drawing == drawing);
-        app.activeBoard.pinnedDrawings.splice(index, 1);
-        refreshDropdown();
-    }
-}
-
-function getSelectedDrawing(): Drawing | undefined
-{
-    const dropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
-
-    if (dropdown.selectedIndex < 0) return undefined;
-
-    return app.activeBoard.pinnedDrawings[dropdown.selectedIndex].drawing;
-}
-
-function refreshName()
-{
-    const drawing = getSelectedDrawing();
-    const name = document.getElementById("drawing-name")! as HTMLInputElement;
-
-    if (drawing)
-    {
-        name.value = drawing.name;
-    }
-}
-
-function refreshDropdown()
-{
-    const dropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
-
-    if (app.selected)
-    {
-        dropdown.selectedIndex = app.activeBoard.pinnedDrawings.indexOf(app.selected);
-    }
-
-    refreshName();
-    app.refresh();
-}
-
 let project: FlicksyProject;
 let app: DrawingBoardsApp;
 
@@ -162,23 +102,13 @@ function setup()
 
     app.brush = makeCircleBrush(1, 0xFFFFFF);
 
-    const dropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
-    dropdown.addEventListener("change", () =>
-    {
-        refreshName();
-    });
-
-    (document.getElementById("rename-drawing-button")! as HTMLButtonElement).addEventListener("click", rename);
-    (document.getElementById("delete-drawing-button")! as HTMLButtonElement).addEventListener("click", delete_);
-
     function loadProject(data: FlicksyProjectData)
     {
         project = new FlicksyProject();
         project.fromData(data);
 
         app.setDrawingBoard(project.drawingBoards[0]);
-
-        refreshDropdown();
+        app.refresh();
     }
 
     localForage.getItem<FlicksyProjectData>("v1-test").then(projectData => 
@@ -195,8 +125,7 @@ function setup()
             
             project.drawingBoards.push(new DrawingBoard());
             app.setDrawingBoard(project.drawingBoards[0]);
-
-            refreshDropdown();
+            app.refresh();
         }
     });
 
@@ -289,7 +218,7 @@ function setup()
             drawing.name = `drawing ${app.activeBoard.pinnedDrawings.length}`;
             app.activeBoard.PinDrawing(drawing, position);
 
-            refreshDropdown();
+            app.refresh();
         });
     }
 

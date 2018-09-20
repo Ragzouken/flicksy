@@ -105,10 +105,12 @@ export default class DrawingBoardsApp
 
     public brush: MTexture;
     public erasing: boolean;
-    
-    private selectDropdown: HTMLSelectElement;
 
     public selected: PinnedDrawing | undefined;
+
+    private drawingNameInput: HTMLInputElement;
+    private drawingRenameButton: HTMLButtonElement;
+    private pinDeleteButton: HTMLButtonElement;
 
     public constructor(pixi: Pixi.Application)
     {
@@ -118,19 +120,24 @@ export default class DrawingBoardsApp
 
         document.onpointerup = () => this.stopDragging();
 
-        this.selectDropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
-        this.selectDropdown.addEventListener("change", () =>
+        this.drawingNameInput = document.getElementById("drawing-name")! as HTMLInputElement;
+        this.drawingRenameButton = document.getElementById("rename-drawing-button")! as HTMLButtonElement;
+        this.pinDeleteButton = document.getElementById("delete-drawing-button")! as HTMLButtonElement;
+
+        this.drawingRenameButton.addEventListener("click", () =>
         {
-            let pin: PinnedDrawing | undefined;
-            const index = this.selectDropdown.selectedIndex;
-
-            if (index >= 0)
+            if (this.selected)
             {
-                pin = this.drawingBoard.pinnedDrawings[index];
+                this.selected.drawing.name = this.drawingNameInput.value;
             }
-
-            this.select(pin);
         });
+
+        this.pinDeleteButton.addEventListener("click", () =>
+        {
+            if (this.selected) this.removePin(this.selected);
+        });
+
+        this.select(undefined);
     }
 
     private clear(): void
@@ -149,17 +156,30 @@ export default class DrawingBoardsApp
     /** Switch the currently selected pin, or select nothing if undefined */
     public select(pin: PinnedDrawing | undefined): void
     {
-        if (this.selected == pin) return;
-
         this.selected = pin;
         this.pinViews.forEach(view => view.setSelected(view.pin == pin));
 
+        this.drawingNameInput.disabled = !pin;
+        this.drawingRenameButton.disabled = !pin;
+        this.pinDeleteButton.disabled = !pin;
+
         if (pin)
         {
-            this.selectDropdown.selectedIndex = this.activeBoard.pinnedDrawings.indexOf(pin);
-            const event = document.createEvent("HTMLEvents");
-            event.initEvent("change", true, true);
-            this.selectDropdown.dispatchEvent(event);
+            this.drawingNameInput.value = pin.drawing.name;
+        }
+    }
+
+    public removePin(pin: PinnedDrawing)
+    {
+        if (pin == this.selected)
+        {
+            this.select(undefined);
+        }
+
+        if (this.pinViews.has(pin))
+        {
+            this.pinViews.get(pin)!.destroy();
+            this.pinViews.delete(pin);
         }
     }
 
@@ -169,11 +189,6 @@ export default class DrawingBoardsApp
         this.clear();
         this.drawingBoard = board;
         
-        while (this.selectDropdown.lastChild)
-        {
-            this.selectDropdown.removeChild(this.selectDropdown.lastChild);
-        }
-
         for (let pin of board.pinnedDrawings)
         {
             const view = new PinnedDrawingView(pin);
@@ -195,12 +210,6 @@ export default class DrawingBoardsApp
 
             this.container.addChild(view.sprite);
             this.pinViews.set(pin, view);
-
-            const option = document.createElement("option");
-            option.text = pin.drawing.name;
-            option.value = board.pinnedDrawings.indexOf(pin).toString();
-
-            this.selectDropdown.appendChild(option);
         }
     }
 
