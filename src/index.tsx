@@ -6,6 +6,9 @@ import * as JSZip from 'jszip'
 import * as FileSaver from 'file-saver'
 import * as uuid from 'uuid/v4'
 
+import { postGist } from './gists'
+import { base64ToUint8, uint8ToBase64 } from './Base64'
+
 import DrawingBoardsApp from './DrawingBoardsApp'
 import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
 import { Drawing } from './Drawing';
@@ -166,25 +169,36 @@ function setup()
     (document.getElementById("rename-drawing-button")! as HTMLButtonElement).addEventListener("click", rename);
     (document.getElementById("delete-drawing-button")! as HTMLButtonElement).addEventListener("click", delete_);
 
-    localForage.getItem<FlicksyProjectData>("v1-test").then(projectData => 
+    function loadProject(data: FlicksyProjectData)
     {
         project = new FlicksyProject();
-        project.name = "unnamed project";
-        project.uuid = uuid();
-        
-        if (projectData)
-        {
-            project.fromData(projectData);
-        }
+        project.fromData(data);
 
         app.setDrawingBoard(project.drawingBoards[0]);
 
         refreshDropdown();
+    }
+
+    localForage.getItem<FlicksyProjectData>("v1-test").then(projectData => 
+    {        
+        if (projectData)
+        {
+            loadProject(projectData);
+        }
+        else
+        {
+            project = new FlicksyProject();
+            project.name = "unnamed project";
+            project.uuid = uuid();
+            
+            app.setDrawingBoard(project.drawingBoards[0]);
+
+            refreshDropdown();
+        }
     });
 
     document.getElementById("save")!.addEventListener("click", () =>
     {
-        localForage.setItem("test4", app.activeBoard.toData());
         localForage.setItem("v1-test", project.toData());
     });
 
@@ -209,11 +223,50 @@ function setup()
         });
     });
 
+    const importButton = document.getElementById("import-data")! as HTMLInputElement;
+    importButton.addEventListener("change", () =>
+    {
+        if (importButton.files && importButton.files[0])
+        {
+            const file = importButton.files[0];
+            const reader = new FileReader();
+
+            reader.onload = progress =>
+            {
+                const data = JSON.parse(reader.result as string, (key, value) =>
+                {
+                    if (value.hasOwnProperty("_type")
+                     && value._type == "Uint8ClampedArray")
+                    {
+                        return base64ToUint8(value.data);
+                    }
+
+                    return value;
+                });
+
+                loadProject(data);
+            };
+            reader.readAsText(file);
+        }
+    });
+
     document.getElementById("download-data")!.addEventListener("click", () =>
     {
-        const json = JSON.stringify(project.toData());
-        const blob = new Blob([json], {type: "application/json"});
+        const json = JSON.stringify(project.toData(), (key, value) =>
+        {
+            if (value instanceof Uint8ClampedArray)
+            {
+                return { "_type": "Uint8ClampedArray", "data": uint8ToBase64(value) }
+            }
+            else
+            {
+                return value;
+            }
+        });
 
+        //postGist(json, url => console.log(url));
+
+        const blob = new Blob([json], {type: "application/json"});
         FileSaver.saveAs(blob, "project.json");
     });
 
