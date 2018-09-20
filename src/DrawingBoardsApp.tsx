@@ -261,6 +261,8 @@ export default class DrawingBoardsApp
         this.draggedPin = view;
         this.dragType = "draw";
         this.dragPrev = event.data.getLocalPosition(view.sprite);
+
+        this.draw(this.dragPrev, this.dragPrev, view.pin.drawing.texture);
     }
 
     private draw(prev: Pixi.Point, 

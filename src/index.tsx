@@ -222,10 +222,7 @@ function setup()
         });
     }
 
-    pixi.view.oncontextmenu = (e) => 
-    {
-      e.preventDefault();
-    };
+    pixi.view.oncontextmenu = (e) => e.preventDefault();
 
     pixi.stage.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
     {
