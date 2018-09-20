@@ -20,8 +20,13 @@ canvas
 #sidebar
 {
     position: absolute;
-    left: 32px;
-    top: 32px;
+    left: 0px;
+    top: 0px;
+
+    height: 100%;
+
+    color: white;
+    background-color: darkmagenta;
 }
 
 #info

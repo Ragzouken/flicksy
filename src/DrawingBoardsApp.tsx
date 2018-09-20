@@ -29,6 +29,8 @@ class PinnedDrawingView
     public readonly border: Pixi.Graphics;
     /** The Pixi.Graphics for displaying the selection highlight */
     public readonly select: Pixi.Graphics;
+    /** The Pixi.Graphics for displaying the hover highlight */
+    public readonly hover: Pixi.Graphics;
 
     public constructor(pin: PinnedDrawing)
     {
@@ -37,6 +39,7 @@ class PinnedDrawingView
         // create the sprite and move it to the pin position
         this.sprite = new Pixi.Sprite(pin.drawing.texture.texture);
         this.sprite.position = pin.position;
+        this.sprite.interactive = true;
 
         const width = pin.drawing.texture.data.width;
         const height = pin.drawing.texture.data.height;
@@ -54,9 +57,20 @@ class PinnedDrawingView
         this.select.drawRect(-.5, -.5, width + 1, height + 1);
         this.select.alpha = 0.5;
         this.sprite.addChild(this.select);
+
+        // create the selection highlight as a child of the spirte
+        this.hover = new Pixi.Graphics();
+        this.hover.lineStyle(.5, 0xFF0000);
+        this.hover.drawRect(-.5, -.5, width + 1, height + 1);
+        this.hover.alpha = 0.5;
+        this.sprite.addChild(this.hover);
         
         // turn off the selection highlight by default
         this.setSelected(false);
+
+        this.hover.visible = false;
+        this.sprite.on("pointerover", () => this.hover.visible = true);
+        this.sprite.on("pointerout", () => this.hover.visible = false);
     }
 
     /** Set whether this view should display the selection highlight or not */

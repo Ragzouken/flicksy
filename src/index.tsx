@@ -160,6 +160,8 @@ function setup()
 
     app = new DrawingBoardsApp(pixi);
 
+    app.brush = makeCircleBrush(1, 0xFFFFFF);
+
     const dropdown = document.getElementById("select-drawing")! as HTMLSelectElement;
     dropdown.addEventListener("change", () =>
     {
@@ -191,6 +193,7 @@ function setup()
             project.name = "unnamed project";
             project.uuid = uuid();
             
+            project.drawingBoards.push(new DrawingBoard());
             app.setDrawingBoard(project.drawingBoards[0]);
 
             refreshDropdown();

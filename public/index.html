@@ -28,58 +28,68 @@
     <div id="root"></div>
     <div id="sidebar">
         <div id="info" class="panel">
-            <p>hello this is a little test</p>
-            <p>right-click to drag drawings around, left-click to drag the pencil, click the palette to change color</p>
-            <p><button id="save">save</button></p>
-            <p><button id="download">download all</button></p>
-            <p><button id="download-data">export data</button></p>
-            <p>import data<br><input id="import-data" type="file" accept="application/json"></p>
+            <p>prototype art component of a gamemaking tool</p>
+            <p>right-click to drag drawings around, left-click to drag the pencil, click the palette to change color and brush size</p>
+            <p>start by adding a drawing in the <b>add drawings</b> menu below</p>
+            <h3>add drawings</h3>
+            <p></p>
+                <select id="create-drawing-width">
+                    <option value="24">24px</option>
+                    <option value="32">32px</option>
+                    <option value="48">48px</option>
+                    <option value="64">64px</option>
+                </select>
+                x
+                <select id="create-drawing-height">
+                    <option value="24">24px</option>
+                    <option value="32">32px</option>
+                    <option value="48">48px</option>
+                    <option value="64">64px</option>
+                </select>
+                =>
+                <button id="create-drawing-button">add drawing</button>
+            </p>
+            <h3>selected drawing</h3>
             <p>
                 <select id="select-drawing"></select> => <button id="delete-drawing-button">delete</button>
-                <br>
+            </p>
+            <p>
                 <input id="drawing-name"> => <button id="rename-drawing-button">rename</button>
             </p>
-        </div>
-        <div id="menu" class="panel">
-            <select id="create-drawing-width">
-                <option value="24">24px</option>
-                <option value="32">32px</option>
-                <option value="48">48px</option>
-                <option value="64">64px</option>
-            </select>
-            x
-            <select id="create-drawing-height">
-                <option value="24">24px</option>
-                <option value="32">32px</option>
-                <option value="48">48px</option>
-                <option value="64">64px</option>
-            </select>
-            =>
-            <button id="create-drawing-button">add drawing</button>
-        </div>
-        <div id="palette" class="panel">
-            <div><button>X</button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-            <div><button></button></div>
-        </div>
-        <div id="brushes" class="panel">
-            <div><button>1px</button></div>
-            <div><button>2px</button></div>
-            <div><button>3px</button></div>
-            <div><button>4px</button></div>
+            <h3>brush settings</h3>
+            <div id="brushes">
+                <div><button>1px</button></div>
+                <div><button>2px</button></div>
+                <div><button>3px</button></div>
+                <div><button>4px</button></div>
+            </div>
+            <br>
+            <div id="palette">
+                <div><button>X</button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+                <div><button></button></div>
+            </div>
+            <h3>export</h3>
+            <p>
+                <button id="save">save</button>
+                <button id="download-data">export data</button>
+                <button id="download">export images</button>
+            </p>
+            <h3>import</h3>
+            <p><input id="import-data" type="file" accept="application/json"></p>
         </div>
     </div>
     <!--
