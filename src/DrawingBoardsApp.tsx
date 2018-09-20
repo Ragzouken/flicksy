@@ -149,8 +149,18 @@ export default class DrawingBoardsApp
     /** Switch the currently selected pin, or select nothing if undefined */
     public select(pin: PinnedDrawing | undefined): void
     {
+        if (this.selected == pin) return;
+
         this.selected = pin;
         this.pinViews.forEach(view => view.setSelected(view.pin == pin));
+
+        if (pin)
+        {
+            this.selectDropdown.selectedIndex = this.activeBoard.pinnedDrawings.indexOf(pin);
+            const event = document.createEvent("HTMLEvents");
+            event.initEvent("change", true, true);
+            this.selectDropdown.dispatchEvent(event);
+        }
     }
 
     /** Replace the DrawingBoard that should be displayed */
@@ -207,6 +217,8 @@ export default class DrawingBoardsApp
         this.draggedPin = view;
         this.dragType = "move";
         this.dragOrigin = sub(view.sprite.position, event.data.getLocalPosition(this.container));
+
+        this.select(view.pin);
     }
 
     /** 
