@@ -1,6 +1,7 @@
 import * as uuid from 'uuid/v4';
 
 import { MTexture } from "./MTexture";
+import { FlicksyData } from "./FlicksyProject";
 
 export interface DrawingData
 {
@@ -11,7 +12,7 @@ export interface DrawingData
     data: Uint8ClampedArray;
 }
 
-export class Drawing
+export class Drawing implements FlicksyData<Drawing, DrawingData>
 {
     public uuid: string;
     public name: string = "unnamed drawing";

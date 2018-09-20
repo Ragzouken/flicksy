@@ -3,7 +3,7 @@ import * as uuid from 'uuid/v4'
 import { Point } from "pixi.js"
 import { MTexture } from "./MTexture"
 
-import { FlicksyProject } from './FlicksyProject';
+import { FlicksyData, FlicksyProject } from './FlicksyProject'
 import { Drawing } from "./Drawing"
 
 export interface PinnedDrawingData
@@ -19,7 +19,7 @@ export interface DrawingBoardData
     pins: PinnedDrawingData[];
 }
 
-export class PinnedDrawing
+export class PinnedDrawing implements FlicksyData<PinnedDrawing, PinnedDrawingData>
 {
     public position: Point;
     public drawing: Drawing;

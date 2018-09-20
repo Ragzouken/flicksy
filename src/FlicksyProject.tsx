@@ -4,6 +4,12 @@ import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
 import { DrawingData, Drawing } from './Drawing';
 import { MTexture } from './MTexture';
 
+export interface FlicksyData<T, TData>
+{
+    fromData(data: TData, project: FlicksyProject): T;
+    toData(): TData;
+}
+
 export interface FlicksyProjectData
 {
     uuid: string;
