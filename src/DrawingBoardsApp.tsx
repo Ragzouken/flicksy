@@ -100,6 +100,7 @@ export default class DrawingBoardsApp
 
     private pixi: Pixi.Application;
     private container: Pixi.Container;
+    private pinContainer: Pixi.Container;
 
     private pinViews = new Map<PinnedDrawing, PinnedDrawingView>();
     
@@ -133,6 +134,8 @@ export default class DrawingBoardsApp
         this.pixi = pixi;
         this.container = new Pixi.Container();
         this.pixi.stage.addChild(this.container);
+        this.pinContainer = new Pixi.Container();
+        this.container.addChild(this.pinContainer);
 
         document.onpointerup = () => this.stopDragging();
 
@@ -254,7 +257,7 @@ export default class DrawingBoardsApp
                 }
             });
 
-            this.container.addChild(view.sprite);
+            this.pinContainer.addChild(view.sprite);
             this.pinViews.set(pin, view);
         }
     }

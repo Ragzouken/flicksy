@@ -29,7 +29,7 @@ function randomInt(min: number, max: number){
 let brushColor = 0xFF00FF;
 let brushSize = 1;
 
-const white = 0xFFFFFF;
+const white = 0xFFFFFFFF;
 
 function doPalette()
 {
