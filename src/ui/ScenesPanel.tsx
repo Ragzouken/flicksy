@@ -26,29 +26,41 @@ class SceneObjectView
         this.sprite.position = object.position;
         this.sprite.interactive = true;
 
-        const width = object.drawing.texture.data.width;
-        const height = object.drawing.texture.data.height;
-
         // create the selection highlight as a child of the sprite
         this.select = new Pixi.Graphics();
-        this.select.lineStyle(.5, 0xFFFFFF);
-        this.select.drawRect(-.5, -.5, width + 1, height + 1);
-        this.select.alpha = 0.5;
         this.sprite.addChild(this.select);
 
         // create the selection highlight as a child of the sprite
         this.hover = new Pixi.Graphics();
-        this.hover.lineStyle(.5, 0xFF0000);
-        this.hover.drawRect(-.5, -.5, width + 1, height + 1);
-        this.hover.alpha = 0.5;
         this.sprite.addChild(this.hover);
         
+        this.refresh();
+
         // turn off the selection highlight by default
         this.setSelected(false);
 
         this.hover.visible = false;
         this.sprite.on("pointerover", () => this.hover.visible = true);
         this.sprite.on("pointerout", () => this.hover.visible = false);
+    }
+
+    public refresh()
+    {
+        this.sprite.texture = this.object.drawing.texture.texture;
+        this.sprite.position = this.object.position;
+
+        const width = this.object.drawing.texture.data.width;
+        const height = this.object.drawing.texture.data.height;
+
+        this.select.clear();
+        this.select.lineStyle(.5, 0xFFFFFF);
+        this.select.drawRect(-.5, -.5, width + 1, height + 1);
+        this.select.alpha = 0.5;
+
+        this.hover.clear();
+        this.hover.lineStyle(.5, 0xFF0000);
+        this.hover.drawRect(-.5, -.5, width + 1, height + 1);
+        this.hover.alpha = 0.5;
     }
 
     /** Set whether this view should display the selection highlight or not */
@@ -71,6 +83,7 @@ export default class ScenesPanel
     public get activeScene(): Scene { return this.scene }
 
     private pixi: Pixi.Application;
+    private container: Pixi.Container;
     private overlayContainer: Pixi.Container;
     private objectContainer: Pixi.Container;
 
@@ -86,23 +99,37 @@ export default class ScenesPanel
 
     // create object ui
     private createObjectButton: HTMLButtonElement;
+    private createObjectSelect: HTMLSelectElement;
 
     // selected object ui
     private objectNameInput: HTMLInputElement;
     private objectRenameButton: HTMLButtonElement;
     private objectDeleteButton: HTMLButtonElement;
+    private objectDrawingSelect: HTMLSelectElement;
 
     public constructor(pixi: Pixi.Application)
     {
         this.pixi = pixi;
-        this.overlayContainer = new Pixi.Container();
-        this.pixi.stage.addChild(this.overlayContainer);
+        this.container = new Pixi.Container();
+        this.pixi.stage.addChild(this.container);
         this.objectContainer = new Pixi.Container();
-        this.overlayContainer.addChild(this.objectContainer);
+        this.container.addChild(this.objectContainer);
+        this.overlayContainer = new Pixi.Container();
+        this.container.addChild(this.overlayContainer);
 
-        document.onpointerup = () => this.stopDragging();
+        // scene bounds
+        const bounds = new Pixi.Graphics();
+        bounds.lineStyle(.5, 0xFFFFFF);
+        bounds.drawRect(-.5, -.5, 160 + 1, 120 + 1);
+        bounds.alpha = 0.5;
+        this.overlayContainer.addChild(bounds);
+
+        this.container.position = new Pixi.Point(1, 1);
+
+        document.addEventListener("pointerup", () => this.stopDragging());
 
         this.createObjectButton = document.getElementById("create-object-button")! as HTMLButtonElement;
+        this.createObjectSelect = document.getElementById("create-object-drawing-select")! as HTMLSelectElement;
 
         this.createObjectButton.addEventListener("click", () =>
         {
@@ -114,6 +141,11 @@ export default class ScenesPanel
             object.position = position;
             object.drawing = this.project.drawings[0];
 
+            if (this.createObjectSelect.selectedIndex >= 0)
+            {
+                object.drawing = this.project.getDrawingByUUID(this.createObjectSelect.value)!;
+            }
+
             this.scene.addObject(object);
 
             this.select(object);
@@ -123,6 +155,7 @@ export default class ScenesPanel
         this.objectNameInput = document.getElementById("object-name")! as HTMLInputElement;
         this.objectRenameButton = document.getElementById("rename-object-button")! as HTMLButtonElement;
         this.objectDeleteButton = document.getElementById("delete-object-button")! as HTMLButtonElement;
+        this.objectDrawingSelect = document.getElementById("object-drawing-select")! as HTMLSelectElement;
 
         this.objectRenameButton.addEventListener("click", () =>
         {
@@ -137,18 +170,32 @@ export default class ScenesPanel
             if (this.selected) this.removeObject(this.selected);
         });
 
+        this.objectDrawingSelect.addEventListener("change", () =>
+        {
+            if (this.objectDrawingSelect.selectedIndex >= 0)
+            {
+                const drawing = this.project.getDrawingByUUID(this.objectDrawingSelect.value);
+                
+                if (drawing && this.selected)
+                {
+                    this.selected.drawing = drawing;
+                    this.objectViews.get(this.selected)!.refresh();
+                }
+            }
+        });
+
         this.select(undefined);
     }
 
     public show(): void
     {
-        this.overlayContainer.visible = true;
+        this.container.visible = true;
         document.getElementById("scene-sidebar")!.hidden = false;
     }
 
     public hide(): void
     {
-        this.overlayContainer.visible = false;
+        this.container.visible = false;
         document.getElementById("scene-sidebar")!.hidden = true;
     }
 
@@ -163,6 +210,26 @@ export default class ScenesPanel
     {
         this.setScene(this.scene);
         this.select(this.selected);
+
+        while (this.createObjectSelect.lastChild)
+        {
+            this.createObjectSelect.removeChild(this.createObjectSelect.lastChild);
+        }
+
+        while (this.objectDrawingSelect.lastChild)
+        {
+            this.objectDrawingSelect.removeChild(this.objectDrawingSelect.lastChild);
+        }
+
+        this.project.drawings.forEach(drawing => 
+        {  
+            const option = document.createElement("option");
+            option.text = drawing.name;
+            option.value = drawing.uuid;
+
+            this.createObjectSelect.appendChild(option);
+            this.objectDrawingSelect.appendChild(option.cloneNode(true));
+        });
     }
 
     /** Switch the currently selected object, or select nothing if undefined */
@@ -174,6 +241,7 @@ export default class ScenesPanel
         this.objectNameInput.disabled = !object;
         this.objectRenameButton.disabled = !object;
         this.objectDeleteButton.disabled = !object;
+        this.objectDrawingSelect.disabled = !object;
 
         if (object)
         {

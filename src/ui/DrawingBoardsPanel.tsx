@@ -120,8 +120,8 @@ export default class DrawingBoardsPanel
         this.pinContainer = new Pixi.Container();
         this.container.addChild(this.pinContainer);
 
-        document.onpointerup = () => this.stopDragging();
-
+        document.addEventListener("pointerup", () => this.stopDragging());
+        
         this.createDrawingButton = document.getElementById("create-drawing-button")! as HTMLButtonElement;
         this.createWidthInput = document.getElementById("create-drawing-width")! as HTMLSelectElement;
         this.createHeightInput = document.getElementById("create-drawing-height")! as HTMLSelectElement;
@@ -158,6 +158,7 @@ export default class DrawingBoardsPanel
 
         this.cursorSprite = new Pixi.Sprite();
         this.cursorSprite.visible = true;
+        this.cursorSprite.interactive = false;
         this.container.addChild(this.cursorSprite);
 
         this.select(undefined);

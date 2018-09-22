@@ -27,12 +27,15 @@
     </noscript>
     <div id="root"></div>
     <div id="sidebar">
+        <div id="tabs" class="panel">
+            <button id="info-tab-button">info</button> <button id="drawing-tab-button">drawings</button> <button id="scene-tab-button">scene</button> 
+        </div>
         <div id="info" class="panel">
             <p>prototype art component of a gamemaking tool</p>
-            <p>right-click to drag drawings around, left-click to drag the pencil, click the palette to change color and brush size</p>
-            <p>start by adding a drawing in the <b>add drawings</b> menu below</p>
         </div>
         <div id="drawing-sidebar" class="panel">
+            <p>right-click to drag drawings around, left-click to drag the pencil, click the palette to change color and brush size</p>
+            <p>start by adding a drawing in the <b>add drawings</b> menu below</p>
             <h3>add drawings</h3>
             <p>
                 <select id="create-drawing-width" title="width of the drawing to create">
@@ -83,13 +86,18 @@
             </div>
         </div>
         <div id="scene-sidebar" class="panel">
+            <p>left-click to drag objects around</p>
+            <p>start by adding an object in the <b>add objects</b> menu below</p>
             <h3>add objects</h3>
             <p>
                 <button id="create-object-button" title="create a new object">add object</button>
+                <select id="create-object-drawing-select" title="choose a drawing for this object"></select>
             </p>
             <h3>selected object</h3>
             <p>
                 <input id="object-name" title="name of the currently selected object"> => <button id="rename-object-button" title="rename the currently selected object">rename</button> <button id="delete-object-button" title="delete the currently selected object">delete</button>
+                <br>
+                <select id="object-drawing-select" title="choose a drawing for this object"></select>
             </p>
         </div>
         <div id="file-sidebar" class="panel">

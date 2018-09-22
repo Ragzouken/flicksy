@@ -150,7 +150,37 @@ function setup()
 
     scenesPanel = new ScenesPanel(pixi);
 
+    const info = document.getElementById("info")! as HTMLDivElement;
+
     startupProject();
+
+    function hideAll()
+    {
+        drawingBoardsPanel.hide();
+        scenesPanel.hide();
+        info.hidden = true;
+    }
+
+    hideAll();
+    info.hidden = false;
+
+    document.getElementById("info-tab-button")!.addEventListener("click", () =>
+    {
+        hideAll();
+        info.hidden = false;
+    });
+
+    document.getElementById("drawing-tab-button")!.addEventListener("click", () =>
+    {
+        hideAll();
+        drawingBoardsPanel.show();
+    });
+
+    document.getElementById("scene-tab-button")!.addEventListener("click", () =>
+    {
+        hideAll();
+        scenesPanel.show();
+    });
 
     document.getElementById("save")!.addEventListener("click", () =>
     {
