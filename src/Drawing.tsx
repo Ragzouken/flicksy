@@ -34,6 +34,8 @@ export class Drawing implements FlicksyData<Drawing, DrawingData>
 
     public toData(): DrawingData
     {
+        this.texture.fetch();
+
         return {
             uuid: this.uuid,
             name: this.name,
