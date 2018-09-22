@@ -57,6 +57,11 @@ export class FlicksyProject
         };
     }
 
+    public getDrawingByUUID(uuid: string): Drawing | undefined
+    {
+        return this.drawings.find(drawing => drawing.uuid == uuid);
+    }
+
     public createDrawing(width: number, height: number): Drawing
     {
         const drawing = new Drawing();

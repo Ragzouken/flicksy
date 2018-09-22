@@ -28,9 +28,7 @@ export class PinnedDrawing implements FlicksyData<PinnedDrawing, PinnedDrawingDa
     {
         this.position = new Point(data.position[0], data.position[1]);
         
-        if (data.drawing)
-        {
-            const drawing = project.drawings.find(drawing => drawing.uuid == data.drawing);
+            const drawing = project.getDrawingByUUID(data.drawing);
 
             if (drawing)
             {
@@ -40,7 +38,6 @@ export class PinnedDrawing implements FlicksyData<PinnedDrawing, PinnedDrawingDa
             {
                 console.log(`could not load drawing of uuid ${data.drawing}`);
             }
-        }
 
         return this;
     }

@@ -90,27 +90,17 @@ function makeCircleBrush(circumference: number, color: number): MTexture
 let project: FlicksyProject;
 let app: DrawingBoardsApp;
 
-function setup()
+function loadProject(data: FlicksyProjectData)
 {
-    doPalette();
-    doBrushes();
-    setupMenu();
+    project = new FlicksyProject();
+    project.fromData(data);
 
-    pixi.stage.scale = new Pixi.Point(8, 8);
+    app.setDrawingBoard(project.drawingBoards[0]);
+    app.refresh();
+}
 
-    app = new DrawingBoardsApp(pixi);
-
-    app.brush = makeCircleBrush(1, 0xFFFFFF);
-
-    function loadProject(data: FlicksyProjectData)
-    {
-        project = new FlicksyProject();
-        project.fromData(data);
-
-        app.setDrawingBoard(project.drawingBoards[0]);
-        app.refresh();
-    }
-
+function startupProject()
+{
     localForage.getItem<FlicksyProjectData>("v1-test").then(projectData => 
     {        
         if (projectData)
@@ -128,6 +118,21 @@ function setup()
             app.refresh();
         }
     });
+}
+
+function setup()
+{
+    doPalette();
+    doBrushes();
+    setupMenu();
+
+    pixi.stage.scale = new Pixi.Point(8, 8);
+
+    app = new DrawingBoardsApp(pixi);
+
+    app.brush = makeCircleBrush(1, 0xFFFFFF);
+
+    startupProject();
 
     document.getElementById("save")!.addEventListener("click", () =>
     {
