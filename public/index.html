@@ -31,38 +31,40 @@
             <p>prototype art component of a gamemaking tool</p>
             <p>right-click to drag drawings around, left-click to drag the pencil, click the palette to change color and brush size</p>
             <p>start by adding a drawing in the <b>add drawings</b> menu below</p>
+        </div>
+        <div id="drawing-sidebar" class="panel">
             <h3>add drawings</h3>
-            <p></p>
-                <select id="create-drawing-width">
+            <p>
+                <select id="create-drawing-width" title="width of the drawing to create">
                     <option value="24">24px</option>
                     <option value="32">32px</option>
                     <option value="48">48px</option>
                     <option value="64">64px</option>
                 </select>
                 x
-                <select id="create-drawing-height">
+                <select id="create-drawing-height" title="height of the drawing to create">
                     <option value="24">24px</option>
                     <option value="32">32px</option>
                     <option value="48">48px</option>
                     <option value="64">64px</option>
                 </select>
                 =>
-                <button id="create-drawing-button">add drawing</button>
+                <button id="create-drawing-button" title="create a new drawing">add drawing</button>
             </p>
             <h3>selected drawing</h3>
             <p>
-                <input id="drawing-name"> => <button id="rename-drawing-button">rename</button> <button id="delete-drawing-button">delete</button>
+                <input id="drawing-name" title="name of the currently selected drawing"> => <button id="rename-drawing-button" title="rename the currently selected drawing">rename</button> <button id="delete-drawing-button" title="delete the currently selected drawing">delete</button>
             </p>
             <h3>brush settings</h3>
             <div id="brushes">
-                <div><button>1px</button></div>
-                <div><button>2px</button></div>
-                <div><button>3px</button></div>
-                <div><button>4px</button></div>
+                <div><button title="single pixel brush">1px</button></div>
+                <div><button title="2px diameter brush">2px</button></div>
+                <div><button title="3px diameter brush">3px</button></div>
+                <div><button title="4px diameter brush">4px</button></div>
             </div>
             <br>
             <div id="palette">
-                <div><button>X</button></div>
+                <div><button title="eraser">X</button></div>
                 <div><button></button></div>
                 <div><button></button></div>
                 <div><button></button></div>
@@ -79,14 +81,26 @@
                 <div><button></button></div>
                 <div><button></button></div>
             </div>
+        </div>
+        <div id="scene-sidebar" class="panel">
+            <h3>add objects</h3>
+            <p>
+                <button id="create-object-button" title="create a new object">add object</button>
+            </p>
+            <h3>selected object</h3>
+            <p>
+                <input id="object-name" title="name of the currently selected object"> => <button id="rename-object-button" title="rename the currently selected object">rename</button> <button id="delete-object-button" title="delete the currently selected object">delete</button>
+            </p>
+        </div>
+        <div id="file-sidebar" class="panel">
             <h3>export</h3>
             <p>
-                <button id="save">save</button>
-                <button id="download-data">export data</button>
-                <button id="download">export images</button>
+                <button id="save" title="save project in browser">save</button>
+                <button id="download-data" title="download project as text file">export data</button>
+                <button id="download" title="download zip of all images">export images</button>
             </p>
             <h3>import</h3>
-            <p><input id="import-data" type="file" accept="application/json"></p>
+            <p><input id="import-data" type="file" accept="application/json" title="load project from previous exported text file"></p>
         </div>
     </div>
     <!--

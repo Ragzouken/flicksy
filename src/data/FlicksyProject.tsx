@@ -2,8 +2,8 @@ import * as uuid from 'uuid/v4';
 
 import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
 import { DrawingData, Drawing } from './Drawing';
-import { MTexture } from './MTexture';
-import { SceneData, Scene } from './Scene';
+import { MTexture } from '../MTexture';
+import { SceneData, Scene, SceneObject } from './Scene';
 
 export interface FlicksyData<T, TData>
 {
@@ -48,6 +48,8 @@ export class FlicksyProject
         this.scenes = data.scenes.map(scene => (new Scene).fromData(scene, this));
 
         this.drawingBoards = data.drawingBoards.map(board => (new DrawingBoard).fromData(board, this));
+
+        if (this.scenes.length == 0) this.createScene();
 
         return this;
     }

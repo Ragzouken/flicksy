@@ -2,16 +2,17 @@ import './index.css';
 
 import * as localForage from 'localforage';
 import * as Pixi from 'pixi.js';
-import * as JSZip from 'jszip'
-import * as FileSaver from 'file-saver'
-import * as uuid from 'uuid/v4'
+import * as JSZip from 'jszip';
+import * as FileSaver from 'file-saver';
+import * as uuid from 'uuid/v4';
 
-import { base64ToUint8, uint8ToBase64 } from './Base64'
+import { base64ToUint8, uint8ToBase64 } from './Base64';
 
-import DrawingBoardsApp from './DrawingBoardsApp'
-import { DrawingBoard } from './DrawingBoard';
+import DrawingBoardsPanel from './ui/DrawingBoardsPanel';
+import { DrawingBoard } from './data/DrawingBoard';
 import { MTexture } from './MTexture';
-import { FlicksyProject, FlicksyProjectData } from './FlicksyProject';
+import { FlicksyProject, FlicksyProjectData } from './data/FlicksyProject';
+import ScenesPanel from './ui/ScenesPanel';
 
 const pixi = new Pixi.Application();
 document.getElementById("root")!.appendChild(pixi.view);
@@ -55,10 +56,10 @@ function doPalette()
         button.setAttribute("style", `background-color: rgb(${r},${g},${b});`);
         button.addEventListener("click", () => 
         {
-            app.erasing = (c == 0);
+            drawingBoardsPanel.erasing = (c == 0);
             brushColor = c;
-            app.brush = makeCircleBrush(brushSize, brushColor);
-            app.refresh();
+            drawingBoardsPanel.brush = makeCircleBrush(brushSize, brushColor);
+            drawingBoardsPanel.refresh();
         })
     }
 }
@@ -74,8 +75,8 @@ function doBrushes()
     button.addEventListener("click", () => 
     {
         brushSize = i + 1;
-        app.brush = makeCircleBrush(brushSize, brushColor);
-        app.refresh();
+        drawingBoardsPanel.brush = makeCircleBrush(brushSize, brushColor);
+        drawingBoardsPanel.refresh();
     });
   }
 }
@@ -89,7 +90,14 @@ function makeCircleBrush(circumference: number, color: number): MTexture
 }
 
 let project: FlicksyProject;
-let app: DrawingBoardsApp;
+let drawingBoardsPanel: DrawingBoardsPanel;
+let scenesPanel: ScenesPanel;
+
+function refresh()
+{
+    drawingBoardsPanel.refresh();
+    scenesPanel.refresh();
+}
 
 function loadProject(data: FlicksyProjectData): FlicksyProject
 {
@@ -99,7 +107,7 @@ function loadProject(data: FlicksyProjectData): FlicksyProject
     return project;
 }
 
-function startupProject(app: DrawingBoardsApp): void
+function startupProject(): void
 {
     localForage.getItem<FlicksyProjectData>("v1-test").then(projectData => 
     {       
@@ -118,9 +126,13 @@ function startupProject(app: DrawingBoardsApp): void
             project.drawingBoards.push(new DrawingBoard());
         }
 
-        app.setProject(project);
-        app.setDrawingBoard(project.drawingBoards[0]);
-        app.refresh();
+        drawingBoardsPanel.setProject(project);
+        drawingBoardsPanel.setDrawingBoard(project.drawingBoards[0]);
+        
+        scenesPanel.setProject(project);
+        scenesPanel.setScene(project.scenes[0]);
+
+        refresh();
     });
 }
 
@@ -131,10 +143,14 @@ function setup()
 
     pixi.stage.scale = new Pixi.Point(8, 8);
 
-    app = new DrawingBoardsApp(pixi);
-    app.brush = makeCircleBrush(1, 0xFFFFFF);
+    drawingBoardsPanel = new DrawingBoardsPanel(pixi);
+    drawingBoardsPanel.brush = makeCircleBrush(1, 0xFFFFFF);
 
-    startupProject(app);
+    drawingBoardsPanel.hide();
+
+    scenesPanel = new ScenesPanel(pixi);
+
+    startupProject();
 
     document.getElementById("save")!.addEventListener("click", () =>
     {
@@ -147,7 +163,7 @@ function setup()
         const zip = new JSZip();
         const drawings = zip.folder("drawings");
         
-        for (let pin of app.activeBoard.pinnedDrawings)
+        for (let pin of drawingBoardsPanel.activeBoard.pinnedDrawings)
         {
             const name = pin.drawing.name + ".png";
             const url = pin.drawing.texture.canvas.toDataURL("image/png");
@@ -214,7 +230,8 @@ function setup()
 
     pixi.stage.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
     {
-        app.updateDragging(event);
+        drawingBoardsPanel.updateDragging(event);
+        scenesPanel.updateDragging(event);
     });
 
     const resize = () =>

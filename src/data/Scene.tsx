@@ -1,7 +1,4 @@
-import * as uuid from 'uuid/v4'
-
 import { Point } from "pixi.js"
-import { MTexture } from "./MTexture"
 
 import { FlicksyData, FlicksyProject } from './FlicksyProject'
 import { Drawing } from "./Drawing"
@@ -91,5 +88,10 @@ export class Scene implements FlicksyData<Scene, SceneData>
 
             objects: this.objects.map(object => object.toData()),
         };
+    }
+
+    public addObject(object: SceneObject): void
+    {
+        this.objects.push(object);
     }
 }

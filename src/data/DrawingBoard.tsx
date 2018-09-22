@@ -1,8 +1,6 @@
 import * as uuid from 'uuid/v4'
 
 import { Point } from "pixi.js"
-import { MTexture } from "./MTexture"
-
 import { FlicksyData, FlicksyProject } from './FlicksyProject'
 import { Drawing } from "./Drawing"
 
@@ -59,17 +57,6 @@ export class DrawingBoard
     
     public pinnedDrawings: PinnedDrawing[] = [];
 
-    public PinDrawing(drawing: Drawing, position: Point): PinnedDrawing
-    {
-        const pin = new PinnedDrawing
-        pin.drawing = drawing;
-        pin.position = position;
-
-        this.pinnedDrawings.push(pin);
-
-        return pin;
-    }
-
     public fromData(data: DrawingBoardData, project: FlicksyProject): DrawingBoard
     {
         this.uuid = data.uuid;
@@ -86,5 +73,16 @@ export class DrawingBoard
             name: this.name,
             pins: this.pinnedDrawings.map(pin => pin.toData()),
         };
+    }
+
+    public pinDrawing(drawing: Drawing, position: Point): PinnedDrawing
+    {
+        const pin = new PinnedDrawing
+        pin.drawing = drawing;
+        pin.position = position;
+
+        this.pinnedDrawings.push(pin);
+
+        return pin;
     }
 }

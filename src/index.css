@@ -33,6 +33,7 @@ canvas
 {
   color: white;
   width: 256px;
+  display: none;
 }
 
 .panel

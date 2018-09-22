@@ -1,6 +1,6 @@
 import * as uuid from 'uuid/v4';
 
-import { MTexture } from "./MTexture";
+import { MTexture } from "../MTexture";
 import { FlicksyData } from "./FlicksyProject";
 
 export interface DrawingData
