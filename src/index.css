@@ -6,7 +6,7 @@ body {
   overflow: hidden;
 }
 
-canvas
+#root
 {
     position: absolute;
 
@@ -15,9 +15,18 @@ canvas
     top: 0px;
     right: 0px;
     bottom: 0px;
+}
 
-  /*width: 100%;
-  height: 100%;*/
+canvas
+{
+    margin: 0px;
+    width: 100%;
+    height: 100%;
+}
+
+#dialogue-input
+{
+    width: 240px;
 }
 
 #drawing-name
@@ -30,6 +39,8 @@ canvas
     position: absolute;
     left: 0px;
     top: 0px;
+
+    padding: 8px;
 
     width: 256px;
 
@@ -47,16 +58,14 @@ canvas
 
 .panel
 {
-    margin: 8px;
 }
 
 #menu
 {
-  width: 256px;
   color: white;
 }
 
-#menu > input
+input
 {
   width: 64px;
 }

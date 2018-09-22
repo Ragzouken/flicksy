@@ -10,7 +10,7 @@ export interface SceneObjectData
 
     position: number[];
     drawing: string;
-    script: string;
+    dialogue: string;
 }
 
 export interface SceneData
@@ -28,6 +28,7 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
 
     public position: Point;
     public drawing: Drawing;
+    public dialogue: string;
 
     public fromData(data: SceneObjectData, project: FlicksyProject): SceneObject
     {
@@ -47,6 +48,8 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
             console.log(`could not load drawing of uuid ${data.drawing}`);
         }
 
+        this.dialogue = data.dialogue || "";
+
         return this;
     }
 
@@ -57,7 +60,7 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
             name: this.name,
             
             position: [this.position.x, this.position.y],
-            script: "",
+            dialogue: this.dialogue,
             drawing: this.drawing.uuid,
         };
     }

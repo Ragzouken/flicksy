@@ -106,6 +106,7 @@ export default class ScenesPanel
     private objectRenameButton: HTMLButtonElement;
     private objectDeleteButton: HTMLButtonElement;
     private objectDrawingSelect: HTMLSelectElement;
+    private objectDialogueInput: HTMLTextAreaElement;
 
     public constructor(pixi: Pixi.Application)
     {
@@ -140,6 +141,7 @@ export default class ScenesPanel
             object.name = `object ${this.activeScene.objects.length}`;
             object.position = position;
             object.drawing = this.project.drawings[0];
+            object.dialogue = "";
 
             if (this.createObjectSelect.selectedIndex >= 0)
             {
@@ -156,6 +158,7 @@ export default class ScenesPanel
         this.objectRenameButton = document.getElementById("rename-object-button")! as HTMLButtonElement;
         this.objectDeleteButton = document.getElementById("delete-object-button")! as HTMLButtonElement;
         this.objectDrawingSelect = document.getElementById("object-drawing-select")! as HTMLSelectElement;
+        this.objectDialogueInput = document.getElementById("object-dialogue-input")! as HTMLTextAreaElement;
 
         this.objectRenameButton.addEventListener("click", () =>
         {
@@ -181,6 +184,14 @@ export default class ScenesPanel
                     this.selected.drawing = drawing;
                     this.objectViews.get(this.selected)!.refresh();
                 }
+            }
+        });
+
+        this.objectDialogueInput.addEventListener("input", () =>
+        {
+            if (this.selected)
+            {
+                this.selected.dialogue = this.objectDialogueInput.value;
             }
         });
 
@@ -242,10 +253,12 @@ export default class ScenesPanel
         this.objectRenameButton.disabled = !object;
         this.objectDeleteButton.disabled = !object;
         this.objectDrawingSelect.disabled = !object;
+        this.objectDialogueInput.disabled = !object;
 
         if (object)
         {
             this.objectNameInput.value = object.name;
+            this.objectDialogueInput.value = object.dialogue;
         }
     }
 

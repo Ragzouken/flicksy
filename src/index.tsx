@@ -14,7 +14,7 @@ import { MTexture } from './MTexture';
 import { FlicksyProject, FlicksyProjectData } from './data/FlicksyProject';
 import ScenesPanel from './ui/ScenesPanel';
 
-const pixi = new Pixi.Application();
+const pixi = new Pixi.Application(320, 240);
 document.getElementById("root")!.appendChild(pixi.view);
 pixi.start();
 
@@ -276,10 +276,7 @@ function setup()
     };
 
     pixi.stage.interactive = true;
-    pixi.ticker.add(delta => 
-    {
-        resize();
-    });
+    pixi.ticker.add(delta => resize());
 }
 
 setup();
