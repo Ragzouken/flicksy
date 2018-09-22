@@ -58,6 +58,7 @@ function doPalette()
             app.erasing = (c == 0);
             brushColor = c;
             app.brush = makeCircleBrush(brushSize, brushColor);
+            app.refresh();
         })
     }
 }
@@ -74,8 +75,8 @@ function doBrushes()
     {
         brushSize = i + 1;
         app.brush = makeCircleBrush(brushSize, brushColor);
-        console.log(brushSize);
-    })
+        app.refresh();
+    });
   }
 }
 
@@ -90,22 +91,23 @@ function makeCircleBrush(circumference: number, color: number): MTexture
 let project: FlicksyProject;
 let app: DrawingBoardsApp;
 
-function loadProject(data: FlicksyProjectData)
+function loadProject(data: FlicksyProjectData): FlicksyProject
 {
     project = new FlicksyProject();
     project.fromData(data);
 
-    app.setDrawingBoard(project.drawingBoards[0]);
-    app.refresh();
+    return project;
 }
 
-function startupProject()
+function startupProject(app: DrawingBoardsApp): void
 {
     localForage.getItem<FlicksyProjectData>("v1-test").then(projectData => 
-    {        
+    {       
+        let project: FlicksyProject;
+
         if (projectData)
         {
-            loadProject(projectData);
+            project = loadProject(projectData);
         }
         else
         {
@@ -114,9 +116,11 @@ function startupProject()
             project.uuid = uuid();
             
             project.drawingBoards.push(new DrawingBoard());
-            app.setDrawingBoard(project.drawingBoards[0]);
-            app.refresh();
         }
+
+        app.setProject(project);
+        app.setDrawingBoard(project.drawingBoards[0]);
+        app.refresh();
     });
 }
 
@@ -124,15 +128,13 @@ function setup()
 {
     doPalette();
     doBrushes();
-    setupMenu();
 
     pixi.stage.scale = new Pixi.Point(8, 8);
 
     app = new DrawingBoardsApp(pixi);
-
     app.brush = makeCircleBrush(1, 0xFFFFFF);
 
-    startupProject();
+    startupProject(app);
 
     document.getElementById("save")!.addEventListener("click", () =>
     {
@@ -207,26 +209,6 @@ function setup()
         const blob = new Blob([json], {type: "application/json"});
         FileSaver.saveAs(blob, "project.json");
     });
-
-    function setupMenu()
-    {
-        const createUI = document.getElementById("create-drawing-button")!;
-        const widthUI = document.getElementById("create-drawing-width")! as HTMLSelectElement;
-        const heightUI = document.getElementById("create-drawing-height")! as HTMLSelectElement;
-    
-        createUI.addEventListener("click", () =>
-        {
-            const position = new Pixi.Point(randomInt(48, 128), randomInt(2, 96));
-            const width = +widthUI.options[widthUI.selectedIndex].value;
-            const height = +heightUI.options[heightUI.selectedIndex].value;
-
-            const drawing = project.createDrawing(width, height);
-            drawing.name = `drawing ${app.activeBoard.pinnedDrawings.length}`;
-            const pin = app.activeBoard.PinDrawing(drawing, position);
-            app.select(pin);
-            app.refresh();
-        });
-    }
 
     pixi.view.oncontextmenu = (e) => e.preventDefault();
 

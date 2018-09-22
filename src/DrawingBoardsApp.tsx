@@ -2,6 +2,7 @@ import * as Pixi from 'pixi.js';
 
 import { DrawingBoard, PinnedDrawing } from './DrawingBoard';
 import { MTexture } from './MTexture';
+import { FlicksyProject } from './FlicksyProject';
 
 function add(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.ObservablePoint)
 {
@@ -16,6 +17,11 @@ function sub(a: Pixi.Point | Pixi.ObservablePoint, b: Pixi.Point | Pixi.Observab
 function floor(point: Pixi.Point)
 {
   return new Pixi.Point(Math.floor(point.x), Math.floor(point.y));
+}
+
+function randomInt(min: number, max: number)
+{
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 /** Manages the pixi state for displaying a PinnedDrawing */
@@ -96,6 +102,8 @@ export default class DrawingBoardsApp
     private container: Pixi.Container;
 
     private pinViews = new Map<PinnedDrawing, PinnedDrawingView>();
+    
+    private project: FlicksyProject;
     private drawingBoard: DrawingBoard;
 
     private dragType: "draw" | "move" | undefined;
@@ -104,13 +112,21 @@ export default class DrawingBoardsApp
     private draggedPin: PinnedDrawingView | undefined;
 
     public brush: MTexture;
-    public erasing: boolean;
+    public erasing: boolean; 
 
     public selected: PinnedDrawing | undefined;
 
+    // create drawing ui
+    private createDrawingButton: HTMLButtonElement;
+    private createWidthInput: HTMLSelectElement;
+    private createHeightInput: HTMLSelectElement;
+
+    // selected drawing ui
     private drawingNameInput: HTMLInputElement;
     private drawingRenameButton: HTMLButtonElement;
     private pinDeleteButton: HTMLButtonElement;
+
+    private cursorSprite: Pixi.Sprite;
 
     public constructor(pixi: Pixi.Application)
     {
@@ -119,6 +135,23 @@ export default class DrawingBoardsApp
         this.pixi.stage.addChild(this.container);
 
         document.onpointerup = () => this.stopDragging();
+
+        this.createDrawingButton = document.getElementById("create-drawing-button")! as HTMLButtonElement;
+        this.createWidthInput = document.getElementById("create-drawing-width")! as HTMLSelectElement;
+        this.createHeightInput = document.getElementById("create-drawing-height")! as HTMLSelectElement;
+
+        this.createDrawingButton.addEventListener("click", () =>
+        {
+            const position = new Pixi.Point(randomInt(48, 128), randomInt(2, 96));
+            const width = +this.createWidthInput.options[this.createWidthInput.selectedIndex].value;
+            const height = +this.createHeightInput.options[this.createHeightInput.selectedIndex].value;
+
+            const drawing = this.project.createDrawing(width, height);
+            drawing.name = `drawing ${this.activeBoard.pinnedDrawings.length}`;
+            const pin = this.activeBoard.PinDrawing(drawing, position);
+            this.select(pin);
+            this.refresh();
+        });
 
         this.drawingNameInput = document.getElementById("drawing-name")! as HTMLInputElement;
         this.drawingRenameButton = document.getElementById("rename-drawing-button")! as HTMLButtonElement;
@@ -137,6 +170,10 @@ export default class DrawingBoardsApp
             if (this.selected) this.removePin(this.selected);
         });
 
+        this.cursorSprite = new Pixi.Sprite();
+        this.cursorSprite.visible = true;
+        this.container.addChild(this.cursorSprite);
+
         this.select(undefined);
     }
 
@@ -149,6 +186,10 @@ export default class DrawingBoardsApp
     /** Resynchronise this display to the data in the underlying DrawingBoard */
     public refresh(): void
     {
+        this.cursorSprite.texture = new Pixi.Texture(this.brush.base);
+        this.cursorSprite.pivot = new Pixi.Point(Math.floor(this.brush.data.width / 2),
+                                                 Math.floor(this.brush.data.height / 2));
+
         this.setDrawingBoard(this.drawingBoard);
         this.select(this.selected);
     }
@@ -181,6 +222,11 @@ export default class DrawingBoardsApp
             this.pinViews.get(pin)!.destroy();
             this.pinViews.delete(pin);
         }
+    }
+
+    public setProject(project: FlicksyProject): void
+    {
+        this.project = project;
     }
 
     /** Replace the DrawingBoard that should be displayed */
@@ -236,6 +282,8 @@ export default class DrawingBoardsApp
      */
     public updateDragging(event: Pixi.interaction.InteractionEvent): void
     {
+        this.cursorSprite.position = floor(event.data.getLocalPosition(this.container));
+
         if (this.dragType == "move" && this.draggedPin)
         {
             const position = floor(add(this.dragOrigin, event.data.getLocalPosition(this.container)));
