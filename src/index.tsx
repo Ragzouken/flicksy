@@ -222,8 +222,8 @@ function setup()
 
             const drawing = project.createDrawing(width, height);
             drawing.name = `drawing ${app.activeBoard.pinnedDrawings.length}`;
-            app.activeBoard.PinDrawing(drawing, position);
-
+            const pin = app.activeBoard.PinDrawing(drawing, position);
+            app.select(pin);
             app.refresh();
         });
     }

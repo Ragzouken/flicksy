@@ -79,10 +79,23 @@ export class FlicksyProject
     public createDrawing(width: number, height: number): Drawing
     {
         const drawing = new Drawing();
+        drawing.uuid = uuid();
+        drawing.name = "unnamed drawing";
         drawing.texture = new MTexture(width, height);
 
         this.drawings.push(drawing);
         
         return drawing;
+    }
+
+    public createScene(): Scene
+    {
+        const scene = new Scene();
+        scene.uuid = uuid();
+        scene.name = "unnamed scene";
+
+        this.scenes.push(scene);
+
+        return scene;
     }
 }

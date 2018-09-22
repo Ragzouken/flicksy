@@ -28,16 +28,16 @@ export class PinnedDrawing implements FlicksyData<PinnedDrawing, PinnedDrawingDa
     {
         this.position = new Point(data.position[0], data.position[1]);
         
-            const drawing = project.getDrawingByUUID(data.drawing);
+        const drawing = project.getDrawingByUUID(data.drawing);
 
-            if (drawing)
-            {
-                this.drawing = drawing;
-            }
-            else
-            {
-                console.log(`could not load drawing of uuid ${data.drawing}`);
-            }
+        if (drawing)
+        {
+            this.drawing = drawing;
+        }
+        else
+        {
+            console.log(`could not load drawing of uuid ${data.drawing}`);
+        }
 
         return this;
     }
@@ -72,8 +72,8 @@ export class DrawingBoard
 
     public fromData(data: DrawingBoardData, project: FlicksyProject): DrawingBoard
     {
-        this.uuid = data.uuid || uuid();
-        this.name = data.name || "unnanmed board";
+        this.uuid = data.uuid;
+        this.name = data.name;
         this.pinnedDrawings = data.pins.map(pin => (new PinnedDrawing()).fromData(pin, project));
 
         return this;
