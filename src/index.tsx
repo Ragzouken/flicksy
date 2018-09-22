@@ -136,6 +136,7 @@ function setup()
 
     document.getElementById("save")!.addEventListener("click", () =>
     {
+        project.flicksyVersion = "alpha-1";
         localForage.setItem("v1-test", project.toData());
     });
 
