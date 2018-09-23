@@ -107,6 +107,17 @@ function loadProject(data: FlicksyProjectData): FlicksyProject
     return project;
 }
 
+function setProject(project: FlicksyProject)
+{
+    drawingBoardsPanel.setProject(project);
+    drawingBoardsPanel.setDrawingBoard(project.drawingBoards[0]);
+    
+    scenesPanel.setProject(project);
+    scenesPanel.setScene(project.scenes[0]);
+
+    refresh();
+}
+
 function startupProject(): void
 {
     localForage.getItem<FlicksyProjectData>("v1-test").then(projectData => 
@@ -126,13 +137,7 @@ function startupProject(): void
             project.drawingBoards.push(new DrawingBoard());
         }
 
-        drawingBoardsPanel.setProject(project);
-        drawingBoardsPanel.setDrawingBoard(project.drawingBoards[0]);
-        
-        scenesPanel.setProject(project);
-        scenesPanel.setScene(project.scenes[0]);
-
-        refresh();
+        setProject(project);
     });
 }
 
@@ -230,7 +235,7 @@ function setup()
                     return value;
                 });
 
-                loadProject(data);
+                setProject(loadProject(data));
             };
             reader.readAsText(file);
         }
