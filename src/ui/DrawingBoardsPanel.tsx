@@ -216,6 +216,8 @@ export default class DrawingBoardsPanel
             this.select(undefined);
         }
 
+        this.drawingBoard.removePin(pin);
+
         if (this.pinViews.has(pin))
         {
             this.pinViews.get(pin)!.destroy();

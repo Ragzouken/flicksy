@@ -1,14 +1,26 @@
 import * as uuid from 'uuid/v4';
+import { Point } from 'pixi.js';
 
 import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
 import { DrawingData, Drawing } from './Drawing';
 import { MTexture } from '../MTexture';
-import { SceneData, Scene, SceneObject } from './Scene';
+import { SceneData, Scene } from './Scene';
 
 export interface FlicksyData<T, TData>
 {
     fromData(data: TData, project: FlicksyProject): T;
     toData(): TData;
+}
+
+export interface PositionedDrawing
+{
+    drawing: Drawing;
+    position: Point;
+}
+
+export interface DrawingArrangement
+{
+    drawings: PositionedDrawing[];
 }
 
 export interface FlicksyProjectData

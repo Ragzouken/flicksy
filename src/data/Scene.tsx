@@ -97,4 +97,11 @@ export class Scene implements FlicksyData<Scene, SceneData>
     {
         this.objects.push(object);
     }
+
+    public removeObject(object: SceneObject): void
+    {
+        const index = this.objects.indexOf(object);
+
+        if (index >= 0) this.objects.splice(index, 1);
+    }
 }

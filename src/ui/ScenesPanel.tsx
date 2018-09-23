@@ -6,6 +6,39 @@ import { MTexture } from '../MTexture';
 import { FlicksyProject } from '../data/FlicksyProject';
 import { SceneObject, Scene } from '../data/Scene';
 
+class DialogueView
+{
+    public readonly background: Pixi.Graphics;
+    public readonly text: Pixi.Text;
+
+    public constructor()
+    {
+        this.background = new Pixi.Graphics();
+        this.background.clear();
+        this.background.beginFill(0x000000);
+        this.background.drawRect(0, 0, 100 * 8, 30 * 8);
+        this.background.position = new Pixi.Point(30, 60);
+        this.background.scale = new Pixi.Point(.125, .125);
+
+        this.text = new Pixi.Text("test test test test test test test test test test test test test test test ", {
+            fontFamily: 'Arial', 
+            fontSize: 32, 
+            fill : 0xffffff,
+            wordWrap: true,
+            wordWrapWidth: 100 * 8 - 8 * 8,
+        });
+        this.text.position = new Pixi.Point(4 * 8, 4 * 8);
+        //this.text.texture.baseTexture.scaleMode = 1;
+
+        this.background.addChild(this.text);
+    }
+
+    public setText(text: string): void
+    {
+        
+    }
+}
+
 class SceneObjectView
 {
     /** The SceneObject that this view corresponds to */
@@ -25,6 +58,7 @@ class SceneObjectView
         this.sprite = new Pixi.Sprite(object.drawing.texture.texture);
         this.sprite.position = object.position;
         this.sprite.interactive = true;
+        this.sprite.cursor = "grab";
 
         // create the selection highlight as a child of the sprite
         this.select = new Pixi.Graphics();
@@ -107,6 +141,9 @@ export default class ScenesPanel
     private objectDeleteButton: HTMLButtonElement;
     private objectDrawingSelect: HTMLSelectElement;
     private objectDialogueInput: HTMLTextAreaElement;
+    private objectDialogueShowToggle: HTMLInputElement;
+    
+    private objectDialoguePreview: DialogueView;
 
     public constructor(pixi: Pixi.Application)
     {
@@ -118,10 +155,13 @@ export default class ScenesPanel
         this.overlayContainer = new Pixi.Container();
         this.container.addChild(this.overlayContainer);
 
+        this.objectDialoguePreview = new DialogueView();
+        this.overlayContainer.addChild(this.objectDialoguePreview.background);
+
         // scene bounds
         const bounds = new Pixi.Graphics();
         bounds.lineStyle(.5, 0xFFFFFF);
-        bounds.drawRect(-.5, -.5, 160 + 1, 120 + 1);
+        bounds.drawRect(-.5, -.5, 160 + 1, 100 + 1);
         bounds.alpha = 0.5;
         this.overlayContainer.addChild(bounds);
 
@@ -159,6 +199,7 @@ export default class ScenesPanel
         this.objectDeleteButton = document.getElementById("delete-object-button")! as HTMLButtonElement;
         this.objectDrawingSelect = document.getElementById("object-drawing-select")! as HTMLSelectElement;
         this.objectDialogueInput = document.getElementById("object-dialogue-input")! as HTMLTextAreaElement;
+        this.objectDialogueShowToggle = document.getElementById("show-dialogue-toggle")! as HTMLInputElement;
 
         this.objectRenameButton.addEventListener("click", () =>
         {
@@ -192,7 +233,13 @@ export default class ScenesPanel
             if (this.selected)
             {
                 this.selected.dialogue = this.objectDialogueInput.value;
+                this.objectDialoguePreview.text.text = this.selected.dialogue;
             }
+        });
+
+        this.objectDialogueShowToggle.addEventListener("change", () =>
+        {
+            this.objectDialoguePreview.background.visible = this.objectDialogueShowToggle.checked;
         });
 
         this.select(undefined);
@@ -259,6 +306,12 @@ export default class ScenesPanel
         {
             this.objectNameInput.value = object.name;
             this.objectDialogueInput.value = object.dialogue;
+            this.objectDialoguePreview.text.text = object.dialogue;
+            this.objectDialoguePreview.background.visible = this.objectDialogueShowToggle.checked;
+        }
+        else
+        {
+            this.objectDialoguePreview.background.visible = false;
         }
     }
 
@@ -268,6 +321,8 @@ export default class ScenesPanel
         {
             this.select(undefined);
         }
+
+        this.scene.removeObject(object);
 
         if (this.objectViews.has(object))
         {

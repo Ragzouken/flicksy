@@ -1,7 +1,7 @@
 import * as uuid from 'uuid/v4'
 
 import { Point } from "pixi.js"
-import { FlicksyData, FlicksyProject } from './FlicksyProject'
+import { FlicksyData, FlicksyProject, PositionedDrawing, DrawingArrangement } from './FlicksyProject'
 import { Drawing } from "./Drawing"
 
 export interface PinnedDrawingData
@@ -17,7 +17,7 @@ export interface DrawingBoardData
     pins: PinnedDrawingData[];
 }
 
-export class PinnedDrawing implements FlicksyData<PinnedDrawing, PinnedDrawingData>
+export class PinnedDrawing implements PositionedDrawing, FlicksyData<PinnedDrawing, PinnedDrawingData>
 {
     public position: Point;
     public drawing: Drawing;
@@ -50,12 +50,14 @@ export class PinnedDrawing implements FlicksyData<PinnedDrawing, PinnedDrawingDa
 }
 
 /** A named collection of Drawings arranged spatially */
-export class DrawingBoard
+export class DrawingBoard implements DrawingArrangement
 {
     public uuid: string;
     public name: string;
     
     public pinnedDrawings: PinnedDrawing[] = [];
+
+    public get drawings() { return this.pinnedDrawings; };
 
     public fromData(data: DrawingBoardData, project: FlicksyProject): DrawingBoard
     {
@@ -84,5 +86,12 @@ export class DrawingBoard
         this.pinnedDrawings.push(pin);
 
         return pin;
+    }
+
+    public removePin(pin: PinnedDrawing): void
+    {
+        const index = this.pinnedDrawings.indexOf(pin);
+
+        if (index >= 0) this.pinnedDrawings.splice(index, 1);
     }
 }
