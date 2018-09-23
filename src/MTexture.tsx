@@ -12,6 +12,8 @@ export class MTexture
     public readonly data: ImageData;
     public readonly buf32: Uint32Array;
 
+    public needsFetch: boolean;
+
     public constructor(width: number, height: number)
     {
         this.canvas = document.createElement('canvas');
@@ -259,6 +261,8 @@ export class MTexture
                 err += dx;
             }
         }
+
+        this.needsFetch = true;
     }
 
     public update(): void

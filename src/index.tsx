@@ -198,10 +198,10 @@ function setup()
         const zip = new JSZip();
         const drawings = zip.folder("drawings");
         
-        for (let pin of drawingBoardsPanel.activeBoard.pinnedDrawings)
+        for (let drawing of project.drawings)
         {
-            const name = pin.drawing.name + ".png";
-            const url = pin.drawing.texture.canvas.toDataURL("image/png");
+            const name = drawing.name + ".png";
+            const url = drawing.texture.canvas.toDataURL("image/png");
             const data = url.substring(22);
 
             drawings.file(name, data, {base64: true});
@@ -259,6 +259,15 @@ function setup()
 
         const blob = new Blob([json], {type: "application/json"});
         FileSaver.saveAs(blob, "project.json");
+    });
+
+    document.getElementById("export-playable")!.addEventListener("click", () =>
+    {
+        const page = document.documentElement.cloneNode(true) as HTMLElement;
+        const sidebar = page.querySelector<HTMLDivElement>("#sidebar")!;
+        sidebar.parentElement!.removeChild(sidebar);
+        const blob = new Blob([page.outerHTML]);
+        FileSaver.saveAs(blob, "playable.html");
     });
 
     pixi.view.oncontextmenu = (e) => e.preventDefault();

@@ -58,7 +58,6 @@ class SceneObjectView
         this.sprite = new Pixi.Sprite(object.drawing.texture.texture);
         this.sprite.position = object.position;
         this.sprite.interactive = true;
-        this.sprite.cursor = "grab";
 
         // create the selection highlight as a child of the sprite
         this.select = new Pixi.Graphics();
@@ -67,15 +66,41 @@ class SceneObjectView
         // create the selection highlight as a child of the sprite
         this.hover = new Pixi.Graphics();
         this.sprite.addChild(this.hover);
-        
+
         this.refresh();
 
         // turn off the selection highlight by default
         this.setSelected(false);
 
         this.hover.visible = false;
-        this.sprite.on("pointerover", () => this.hover.visible = true);
         this.sprite.on("pointerout", () => this.hover.visible = false);
+        this.sprite.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
+        {
+            this.hover.visible = this.isSolidPixelAtEvent(event);
+            this.sprite.cursor = this.hover.visible ? "grab" : "";
+        });
+    }
+
+    public isSolidPixelAtEvent(event: Pixi.interaction.InteractionEvent): boolean
+    {
+        event.data.getLocalPosition(this.sprite);
+
+        if (!this.sprite.containsPoint(event.data.global)) return false;
+
+        return this.isSolidPixelAt(event.data.getLocalPosition(this.sprite));
+    }
+
+    public isSolidPixelAt(point: Pixi.Point): boolean
+    {
+        if (this.object.drawing.texture.needsFetch)
+        {
+            this.object.drawing.texture.fetch();
+        }
+
+        point = utility.floor(point);
+        const pixel = this.object.drawing.texture.getPixel(point.x, point.y);
+
+        return pixel > 0;
     }
 
     public refresh()
@@ -239,7 +264,9 @@ export default class ScenesPanel
 
         this.objectDialogueShowToggle.addEventListener("change", () =>
         {
-            this.objectDialoguePreview.background.visible = this.objectDialogueShowToggle.checked;
+            this.objectDialoguePreview.background.visible = this.objectDialogueShowToggle.checked
+                                                         && this.selected !== undefined
+                                                         && this.selected.dialogue.length > 0;
         });
 
         this.select(undefined);
@@ -307,7 +334,8 @@ export default class ScenesPanel
             this.objectNameInput.value = object.name;
             this.objectDialogueInput.value = object.dialogue;
             this.objectDialoguePreview.text.text = object.dialogue;
-            this.objectDialoguePreview.background.visible = this.objectDialogueShowToggle.checked;
+            this.objectDialoguePreview.background.visible = this.objectDialogueShowToggle.checked 
+                                                         && object.dialogue.length > 0;
         }
         else
         {
@@ -348,8 +376,11 @@ export default class ScenesPanel
             view.sprite.interactive = true;
             view.sprite.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
             {
-                this.startDragging(view, event);
-                event.stopPropagation();
+                if (view.isSolidPixelAtEvent(event))
+                {
+                    this.startDragging(view, event);
+                    event.stopPropagation();
+                }
             });
 
             this.objectContainer.addChild(view.sprite);
