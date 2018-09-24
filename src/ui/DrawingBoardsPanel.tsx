@@ -168,6 +168,7 @@ export default class DrawingBoardsPanel
     {
         this.container.visible = true;
         document.getElementById("drawing-sidebar")!.hidden = false;
+        this.refresh();
     }
 
     public hide(): void

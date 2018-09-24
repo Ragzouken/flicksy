@@ -13,6 +13,7 @@ import { DrawingBoard } from './data/DrawingBoard';
 import { MTexture } from './MTexture';
 import { FlicksyProject, FlicksyProjectData } from './data/FlicksyProject';
 import ScenesPanel from './ui/ScenesPanel';
+import { Scene } from './data/Scene';
 
 const pixi = new Pixi.Application(320, 240);
 document.getElementById("root")!.appendChild(pixi.view);
@@ -115,6 +116,7 @@ function setProject(project: FlicksyProject)
     scenesPanel.setProject(project);
     scenesPanel.setScene(project.scenes[0]);
 
+    project.flicksyVersion = "alpha-1";
     refresh();
 }
 
@@ -135,6 +137,7 @@ function startupProject(): void
             project.uuid = uuid();
             
             project.drawingBoards.push(new DrawingBoard());
+            project.scenes.push(new Scene());
         }
 
         setProject(project);
@@ -189,7 +192,6 @@ function setup()
 
     document.getElementById("save")!.addEventListener("click", () =>
     {
-        project.flicksyVersion = "alpha-1";
         localForage.setItem("v1-test", project.toData());
     });
 
@@ -266,8 +268,29 @@ function setup()
         const page = document.documentElement.cloneNode(true) as HTMLElement;
         const sidebar = page.querySelector<HTMLDivElement>("#sidebar")!;
         sidebar.parentElement!.removeChild(sidebar);
-        const blob = new Blob([page.outerHTML]);
-        FileSaver.saveAs(blob, "playable.html");
+        
+        const script = page.getElementsByTagName("script")[0];
+        const src = script.src;
+        script.src = "./static/js/bundle.js";
+        
+        const zip = new JSZip();
+
+        fetch("./asset-manifest.json")
+        .then(response =>
+        {
+            zip.file("playable/index.html", page.outerHTML);
+            zip.file("playable/asset-manifest.json", response.text());
+            return fetch(src);
+        })
+        .then(response => 
+        {
+            zip.file(`playable/static/js/bundle.js`, response.text());
+            return zip.generateAsync({type: "blob"});
+        })
+        .then(content => 
+        {
+            FileSaver.saveAs(content, "playable.zip");
+        });
     });
 
     pixi.view.oncontextmenu = (e) => e.preventDefault();

@@ -276,6 +276,7 @@ export default class ScenesPanel
     {
         this.container.visible = true;
         document.getElementById("scene-sidebar")!.hidden = false;
+        this.refresh();
     }
 
     public hide(): void
