@@ -100,6 +100,23 @@ function refresh()
     scenesPanel.refresh();
 }
 
+function projectToJSON(project: FlicksyProject): string
+{
+    const json = JSON.stringify(project.toData(), (key, value) =>
+    {
+        if (value instanceof Uint8ClampedArray)
+        {
+            return { "_type": "Uint8ClampedArray", "data": uint8ToBase64(value) }
+        }
+        else
+        {
+            return value;
+        }
+    });
+
+    return json;
+}
+
 function parseProjectData(json: string): FlicksyProjectData
 {
     const data = JSON.parse(json, (key, value) =>
@@ -152,9 +169,9 @@ function newProject(): FlicksyProject
     return project;
 }
 
-function startupProject(): void
+async function findProject(): Promise<FlicksyProject>
 {
-    fetch("./bundled-project.json")
+    return fetch("./bundled-project.json")
     .then(response => response.text())
     .then(text =>
     {
@@ -178,13 +195,27 @@ function startupProject(): void
     {       
         if (projectData)
         {
-            setProject(loadProject(projectData));
+            return loadProject(projectData);
         }
         else
         {
-            setProject(newProject());
+            return newProject();
         }
     });
+}
+
+async function exportPlayable(project: FlicksyProject)
+{
+    const template = await fetch("./playable-template.zip");
+    const templateBlob = await template.blob();
+    const templateZip = await JSZip.loadAsync(templateBlob);
+
+    templateZip.file("bundled-project.json", projectToJSON(project));
+    const exportBlob = await templateZip.generateAsync({type: "blob"});
+
+    // TODO: also add blob of the template zip?
+
+    FileSaver.saveAs(exportBlob, "playable.zip");
 }
 
 function setup()
@@ -203,7 +234,7 @@ function setup()
 
     const info = document.getElementById("info")! as HTMLDivElement;
 
-    startupProject();
+    findProject().then(setProject);
 
     function hideAll()
     {
@@ -308,32 +339,7 @@ function setup()
 
     document.getElementById("export-playable")!.addEventListener("click", () =>
     {
-        const page = document.documentElement.cloneNode(true) as HTMLElement;
-        const sidebar = page.querySelector<HTMLDivElement>("#sidebar")!;
-        //sidebar.parentElement!.removeChild(sidebar);
-        
-        const script = page.getElementsByTagName("script")[0];
-        const src = script.src;
-        script.src = "./static/js/bundle.js";
-        
-        const zip = new JSZip();
-
-        fetch("./asset-manifest.json")
-        .then(response =>
-        {
-            zip.file("playable/index.html", page.outerHTML);
-            zip.file("playable/asset-manifest.json", response.text());
-            return fetch(src);
-        })
-        .then(response => 
-        {
-            zip.file(`playable/static/js/bundle.js`, response.text());
-            return zip.generateAsync({type: "blob"});
-        })
-        .then(content => 
-        {
-            FileSaver.saveAs(content, "playable.zip");
-        });
+        exportPlayable(project);
     });
 
     pixi.view.oncontextmenu = (e) => e.preventDefault();
