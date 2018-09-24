@@ -100,47 +100,90 @@ function refresh()
     scenesPanel.refresh();
 }
 
+function parseProjectData(json: string): FlicksyProjectData
+{
+    const data = JSON.parse(json, (key, value) =>
+    {
+        if (value.hasOwnProperty("_type")
+            && value._type == "Uint8ClampedArray")
+        {
+            return base64ToUint8(value.data);
+        }
+
+        return value;
+    });
+
+    return data;
+}
+
 function loadProject(data: FlicksyProjectData): FlicksyProject
 {
-    project = new FlicksyProject();
+    const project = new FlicksyProject();
     project.fromData(data);
 
     return project;
 }
 
-function setProject(project: FlicksyProject)
+function setProject(p: FlicksyProject)
 {
-    drawingBoardsPanel.setProject(project);
-    drawingBoardsPanel.setDrawingBoard(project.drawingBoards[0]);
-    
-    scenesPanel.setProject(project);
-    scenesPanel.setScene(project.scenes[0]);
+    project = p;
 
-    project.flicksyVersion = "alpha-1";
+    drawingBoardsPanel.setProject(p);
+    drawingBoardsPanel.setDrawingBoard(p.drawingBoards[0]);
+    
+    scenesPanel.setProject(p);
+    scenesPanel.setScene(p.scenes[0]);
+
+    p.flicksyVersion = "alpha-1";
     refresh();
+}
+
+function newProject(): FlicksyProject
+{
+    console.log("new project");
+
+    const project = new FlicksyProject();
+    project.name = "unnamed project";
+    project.uuid = uuid();
+    
+    project.drawingBoards.push(new DrawingBoard());
+    project.scenes.push(new Scene());
+
+    return project;
 }
 
 function startupProject(): void
 {
-    localForage.getItem<FlicksyProjectData>("v1-test").then(projectData => 
-    {       
-        let project: FlicksyProject;
+    fetch("./bundled-project.json")
+    .then(response => response.text())
+    .then(text =>
+    {
+        try
+        {
+            const data = parseProjectData(text);
+            return data;
+        }
+        catch (e)
+        {
+            throw e; // Promise.reject("no project");
+        }
+    })
+    .catch(reason => 
+    {
+        console.log(reason);
 
+        return localForage.getItem<FlicksyProjectData>("v1-test");
+    })
+    .then(projectData => 
+    {       
         if (projectData)
         {
-            project = loadProject(projectData);
+            setProject(loadProject(projectData));
         }
         else
         {
-            project = new FlicksyProject();
-            project.name = "unnamed project";
-            project.uuid = uuid();
-            
-            project.drawingBoards.push(new DrawingBoard());
-            project.scenes.push(new Scene());
+            setProject(newProject());
         }
-
-        setProject(project);
     });
 }
 
@@ -267,7 +310,7 @@ function setup()
     {
         const page = document.documentElement.cloneNode(true) as HTMLElement;
         const sidebar = page.querySelector<HTMLDivElement>("#sidebar")!;
-        sidebar.parentElement!.removeChild(sidebar);
+        //sidebar.parentElement!.removeChild(sidebar);
         
         const script = page.getElementsByTagName("script")[0];
         const src = script.src;
