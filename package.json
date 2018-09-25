@@ -1,5 +1,5 @@
 {
-  "name": "bitsy-sketch",
+  "name": "flicksy",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -15,7 +15,7 @@
     "build": "react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
-    "publish": "react-scripts-ts build && butler push ./build candle/flicksy:web"
+    "publish": "npm run build && butler push ./build candle/flicksy:web"
   },
   "devDependencies": {
     "@types/file-saver": "^1.3.0",

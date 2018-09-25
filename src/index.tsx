@@ -141,6 +141,13 @@ function loadProject(data: FlicksyProjectData): FlicksyProject
     return project;
 }
 
+function setPlayback()
+{
+    document.getElementById("sidebar")!.hidden = true;
+    scenesPanel.show();
+    scenesPanel.testPlayMode();
+}
+
 function setProject(p: FlicksyProject)
 {
     project = p;
@@ -169,6 +176,8 @@ function newProject(): FlicksyProject
     return project;
 }
 
+let bundled: boolean;
+
 async function findProject(): Promise<FlicksyProject>
 {
     return fetch("./bundled-project.json")
@@ -178,6 +187,7 @@ async function findProject(): Promise<FlicksyProject>
         try
         {
             const data = parseProjectData(text);
+            bundled = true;
             return data;
         }
         catch (e)
@@ -211,9 +221,8 @@ async function exportPlayable(project: FlicksyProject)
     const templateZip = await JSZip.loadAsync(templateBlob);
 
     templateZip.file("bundled-project.json", projectToJSON(project));
+    //templateZip.file("playable-template.zip", templateBlob);
     const exportBlob = await templateZip.generateAsync({type: "blob"});
-
-    // TODO: also add blob of the template zip?
 
     FileSaver.saveAs(exportBlob, "playable.zip");
 }
@@ -233,8 +242,6 @@ function setup()
     scenesPanel = new ScenesPanel(pixi);
 
     const info = document.getElementById("info")! as HTMLDivElement;
-
-    findProject().then(setProject);
 
     function hideAll()
     {
@@ -363,6 +370,14 @@ function setup()
 
     pixi.stage.interactive = true;
     pixi.ticker.add(delta => resize());
+
+    findProject().then(setProject).then(() =>
+    {
+        if (bundled)
+        {
+            setPlayback();
+        }
+    });
 }
 
 setup();

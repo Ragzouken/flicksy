@@ -2,7 +2,6 @@ import * as uuid from 'uuid/v4';
 import * as Pixi from 'pixi.js';
 import * as utility from './../utility';
 
-import { MTexture } from '../MTexture';
 import { FlicksyProject } from '../data/FlicksyProject';
 import { SceneObject, Scene } from '../data/Scene';
 
@@ -32,11 +31,6 @@ class DialogueView
 
         this.background.addChild(this.text);
     }
-
-    public setText(text: string): void
-    {
-        
-    }
 }
 
 class SceneObjectView
@@ -50,9 +44,13 @@ class SceneObjectView
     /** The Pixi.Graphics for displaying the hover highlight */
     public readonly hover: Pixi.Graphics;
 
+    public showHover: boolean;
+
     public constructor(object: SceneObject)
     {
         this.object = object;
+
+        this.showHover = true;
 
         // create the sprite and move it to the pin position
         this.sprite = new Pixi.Sprite(object.drawing.texture.texture);
@@ -76,8 +74,22 @@ class SceneObjectView
         this.sprite.on("pointerout", () => this.hover.visible = false);
         this.sprite.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
         {
-            this.hover.visible = this.isSolidPixelAtEvent(event);
-            this.sprite.cursor = this.hover.visible ? "grab" : "";
+            const solid = this.isSolidPixelAtEvent(event);
+
+            this.hover.visible = this.showHover && solid;
+
+            if (solid && this.showHover)
+            {
+                this.sprite.cursor = "grab";
+            }
+            else if (solid && !this.showHover) 
+            {
+                this.sprite.cursor = "pointer";
+            }
+            else
+            {
+                this.sprite.cursor = "initial";
+            }
         });
     }
 
@@ -92,13 +104,8 @@ class SceneObjectView
 
     public isSolidPixelAt(point: Pixi.Point): boolean
     {
-        if (this.object.drawing.texture.needsFetch)
-        {
-            this.object.drawing.texture.fetch();
-        }
-
         point = utility.floor(point);
-        const pixel = this.object.drawing.texture.getPixel(point.x, point.y);
+        const pixel = this.object.drawing.getPixel(point.x, point.y);
 
         return pixel > 0;
     }
@@ -170,6 +177,8 @@ export default class ScenesPanel
     
     private objectDialoguePreview: DialogueView;
 
+    private playModeTest: boolean;
+
     public constructor(pixi: Pixi.Application)
     {
         this.pixi = pixi;
@@ -193,6 +202,12 @@ export default class ScenesPanel
         this.container.position = new Pixi.Point(1, 1);
 
         document.addEventListener("pointerup", () => this.stopDragging());
+
+        document.getElementById("scene-test")!.addEventListener("click", () =>
+        {
+            console.log("test play");
+            this.testPlayMode();
+        });
 
         this.createObjectButton = document.getElementById("create-object-button")! as HTMLButtonElement;
         this.createObjectSelect = document.getElementById("create-object-drawing-select")! as HTMLSelectElement;
@@ -225,6 +240,9 @@ export default class ScenesPanel
         this.objectDrawingSelect = document.getElementById("object-drawing-select")! as HTMLSelectElement;
         this.objectDialogueInput = document.getElementById("object-dialogue-input")! as HTMLTextAreaElement;
         this.objectDialogueShowToggle = document.getElementById("show-dialogue-toggle")! as HTMLInputElement;
+
+        this.objectDialoguePreview.background.interactive = true;
+        this.objectDialoguePreview.background.on("pointerdown", () => this.hideDialogue());
 
         this.objectRenameButton.addEventListener("click", () =>
         {
@@ -289,6 +307,25 @@ export default class ScenesPanel
     {
         this.objectViews.forEach(view => view.destroy());
         this.objectViews.clear();
+    }
+
+    public testPlayMode(): void
+    {
+        this.playModeTest = true;
+        this.select(undefined);
+        this.refresh();
+        this.objectViews.forEach(view => view.showHover = false);
+    }
+
+    public hideDialogue(): void
+    {
+        this.objectDialoguePreview.background.visible = false;
+    }
+
+    public showDialogue(object: SceneObject): void
+    {
+        this.objectDialoguePreview.background.visible = object.dialogue.length > 0;
+        this.objectDialoguePreview.text.text = object.dialogue;
     }
 
     /** Resynchronise this display to the data in the underlying Scene */
@@ -379,8 +416,15 @@ export default class ScenesPanel
             {
                 if (view.isSolidPixelAtEvent(event))
                 {
-                    this.startDragging(view, event);
-                    event.stopPropagation();
+                    if (this.playModeTest)
+                    {
+                        this.showDialogue(view.object);
+                    }
+                    else
+                    {
+                        this.startDragging(view, event);
+                        event.stopPropagation();
+                    }
                 }
             });
 
