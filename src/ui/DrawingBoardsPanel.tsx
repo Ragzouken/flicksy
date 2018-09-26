@@ -106,6 +106,7 @@ export default class DrawingBoardsPanel
     private createHeightInput: HTMLSelectElement;
 
     // selected drawing ui
+    private drawingSectionDiv: HTMLDivElement;
     private drawingNameInput: HTMLInputElement;
     private pinDeleteButton: HTMLButtonElement;
 
@@ -123,6 +124,7 @@ export default class DrawingBoardsPanel
 
         document.addEventListener("pointerup", () => this.stopDragging());
         
+        this.drawingSectionDiv = document.getElementById("selected-drawing-section")! as HTMLDivElement;
         this.createDrawingButton = document.getElementById("create-drawing-button")! as HTMLButtonElement;
         this.createWidthInput = document.getElementById("create-drawing-width")! as HTMLSelectElement;
         this.createHeightInput = document.getElementById("create-drawing-height")! as HTMLSelectElement;
@@ -200,6 +202,7 @@ export default class DrawingBoardsPanel
         this.selected = pin;
         this.pinViews.forEach(view => view.setSelected(view.pin == pin));
 
+        this.drawingSectionDiv.hidden = !pin;
         this.drawingNameInput.disabled = !pin;
         this.pinDeleteButton.disabled = !pin;
 

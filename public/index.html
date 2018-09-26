@@ -57,10 +57,10 @@
             <div class="section">
                 <h1>drawing boards tab</h1>
                 <p>right-click to drag drawings around, left-click to drag the pencil, click the palette to change color and brush size</p>
-                <p>start by adding a drawing in the <b>add drawings</b> menu below</p>
+                <p>start by adding a drawing in the <b>add new drawings</b> menu below</p>
             </div>
             <div class="section">
-                <h1>add drawings</h1>
+                <h1>add new drawings</h1>
                 <p>
                     <select id="create-drawing-width" title="width of the drawing to create">
                         <option value="24">24px</option>
@@ -75,14 +75,14 @@
                         <option value="48">48px</option>
                         <option value="64">64px</option>
                     </select>
-                    =>
-                    <button id="create-drawing-button" title="create a new drawing">add drawing</button>
+                    
+                    <button id="create-drawing-button" title="create a new drawing">create</button>
                 </p>
             </div>
-            <div class="section">
+            <div class="section" id="selected-drawing-section">
                 <h1>selected drawing</h1>
-                <p>
-                    <input id="drawing-name" title="name of the currently selected drawing"> => <button id="delete-drawing-button" title="delete the currently selected drawing">delete</button>
+                <p class="rename-delete">
+                    <input id="drawing-name" title="name of the currently selected drawing" class="rename"><button id="delete-drawing-button" title="delete the currently selected drawing">delete</button>
                 </p>
             </div>
             <div class="section">
@@ -125,26 +125,30 @@
                 <p>
                     <select id="active-scene-select"></select> <button id="create-scene-button">new scene</button>
                 </p>
-                <p>
-                    <input id="scene-name-input" title="name of the active scene"> => <button id="delete-scene-button" title="delete the active scene">delete</button>
+            </div>
+            <div class="section">
+                <h1>active scene</h1>
+                <p class="rename-delete">
+                    <input id="scene-name-input" title="name of the active scene" class="rename"><button id="delete-scene-button" title="delete the active scene">delete</button>
                 </p>
             </div>
             <div class="section">
                 <h1>add objects</h1>
                 <p>
-                    <button id="create-object-button" title="create a new object">add object</button>
                     <select id="create-object-drawing-select" title="choose a drawing for this object"></select>
+                    <button id="create-object-button" title="create a new object">add object</button>
                 </p>
             </div>
             <div class="section" id="selected-object-section">
                 <h1>selected object</h1>
-                <p>
-                    <input id="object-name" title="name of the currently selected object"> => <button id="delete-object-button" title="delete the currently selected object">delete</button>
+                <p class="rename-delete">
+                    <input id="object-name" title="name of the currently selected object" class="rename"><button id="delete-object-button" title="delete the currently selected object">delete</button>
                 </p><p>
+                    <b>drawing:</b><br>
                     <select id="object-drawing-select" title="choose a drawing for this object"></select>
                 </p><p>
                     <b>dialogue:</b><br>
-                    <textarea id="object-dialogue-input"></textarea>
+                    <textarea id="object-dialogue-input" rows="8"></textarea>
                     <br><label><input type="checkbox" id="show-dialogue-toggle">preview</label>
                     <p>
                         <b>scene change:</b><br>
