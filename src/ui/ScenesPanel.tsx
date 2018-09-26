@@ -4,6 +4,7 @@ import * as utility from './../utility';
 
 import { FlicksyProject } from '../data/FlicksyProject';
 import { SceneObject, Scene } from '../data/Scene';
+import { Drawing } from '../data/Drawing';
 
 class DialogueView
 {
@@ -174,6 +175,13 @@ export default class ScenesPanel
 
     public selected: SceneObject | undefined;
 
+    // scenes ui
+    private createSceneButton: HTMLButtonElement;
+    private activeSceneSelect: HTMLSelectElement;
+    private sceneNameInput: HTMLInputElement;
+    private sceneRenameButton: HTMLButtonElement;
+    private sceneDeleteButton: HTMLButtonElement;
+
     // create object ui
     private createObjectButton: HTMLButtonElement;
     private createObjectSelect: HTMLSelectElement;
@@ -215,6 +223,47 @@ export default class ScenesPanel
         //this.container.position = new Pixi.Point(1, 1);
 
         document.addEventListener("pointerup", () => this.stopDragging());
+
+        this.activeSceneSelect = document.getElementById("active-scene-select")! as HTMLSelectElement;
+        this.createSceneButton = document.getElementById("create-scene-button")! as HTMLButtonElement;
+        this.sceneNameInput = document.getElementById("scene-name-input")! as HTMLInputElement;
+        this.sceneRenameButton = document.getElementById("rename-scene-button")! as HTMLButtonElement;
+        this.sceneDeleteButton = document.getElementById("delete-scene-button")! as HTMLButtonElement;
+
+        this.createSceneButton.addEventListener("click", () =>
+        {
+            const scene = this.project.createScene();
+            scene.name = `scene ${this.project.scenes.length}`;
+
+            this.select(undefined);
+            this.setScene(scene);
+            this.refresh();
+        });
+
+        this.sceneRenameButton.addEventListener("click", () =>
+        {
+            this.scene.name = this.sceneNameInput.value;
+        });
+
+        this.sceneDeleteButton.addEventListener("click", () =>
+        {
+            if (this.project.scenes.length == 1) return;
+
+            const index = this.project.scenes.indexOf(this.scene);
+            this.project.scenes.splice(index, 1);
+
+            this.setScene(this.project.scenes[0]);
+            this.refresh();
+        });
+
+        this.activeSceneSelect.addEventListener("change", () =>
+        {
+            const scene = this.project.scenes[this.activeSceneSelect.selectedIndex];
+
+            this.select(undefined);
+            this.setScene(scene);
+            this.refresh();
+        });
 
         this.createObjectButton = document.getElementById("create-object-button")! as HTMLButtonElement;
         this.createObjectSelect = document.getElementById("create-object-drawing-select")! as HTMLSelectElement;
@@ -340,25 +389,20 @@ export default class ScenesPanel
         this.setScene(this.scene);
         this.select(this.selected);
 
-        while (this.createObjectSelect.lastChild)
+        function drawingToOption(drawing: Drawing)
         {
-            this.createObjectSelect.removeChild(this.createObjectSelect.lastChild);
+            return { "label": drawing.name, "value": drawing.uuid };
         }
 
-        while (this.objectDrawingSelect.lastChild)
-        {
-            this.objectDrawingSelect.removeChild(this.objectDrawingSelect.lastChild);
-        }
+        utility.repopulateSelect(this.createObjectSelect, 
+                                 this.project.drawings.map(drawingToOption));
 
-        this.project.drawings.forEach(drawing => 
-        {  
-            const option = document.createElement("option");
-            option.text = drawing.name;
-            option.value = drawing.uuid;
+        utility.repopulateSelect(this.objectDrawingSelect, 
+                                 this.project.drawings.map(drawingToOption));
 
-            this.createObjectSelect.appendChild(option);
-            this.objectDrawingSelect.appendChild(option.cloneNode(true));
-        });
+        utility.repopulateSelect(this.activeSceneSelect,
+                                 this.project.scenes.map(scene => ({ "label": scene.name, "value": scene.uuid })));
+        this.activeSceneSelect.selectedIndex = this.project.scenes.indexOf(this.scene);
     }
 
     /** Switch the currently selected object, or select nothing if undefined */
@@ -412,6 +456,8 @@ export default class ScenesPanel
     {
         this.clear();
         this.scene = scene;
+
+        this.sceneNameInput.value = scene.name;
         
         for (let object of scene.objects)
         {

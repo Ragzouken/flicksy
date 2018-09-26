@@ -112,4 +112,15 @@ export class FlicksyProject
 
         return scene;
     }
+
+    public createDrawingBoard(): DrawingBoard
+    {
+        const board = new DrawingBoard();
+        board.uuid = uuid();
+        board.name = "unnamed drawing board";
+
+        this.drawingBoards.push(board);
+
+        return board;
+    }
 }

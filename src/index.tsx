@@ -170,9 +170,9 @@ function newProject(): FlicksyProject
     project.name = "unnamed project";
     project.uuid = uuid();
     
-    project.drawingBoards.push(new DrawingBoard());
-    project.scenes.push(new Scene());
-
+    project.createDrawingBoard();
+    project.createScene();
+    
     return project;
 }
 
@@ -347,11 +347,6 @@ function setup()
     document.getElementById("export-playable")!.addEventListener("click", () =>
     {
         exportPlayable(project);
-    });
-
-    document.getElementById("scene-test")!.addEventListener("click", () =>
-    {
-        setPlayback();
     });
 
     pixi.view.oncontextmenu = (e) => e.preventDefault();
