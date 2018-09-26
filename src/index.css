@@ -19,50 +19,44 @@ canvas
 
 #dialogue-input
 {
-    width: 240px;
-}
-
-#drawing-name
-{
-    width: 96px;
+    width: 100%;
 }
 
 #sidebar
 {
-    padding: 8px;
-
-    width: 256px;
+    width: 292px;
 
     color: white;
-    background-color: darkmagenta;
+    background-color: darkslategrey;
 
     flex: none;
+
+    overflow-x: none;
+    overflow-y: auto;
+}
+
+.section 
+{
+    margin: 8px;
+    padding: 8px;
+    background-color: darkmagenta;
+}
+
+.section > h1
+{
+    font-size: 1.5em;
+    margin-top: 0;
+}
+
+.section > p
+{
+    margin-bottom: 0;
 }
 
 #container
 {
     flex: 1;
     overflow: hidden;
-}
-
-#info
-{
-  color: white;
-  width: 256px;
-}
-
-.panel
-{
-}
-
-#menu
-{
-  color: white;
-}
-
-input
-{
-  width: 64px;
 }
 
 #palette

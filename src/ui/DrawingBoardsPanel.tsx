@@ -107,7 +107,6 @@ export default class DrawingBoardsPanel
 
     // selected drawing ui
     private drawingNameInput: HTMLInputElement;
-    private drawingRenameButton: HTMLButtonElement;
     private pinDeleteButton: HTMLButtonElement;
 
     private cursorSprite: Pixi.Sprite;
@@ -119,6 +118,8 @@ export default class DrawingBoardsPanel
         this.pixi.stage.addChild(this.container);
         this.pinContainer = new Pixi.Container();
         this.container.addChild(this.pinContainer);
+
+        this.container.pivot = new Pixi.Point(80, 50);
 
         document.addEventListener("pointerup", () => this.stopDragging());
         
@@ -140,10 +141,9 @@ export default class DrawingBoardsPanel
         });
 
         this.drawingNameInput = document.getElementById("drawing-name")! as HTMLInputElement;
-        this.drawingRenameButton = document.getElementById("rename-drawing-button")! as HTMLButtonElement;
         this.pinDeleteButton = document.getElementById("delete-drawing-button")! as HTMLButtonElement;
 
-        this.drawingRenameButton.addEventListener("click", () =>
+        this.drawingNameInput.addEventListener("input", () =>
         {
             if (this.selected)
             {
@@ -201,7 +201,6 @@ export default class DrawingBoardsPanel
         this.pinViews.forEach(view => view.setSelected(view.pin == pin));
 
         this.drawingNameInput.disabled = !pin;
-        this.drawingRenameButton.disabled = !pin;
         this.pinDeleteButton.disabled = !pin;
 
         if (pin)

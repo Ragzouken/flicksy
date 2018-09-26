@@ -179,7 +179,6 @@ export default class ScenesPanel
     private createSceneButton: HTMLButtonElement;
     private activeSceneSelect: HTMLSelectElement;
     private sceneNameInput: HTMLInputElement;
-    private sceneRenameButton: HTMLButtonElement;
     private sceneDeleteButton: HTMLButtonElement;
 
     // create object ui
@@ -187,8 +186,8 @@ export default class ScenesPanel
     private createObjectSelect: HTMLSelectElement;
 
     // selected object ui
+    private objectSection: HTMLDivElement;
     private objectNameInput: HTMLInputElement;
-    private objectRenameButton: HTMLButtonElement;
     private objectDeleteButton: HTMLButtonElement;
     private objectDrawingSelect: HTMLSelectElement;
     private objectDialogueInput: HTMLTextAreaElement;
@@ -226,10 +225,10 @@ export default class ScenesPanel
 
         document.addEventListener("pointerup", () => this.stopDragging());
 
+        this.objectSection = document.getElementById("selected-object-section")! as HTMLDivElement;
         this.activeSceneSelect = document.getElementById("active-scene-select")! as HTMLSelectElement;
         this.createSceneButton = document.getElementById("create-scene-button")! as HTMLButtonElement;
         this.sceneNameInput = document.getElementById("scene-name-input")! as HTMLInputElement;
-        this.sceneRenameButton = document.getElementById("rename-scene-button")! as HTMLButtonElement;
         this.sceneDeleteButton = document.getElementById("delete-scene-button")! as HTMLButtonElement;
 
         this.createSceneButton.addEventListener("click", () =>
@@ -242,10 +241,7 @@ export default class ScenesPanel
             this.refresh();
         });
 
-        this.sceneRenameButton.addEventListener("click", () =>
-        {
-            this.scene.name = this.sceneNameInput.value;
-        });
+        this.sceneNameInput.addEventListener("input", () => this.scene.name = this.sceneNameInput.value);
 
         this.sceneDeleteButton.addEventListener("click", () =>
         {
@@ -293,12 +289,16 @@ export default class ScenesPanel
         });
 
         this.objectNameInput = document.getElementById("object-name")! as HTMLInputElement;
-        this.objectRenameButton = document.getElementById("rename-object-button")! as HTMLButtonElement;
         this.objectDeleteButton = document.getElementById("delete-object-button")! as HTMLButtonElement;
         this.objectDrawingSelect = document.getElementById("object-drawing-select")! as HTMLSelectElement;
         this.objectDialogueInput = document.getElementById("object-dialogue-input")! as HTMLTextAreaElement;
         this.objectDialogueShowToggle = document.getElementById("show-dialogue-toggle")! as HTMLInputElement;
         this.objectSceneChangeSelect = document.getElementById("object-scene-select")! as HTMLSelectElement;
+
+        this.objectNameInput.addEventListener("input", () => 
+        {
+            if (this.selected) this.selected.name = this.objectNameInput.value;
+        });
 
         this.objectDialoguePreview.container.on("pointerdown", () => 
         {
@@ -321,14 +321,6 @@ export default class ScenesPanel
             if (this.selected && scene)
             {
                 this.selected.sceneChange = scene.uuid;
-            }
-        });
-
-        this.objectRenameButton.addEventListener("click", () =>
-        {
-            if (this.selected)
-            {
-                this.selected.name = this.objectNameInput.value;
             }
         });
 
@@ -418,8 +410,6 @@ export default class ScenesPanel
     {
         this.setScene(this.scene);
 
-        this.select(this.selected);
-
         function drawingToOption(drawing: Drawing)
         {
             return { "label": drawing.name, "value": drawing.uuid };
@@ -435,7 +425,6 @@ export default class ScenesPanel
                                  this.project.scenes.map(scene => ({ "label": scene.name, "value": scene.uuid })));
         this.activeSceneSelect.selectedIndex = this.project.scenes.indexOf(this.scene);
 
-        
         utility.repopulateSelect(this.objectSceneChangeSelect,
             this.project.scenes.map(scene => ({ "label": scene.name, "value": scene.uuid })));
 
@@ -444,6 +433,8 @@ export default class ScenesPanel
             const scene = this.project.getSceneByUUID(this.selected.sceneChange)!;
             this.objectSceneChangeSelect.selectedIndex = this.project.scenes.indexOf(scene);
         }
+
+        this.select(this.selected);
     }
 
     /** Switch the currently selected object, or select nothing if undefined */
@@ -452,8 +443,8 @@ export default class ScenesPanel
         this.selected = object;
         this.objectViews.forEach(view => view.setSelected(view.object == object));
 
+        this.objectSection.hidden = !object;
         this.objectNameInput.disabled = !object;
-        this.objectRenameButton.disabled = !object;
         this.objectDeleteButton.disabled = !object;
         this.objectDrawingSelect.disabled = !object;
         this.objectDialogueInput.disabled = !object;
@@ -466,6 +457,8 @@ export default class ScenesPanel
                 const scene = this.project.getSceneByUUID(object.sceneChange)!;
                 this.objectSceneChangeSelect.selectedIndex = this.project.scenes.indexOf(scene);
             }
+
+            this.objectDrawingSelect.selectedIndex = this.project.drawings.indexOf(object.drawing);
 
             this.objectNameInput.value = object.name;
             this.objectDialogueInput.value = object.dialogue;
