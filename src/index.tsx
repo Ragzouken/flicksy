@@ -232,7 +232,7 @@ function setup()
     doPalette();
     doBrushes();
 
-    pixi.stage.scale = new Pixi.Point(8, 8);
+    //pixi.stage.scale = new Pixi.Point(8, 8);
 
     drawingBoardsPanel = new DrawingBoardsPanel(pixi);
     drawingBoardsPanel.brush = makeCircleBrush(1, 0xFFFFFF);
@@ -349,6 +349,11 @@ function setup()
         exportPlayable(project);
     });
 
+    document.getElementById("scene-test")!.addEventListener("click", () =>
+    {
+        setPlayback();
+    });
+
     pixi.view.oncontextmenu = (e) => e.preventDefault();
 
     pixi.stage.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
@@ -359,13 +364,22 @@ function setup()
 
     const resize = () =>
     {
-      const w = document.documentElement.clientWidth;    
-      const h = document.documentElement.clientHeight;    
-      // this part resizes the canvas but keeps ratio the same    
-      pixi.renderer.view.style.width = w + "px";    
-      pixi.renderer.view.style.height = h + "px";    
-      // this part adjusts the ratio:    
-      pixi.renderer.resize(w,h);
+        const container = document.getElementById("container")! as HTMLDivElement;
+
+        const w = container.clientWidth;
+        const h = container.clientHeight; 
+
+        // this part resizes the canvas but keeps ratio the same    
+        pixi.renderer.view.style.width = w + "px";    
+        pixi.renderer.view.style.height = h + "px";    
+        
+        // this part adjusts the ratio:    
+        pixi.renderer.resize(w,h);
+
+        const scale = Math.floor(Math.min(w / 160, h / 100));
+
+        pixi.stage.scale = new Pixi.Point(scale, scale);
+        pixi.stage.position = new Pixi.Point(w / 2, h / 2);
     };
 
     pixi.stage.interactive = true;

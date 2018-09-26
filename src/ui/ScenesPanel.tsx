@@ -7,17 +7,27 @@ import { SceneObject, Scene } from '../data/Scene';
 
 class DialogueView
 {
-    public readonly background: Pixi.Graphics;
+    public readonly container: Pixi.Container;
+    public readonly panel: Pixi.Graphics;
     public readonly text: Pixi.Text;
 
     public constructor()
     {
-        this.background = new Pixi.Graphics();
-        this.background.clear();
-        this.background.beginFill(0x000000);
-        this.background.drawRect(0, 0, 100 * 8, 30 * 8);
-        this.background.position = new Pixi.Point(30, 60);
-        this.background.scale = new Pixi.Point(.125, .125);
+        this.container = new Pixi.Container();
+        this.container.width = 160;
+        this.container.height = 100;
+        this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
+        this.container.interactive = true;
+
+        this.panel = new Pixi.Graphics();
+        this.panel.clear();
+        this.panel.beginFill(0x000000);
+        this.panel.drawRect(0, 0, 100 * 8, 30 * 8);
+        this.panel.endFill();
+        this.panel.lineStyle(8, 0xFFFFFF, 1);
+        this.panel.drawRect(4, 4, 100 * 8 - 8, 30 * 8 - 8);
+        this.panel.position = new Pixi.Point(30, 60);
+        this.panel.scale = new Pixi.Point(.125, .125);
 
         this.text = new Pixi.Text("test test test test test test test test test test test test test test test ", {
             fontFamily: 'Arial', 
@@ -29,7 +39,8 @@ class DialogueView
         this.text.position = new Pixi.Point(4 * 8, 4 * 8);
         //this.text.texture.baseTexture.scaleMode = 1;
 
-        this.background.addChild(this.text);
+        this.panel.addChild(this.text);
+        this.container.addChild(this.panel);
     }
 }
 
@@ -190,24 +201,20 @@ export default class ScenesPanel
         this.container.addChild(this.overlayContainer);
 
         this.objectDialoguePreview = new DialogueView();
-        this.overlayContainer.addChild(this.objectDialoguePreview.background);
+        this.overlayContainer.addChild(this.objectDialoguePreview.container);
+
+        this.container.pivot = new Pixi.Point(80, 50);
 
         // scene bounds
         const bounds = new Pixi.Graphics();
-        bounds.lineStyle(.5, 0xFFFFFF);
+        bounds.lineStyle(1, 0xFFFFFF);
         bounds.drawRect(-.5, -.5, 160 + 1, 100 + 1);
-        bounds.alpha = 0.5;
+        bounds.alpha = 1;
         this.overlayContainer.addChild(bounds);
 
-        this.container.position = new Pixi.Point(1, 1);
+        //this.container.position = new Pixi.Point(1, 1);
 
         document.addEventListener("pointerup", () => this.stopDragging());
-
-        document.getElementById("scene-test")!.addEventListener("click", () =>
-        {
-            console.log("test play");
-            this.testPlayMode();
-        });
 
         this.createObjectButton = document.getElementById("create-object-button")! as HTMLButtonElement;
         this.createObjectSelect = document.getElementById("create-object-drawing-select")! as HTMLSelectElement;
@@ -241,8 +248,7 @@ export default class ScenesPanel
         this.objectDialogueInput = document.getElementById("object-dialogue-input")! as HTMLTextAreaElement;
         this.objectDialogueShowToggle = document.getElementById("show-dialogue-toggle")! as HTMLInputElement;
 
-        this.objectDialoguePreview.background.interactive = true;
-        this.objectDialoguePreview.background.on("pointerdown", () => this.hideDialogue());
+        this.objectDialoguePreview.container.on("pointerdown", () => this.hideDialogue());
 
         this.objectRenameButton.addEventListener("click", () =>
         {
@@ -282,9 +288,9 @@ export default class ScenesPanel
 
         this.objectDialogueShowToggle.addEventListener("change", () =>
         {
-            this.objectDialoguePreview.background.visible = this.objectDialogueShowToggle.checked
-                                                         && this.selected !== undefined
-                                                         && this.selected.dialogue.length > 0;
+            this.objectDialoguePreview.container.visible = this.objectDialogueShowToggle.checked
+                                                        && this.selected !== undefined
+                                                        && this.selected.dialogue.length > 0;
         });
 
         this.select(undefined);
@@ -319,12 +325,12 @@ export default class ScenesPanel
 
     public hideDialogue(): void
     {
-        this.objectDialoguePreview.background.visible = false;
+        this.objectDialoguePreview.container.visible = false;
     }
 
     public showDialogue(object: SceneObject): void
     {
-        this.objectDialoguePreview.background.visible = object.dialogue.length > 0;
+        this.objectDialoguePreview.container.visible = object.dialogue.length > 0;
         this.objectDialoguePreview.text.text = object.dialogue;
     }
 
@@ -372,12 +378,12 @@ export default class ScenesPanel
             this.objectNameInput.value = object.name;
             this.objectDialogueInput.value = object.dialogue;
             this.objectDialoguePreview.text.text = object.dialogue;
-            this.objectDialoguePreview.background.visible = this.objectDialogueShowToggle.checked 
-                                                         && object.dialogue.length > 0;
+            this.objectDialoguePreview.container.visible = this.objectDialogueShowToggle.checked 
+                                                        && object.dialogue.length > 0;
         }
         else
         {
-            this.objectDialoguePreview.background.visible = false;
+            this.objectDialoguePreview.container.visible = false;
         }
     }
 
