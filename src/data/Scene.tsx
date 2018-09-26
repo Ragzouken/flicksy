@@ -1,3 +1,4 @@
+import * as uuid from 'uuid/v4';
 import { Point } from "pixi.js"
 
 import { FlicksyData, FlicksyProject } from './FlicksyProject'
@@ -11,6 +12,7 @@ export interface SceneObjectData
     position: number[];
     drawing: string;
     dialogue: string;
+    sceneChange: string | undefined;
 }
 
 export interface SceneData
@@ -29,10 +31,11 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
     public position: Point;
     public drawing: Drawing;
     public dialogue: string;
+    public sceneChange: string | undefined;
 
     public fromData(data: SceneObjectData, project: FlicksyProject): SceneObject
     {
-        this.uuid = data.uuid;
+        this.uuid = data.uuid || uuid();
         this.name = data.name;
 
         this.position = new Point(data.position[0], data.position[1]);
@@ -49,6 +52,7 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
         }
 
         this.dialogue = data.dialogue || "";
+        this.sceneChange = data.sceneChange;
 
         return this;
     }
@@ -62,6 +66,7 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
             position: [this.position.x, this.position.y],
             dialogue: this.dialogue,
             drawing: this.drawing.uuid,
+            sceneChange: this.sceneChange,
         };
     }
 }

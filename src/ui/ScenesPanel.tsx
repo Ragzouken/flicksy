@@ -193,10 +193,12 @@ export default class ScenesPanel
     private objectDrawingSelect: HTMLSelectElement;
     private objectDialogueInput: HTMLTextAreaElement;
     private objectDialogueShowToggle: HTMLInputElement;
+    private objectSceneChangeSelect: HTMLSelectElement;
     
     private objectDialoguePreview: DialogueView;
 
     private playModeTest: boolean;
+    private dialoguingObject: SceneObject | undefined;
 
     public constructor(pixi: Pixi.Application)
     {
@@ -296,8 +298,31 @@ export default class ScenesPanel
         this.objectDrawingSelect = document.getElementById("object-drawing-select")! as HTMLSelectElement;
         this.objectDialogueInput = document.getElementById("object-dialogue-input")! as HTMLTextAreaElement;
         this.objectDialogueShowToggle = document.getElementById("show-dialogue-toggle")! as HTMLInputElement;
+        this.objectSceneChangeSelect = document.getElementById("object-scene-select")! as HTMLSelectElement;
 
-        this.objectDialoguePreview.container.on("pointerdown", () => this.hideDialogue());
+        this.objectDialoguePreview.container.on("pointerdown", () => 
+        {
+            if (this.dialoguingObject
+             && this.dialoguingObject.sceneChange)
+            {
+                this.setScene(this.project.getSceneByUUID(this.dialoguingObject.sceneChange)!);
+                this.testPlayMode();
+            }
+
+            this.dialoguingObject = undefined;
+
+            this.hideDialogue();
+        });
+
+        this.objectSceneChangeSelect.addEventListener("change", () =>
+        {
+            const scene = this.project.getSceneByUUID(this.objectSceneChangeSelect.value);
+
+            if (this.selected && scene)
+            {
+                this.selected.sceneChange = scene.uuid;
+            }
+        });
 
         this.objectRenameButton.addEventListener("click", () =>
         {
@@ -379,6 +404,11 @@ export default class ScenesPanel
 
     public showDialogue(object: SceneObject): void
     {
+        if (this.playModeTest)
+        {
+            this.dialoguingObject = object;
+        }
+
         this.objectDialoguePreview.container.visible = object.dialogue.length > 0;
         this.objectDialoguePreview.text.text = object.dialogue;
     }
@@ -387,6 +417,7 @@ export default class ScenesPanel
     public refresh(): void
     {
         this.setScene(this.scene);
+
         this.select(this.selected);
 
         function drawingToOption(drawing: Drawing)
@@ -403,6 +434,16 @@ export default class ScenesPanel
         utility.repopulateSelect(this.activeSceneSelect,
                                  this.project.scenes.map(scene => ({ "label": scene.name, "value": scene.uuid })));
         this.activeSceneSelect.selectedIndex = this.project.scenes.indexOf(this.scene);
+
+        
+        utility.repopulateSelect(this.objectSceneChangeSelect,
+            this.project.scenes.map(scene => ({ "label": scene.name, "value": scene.uuid })));
+
+        if (this.selected && this.selected.sceneChange)
+        {
+            const scene = this.project.getSceneByUUID(this.selected.sceneChange)!;
+            this.objectSceneChangeSelect.selectedIndex = this.project.scenes.indexOf(scene);
+        }
     }
 
     /** Switch the currently selected object, or select nothing if undefined */
@@ -416,9 +457,16 @@ export default class ScenesPanel
         this.objectDeleteButton.disabled = !object;
         this.objectDrawingSelect.disabled = !object;
         this.objectDialogueInput.disabled = !object;
+        this.objectSceneChangeSelect.disabled = !object;
 
         if (object)
         {
+            if (object.sceneChange)
+            {
+                const scene = this.project.getSceneByUUID(object.sceneChange)!;
+                this.objectSceneChangeSelect.selectedIndex = this.project.scenes.indexOf(scene);
+            }
+
             this.objectNameInput.value = object.name;
             this.objectDialogueInput.value = object.dialogue;
             this.objectDialoguePreview.text.text = object.dialogue;
