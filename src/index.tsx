@@ -141,11 +141,20 @@ function loadProject(data: FlicksyProjectData): FlicksyProject
     return project;
 }
 
+function setEditor()
+{
+    document.getElementById("sidebar")!.hidden = false;
+    document.getElementById("editor-button")!.hidden = true;
+}
+
 function setPlayback()
 {
     document.getElementById("sidebar")!.hidden = true;
+    scenesPanel.setScene(project.scenes[0]);
     scenesPanel.show();
     scenesPanel.testPlayMode();
+
+    document.getElementById("editor-button")!.hidden = bundled;
 }
 
 function setProject(p: FlicksyProject)
@@ -252,6 +261,17 @@ function setup()
 
     hideAll();
     info.hidden = false;
+
+    document.getElementById("editor-button")!.addEventListener("click", () =>
+    {
+        setEditor();
+    });
+    document.getElementById("editor-button")!.hidden = true;
+
+    document.getElementById("playtest-button")!.addEventListener("click", () =>
+    {
+        setPlayback();
+    });
 
     document.getElementById("info-tab-button")!.addEventListener("click", () =>
     {

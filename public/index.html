@@ -28,7 +28,9 @@
     <div id="sidebar">
         <div id="tabs" class="panel">
             <div class="section">
-                <button id="info-tab-button">info</button> <button id="drawing-tab-button">drawings</button> <button id="scene-tab-button">scene</button> 
+                <button id="info-tab-button">project</button>
+                <button id="drawing-tab-button">drawings</button> 
+                <button id="scene-tab-button">scene</button>
             </div>
         </div>
         <div id="info" class="panel">
@@ -36,6 +38,10 @@
                 <h1>flicksy</h1>
                 <p>prototype art component of a gamemaking tool</p>
                 <p>create drawings in the drawings tab and then compose scenes with them in the scenes tab</p>
+            </div>
+            <div class="section">
+                <h1>playtest</h1>
+                <button id="playtest-button">play</button> 
             </div>
             <div class="section">
                 <h1>export</h1>
@@ -118,7 +124,7 @@
             <div class="section">
                 <h1>scenes tab</h1>
                 <p>left-click to drag objects around</p>
-                <p>start by adding an object in the <b>add objects</b> menu below</p>
+                <p>start by adding an object in the <b>create objects</b> menu below</p>
             </div>
             <div class="section">
                 <h1>scenes</h1>
@@ -133,10 +139,10 @@
                 </p>
             </div>
             <div class="section">
-                <h1>add objects</h1>
+                <h1>create objects</h1>
                 <p>
                     <select id="create-object-drawing-select" title="choose a drawing for this object"></select>
-                    <button id="create-object-button" title="create a new object">add object</button>
+                    <button id="create-object-button" title="create a new object">create</button>
                 </p>
             </div>
             <div class="section" id="selected-object-section">
@@ -160,6 +166,7 @@
     <div id="container">
         <div id="root"></div>
     </div>
+    <button id="editor-button">editor</button>
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.

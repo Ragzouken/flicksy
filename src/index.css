@@ -32,6 +32,14 @@ button, select
     /*-webkit-appearance: none;*/
 }
 
+
+#editor-button
+{
+    position: absolute;
+    top: 32px;
+    left: 32px;
+}
+
 .rename-delete
 {
     display: flex;
