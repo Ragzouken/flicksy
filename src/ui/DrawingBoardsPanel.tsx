@@ -226,6 +226,8 @@ export default class DrawingBoardsPanel
             this.pinViews.get(pin)!.destroy();
             this.pinViews.delete(pin);
         }
+
+        this.project.removeOrphans();
     }
 
     public setProject(project: FlicksyProject): void

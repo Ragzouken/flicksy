@@ -63,6 +63,8 @@ export class FlicksyProject
 
         if (this.scenes.length == 0) this.createScene();
 
+        this.removeOrphans();
+
         return this;
     }
 
@@ -122,5 +124,29 @@ export class FlicksyProject
         this.drawingBoards.push(board);
 
         return board;
+    }
+
+    public removeOrphans(): void
+    {
+        var countsData = this.drawings.map<[Drawing, number]>(drawing => [drawing, 0]);
+        var counts = new Map<Drawing, number>(countsData);
+
+        function countEntity(entity: {drawing: Drawing})
+        {
+            const count = counts.get(entity.drawing) || 0;
+            counts.set(entity.drawing, count + 1);  
+        }
+
+        this.drawingBoards.forEach(board => board.drawings.forEach(countEntity));
+        this.scenes.forEach(scene => scene.objects.forEach(countEntity));
+
+        counts.forEach((count, drawing) => 
+        {
+            if (count == 0)
+            {
+                const index = this.drawings.indexOf(drawing);
+                this.drawings.splice(index, 1);
+            }
+        });
     }
 }
