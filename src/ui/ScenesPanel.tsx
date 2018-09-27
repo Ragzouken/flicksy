@@ -263,10 +263,9 @@ export default class ScenesPanel
             this.refresh();
         });
 
-        this.createObjectButton = document.getElementById("create-object-button")! as HTMLButtonElement;
         this.createObjectSelect = document.getElementById("create-object-drawing-select")! as HTMLSelectElement;
 
-        this.createObjectButton.addEventListener("click", () =>
+        this.createObjectSelect.addEventListener("change", () =>
         {
             const position = new Pixi.Point(utility.randomInt(48, 128), utility.randomInt(2, 96));
 
@@ -417,6 +416,12 @@ export default class ScenesPanel
 
         utility.repopulateSelect(this.createObjectSelect, 
                                  this.project.drawings.map(drawingToOption));
+
+        const label = document.createElement("option") as HTMLOptionElement;
+        this.createObjectSelect.insertBefore(label, this.createObjectSelect.firstChild);
+        label.text = "create object from drawing";
+        label.selected = true;
+        label.disabled = true;
 
         utility.repopulateSelect(this.objectDrawingSelect, 
                                  this.project.drawings.map(drawingToOption));

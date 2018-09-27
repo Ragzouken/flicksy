@@ -223,8 +223,29 @@ async function findProject(): Promise<FlicksyProject>
     });
 }
 
+async function exportPlayable2(project: FlicksyProject)
+{
+    const html = document.cloneNode(true) as Document;
+    const script = html.getElementsByTagName("script")[0] as HTMLScriptElement;
+    const source = await (await fetch(script.src)).text();
+    script.text = source;
+    script.removeAttribute("src");
+
+    const data = html.createElement("script") as HTMLScriptElement;
+    data.id = "flicksy-data";
+    data.type = "text/flicksy";
+    data.text = `\n${projectToJSON(project)}\n`;
+    html.body.appendChild(data);
+
+    const blob = new Blob([html.documentElement.outerHTML], {type: "application/json"});
+    FileSaver.saveAs(blob, "playable.html");
+}
+
 async function exportPlayable(project: FlicksyProject)
 {
+    //exportPlayable2(project);
+    //return;
+
     const template = await fetch("./playable-template.zip");
     const templateBlob = await template.blob();
     const templateZip = await JSZip.loadAsync(templateBlob);

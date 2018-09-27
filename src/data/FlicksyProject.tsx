@@ -128,8 +128,7 @@ export class FlicksyProject
 
     public removeOrphans(): void
     {
-        var countsData = this.drawings.map<[Drawing, number]>(drawing => [drawing, 0]);
-        var counts = new Map<Drawing, number>(countsData);
+        var counts = new Map<Drawing, number>();
 
         function countEntity(entity: {drawing: Drawing})
         {
@@ -137,6 +136,7 @@ export class FlicksyProject
             counts.set(entity.drawing, count + 1);  
         }
 
+        this.drawings.forEach(drawing => counts.set(drawing, 0));
         this.drawingBoards.forEach(board => board.drawings.forEach(countEntity));
         this.scenes.forEach(scene => scene.objects.forEach(countEntity));
 

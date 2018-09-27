@@ -28,7 +28,6 @@ button, select
     border: 0;
     padding: 3px 6px;
     font-weight: bold;
-    margin: 1px 3px;
     /*-webkit-appearance: none;*/
 }
 
@@ -38,6 +37,11 @@ button, select
     position: absolute;
     top: 32px;
     left: 32px;
+}
+
+#delete-scene-button
+{
+    float: right;
 }
 
 .rename-delete
@@ -56,9 +60,31 @@ button
     padding: 4px 8px;
 }
 
+/* width */
+::-webkit-scrollbar {
+    color: black;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #754d6d;
+    border-left: solid 1px black; 
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background:  rgb(180, 157, 27);
+    border-left: solid 1px black; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #FFD800; 
+}
+
 #sidebar
 {
-    width: 292px;
+    width: 320px;
 
     color: white;
     background-color: #792368;
@@ -66,7 +92,7 @@ button
     flex: none;
 
     overflow-x: none;
-    overflow-y: auto;
+    overflow-y: scroll;
 }
 
 .section 
@@ -86,6 +112,11 @@ button
 .section > p
 {
     margin-bottom: 0;
+}
+
+select
+{
+    flex: 1;
 }
 
 #container
