@@ -145,6 +145,8 @@ function setEditor()
 {
     document.getElementById("sidebar")!.hidden = false;
     document.getElementById("editor-button")!.hidden = true;
+    scenesPanel.hide();
+    scenesPanel.setPlayTestMode(false);
 }
 
 function setPlayback()
@@ -152,7 +154,7 @@ function setPlayback()
     document.getElementById("sidebar")!.hidden = true;
     scenesPanel.setScene(project.scenes[0]);
     scenesPanel.show();
-    scenesPanel.testPlayMode();
+    scenesPanel.setPlayTestMode(true);
 
     document.getElementById("editor-button")!.hidden = bundled;
 }

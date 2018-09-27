@@ -17,11 +17,6 @@ canvas
     height: 100%;
 }
 
-#object-dialogue-input
-{
-    width: 100%;
-}
-
 button, select
 {
     background-color: #FFD800;
@@ -31,6 +26,38 @@ button, select
     /*-webkit-appearance: none;*/
 }
 
+input, textarea
+{
+    border: 0;
+    background-color: black;
+    color: white;
+    padding: 3px 6px;
+}
+
+input
+{
+    margin-right: 6px;
+}
+
+#create-scene-button
+{
+    float: right;
+}
+
+input.full-input
+{
+    width: calc(100% - 12px);
+}
+
+select.full-input
+{
+    width: 100%;
+}
+
+#object-dialogue-input, #import-data
+{
+    width: calc(100% - 12px);
+}
 
 #editor-button
 {
@@ -91,7 +118,7 @@ button
 
     flex: none;
 
-    overflow-x: none;
+    overflow-x: hidden;
     overflow-y: scroll;
 }
 
@@ -102,11 +129,52 @@ button
     background-color: #367b6b;
 }
 
+#tabs
+{
+    margin: 16px;
+    display: flex;
+}
+
+#tabs > button
+{
+    margin: 4px;
+    flex: 1;
+}
+
+#tabs > button:first-child
+{
+    margin-left: 0px;
+}
+
+#tabs > button:last-child
+{
+    margin-right: 0px;
+}
+
+#dialogue-preview
+{
+    float: right;
+}
+
+#object-drawing-select, #object-scene-select
+{
+    width: 100%;
+}
+
 .section > h1
 {
     color: #FFD800;
     font-size: 1.5em;
     margin-top: 0;
+}
+
+.section > h2
+{
+    font-size: 1em;
+    font-weight: bold;
+    color: #cef0df;
+
+    margin-bottom: .25em;
 }
 
 .section > p

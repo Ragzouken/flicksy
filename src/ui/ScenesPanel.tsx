@@ -90,11 +90,13 @@ class SceneObjectView
 
             this.hover.visible = this.showHover && solid;
 
+            const interactable = this.object.dialogue.length > 0 || this.object.sceneChange;
+
             if (solid && this.showHover)
             {
                 this.sprite.cursor = "grab";
             }
-            else if (solid && !this.showHover) 
+            else if (solid && !this.showHover && interactable) 
             {
                 this.sprite.cursor = "pointer";
             }
@@ -213,6 +215,9 @@ export default class ScenesPanel
         this.overlayContainer.addChild(this.objectDialoguePreview.container);
 
         this.container.pivot = new Pixi.Point(80, 50);
+        this.container.interactive = true;
+        this.container.on("pointerdown", () => this.select(undefined));
+        this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
 
         // scene bounds
         const bounds = new Pixi.Graphics();
@@ -305,7 +310,7 @@ export default class ScenesPanel
              && this.dialoguingObject.sceneChange)
             {
                 this.setScene(this.project.getSceneByUUID(this.dialoguingObject.sceneChange)!);
-                this.testPlayMode();
+                this.setPlayTestMode(true);
             }
 
             this.dialoguingObject = undefined;
@@ -380,12 +385,12 @@ export default class ScenesPanel
         this.objectViews.clear();
     }
 
-    public testPlayMode(): void
+    public setPlayTestMode(on: boolean): void
     {
-        this.playModeTest = true;
+        this.playModeTest = on;
         this.select(undefined);
         this.refresh();
-        this.objectViews.forEach(view => view.showHover = false);
+        this.objectViews.forEach(view => view.showHover = !on);
     }
 
     public hideDialogue(): void
@@ -516,13 +521,22 @@ export default class ScenesPanel
                 {
                     if (this.playModeTest)
                     {
-                        this.showDialogue(view.object);
+                        if (view.object.dialogue.length > 0)
+                        {
+                            this.showDialogue(view.object);
+                        }
+                        else if (view.object.sceneChange)
+                        {
+                            this.setScene(this.project.getSceneByUUID(view.object.sceneChange)!);
+                            this.setPlayTestMode(true);
+                        }
                     }
                     else
                     {
                         this.startDragging(view, event);
-                        event.stopPropagation();
                     }
+
+                    event.stopPropagation();
                 }
             });
 

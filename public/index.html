@@ -26,22 +26,17 @@
       You need to enable JavaScript to run this app.
     </noscript>
     <div id="sidebar">
-        <div id="tabs" class="panel">
-            <div class="section">
-                <button id="info-tab-button">project</button>
-                <button id="drawing-tab-button">drawings</button> 
-                <button id="scene-tab-button">scene</button>
-            </div>
+        <div id="tabs">
+            <button id="info-tab-button">project</button>
+            <button id="drawing-tab-button">drawings</button> 
+            <button id="scene-tab-button">scene</button>
+            <button id="playtest-button">play</button> 
         </div>
         <div id="info" class="panel">
             <div class="section">
                 <h1>flicksy</h1>
                 <p>prototype art component of a gamemaking tool</p>
                 <p>create drawings in the drawings tab and then compose scenes with them in the scenes tab</p>
-            </div>
-            <div class="section">
-                <h1>playtest</h1>
-                <button id="playtest-button">play</button> 
             </div>
             <div class="section">
                 <h1>export</h1>
@@ -124,38 +119,46 @@
             <div class="section">
                 <h1>scenes tab</h1>
                 <p>left-click to drag objects around</p>
-                <p>start by adding an object in the <b>create objects</b> menu below</p>
+                <p>start by adding an object in the <b>active scene</b> section below</p>
             </div>
             <div class="section">
+                <button id="create-scene-button">new scene</button>
                 <h1>scenes</h1>
-                <p>
-                    <select id="active-scene-select"></select> <button id="create-scene-button">new scene</button>
-                </p>
+                
+                <h2>switch scene</h2>
+                <select id="active-scene-select" class="full-input"></select>
             </div>
             <div class="section">
-                <button id="delete-scene-button" title="delete the active scene">delete</button>
                 <h1>active scene</h1>
-                <p class="rename-delete">
-                    <input id="scene-name-input" title="name of the active scene" class="rename">
-                </p><p class="rename-delete">
-                    <select id="create-object-drawing-select" title="choose a drawing for this object"></select>
-                </p>
+                
+                <h2>name</h2>
+                <div class="rename-delete">
+                    <input id="scene-name-input" class="rename" title="name of the active scene">
+                    <button id="delete-scene-button" title="delete the active scene">delete</button>
+                </div>    
+
+                <h2>add object</h2>
+                <select id="create-object-drawing-select" class="full-input" title="choose a drawing for this object"></select>
             </div>
             <div class="section" id="selected-object-section">
                 <h1>selected object</h1>
-                <p class="rename-delete">
+
+                <h2>name</h2>
+                <div class="rename-delete">
                     <input id="object-name" title="name of the currently selected object" class="rename"><button id="delete-object-button" title="delete the currently selected object">delete</button>
-                </p><p>
-                    <b>drawing:</b><br>
-                    <select id="object-drawing-select" title="choose a drawing for this object"></select>
-                </p><p>
-                    <b>dialogue:</b><br>
-                    <textarea id="object-dialogue-input" rows="8"></textarea>
-                    <br><label><input type="checkbox" id="show-dialogue-toggle">preview</label>
-                    <p>
-                        <b>scene change:</b><br>
-                        <select id="object-scene-select"></select></p>
-                </p>
+                </div>
+
+                <h2>drawing</h2>
+                <select id="object-drawing-select" title="choose a drawing for this object"></select>
+                
+                <h2>
+                    <label id="dialogue-preview">preview <input type="checkbox" id="show-dialogue-toggle"></label>
+                    dialogue
+                </h2>
+                <textarea id="object-dialogue-input" rows="8"></textarea>
+                
+                <h2>scene change</h2>
+                <select id="object-scene-select"></select>
             </div>
         </div>
     </div>
