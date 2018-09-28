@@ -76,7 +76,7 @@ select.full-input
     display: flex;
 }
 
-input.rename
+.rename-delete > input
 {
     flex: 1;
     min-width: 0;
@@ -131,24 +131,50 @@ button
 
 #tabs
 {
-    margin: 16px;
+    margin: 12px;
     display: flex;
+    flex-flow: row wrap;
 }
 
 #tabs > button
 {
     margin: 4px;
+    flex: 0 1;
+}
+
+.size-select
+{
+    margin: -4px;
+    display: flex;
+}
+
+.size-select > *
+{
+    margin: 4px;
     flex: 1;
 }
 
-#tabs > button:first-child
+.size-select > div
 {
-    margin-left: 0px;
+    flex: 0;
 }
 
-#tabs > button:last-child
+.size-select > button
 {
-    margin-right: 0px;
+    flex: 0;
+}
+
+.section-buttons
+{
+    margin: -4px;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.section-buttons > button
+{
+    margin: 4px;
+    flex: 0 0;
 }
 
 #dialogue-preview

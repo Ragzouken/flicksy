@@ -384,7 +384,7 @@ function setup()
         //postGist(json, url => console.log(url));
 
         const blob = new Blob([json], {type: "application/json"});
-        FileSaver.saveAs(blob, "project.json");
+        FileSaver.saveAs(blob, "project.flicksy.json");
     });
 
     document.getElementById("export-playable")!.addEventListener("click", () =>

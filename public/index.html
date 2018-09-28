@@ -31,6 +31,7 @@
             <button id="drawing-tab-button">drawings</button> 
             <button id="scene-tab-button">scene</button>
             <button id="playtest-button">play</button> 
+            <button id="save" title="Save the project in the browser">save</button>
         </div>
         <div id="info" class="panel">
             <div class="section">
@@ -40,61 +41,63 @@
             </div>
             <div class="section">
                 <h1>export</h1>
-                <p>
-                    <button id="save" title="save project in browser">save</button>
-                    <button id="download-data" title="download project as text file">export data</button>
-                    <button id="download" title="download zip of all images">export images</button>
-                </p>
-                <p>
-                <button id="export-playable" title="download a playable html page of the game">export playable</button>
-                </p>
+                <div class="section-buttons">
+                    <button id="download-data" title="Download the project as text file">project data</button>
+                    <button id="download" title="Download a zip of the drawings as image files">drawing images</button>
+                    <button id="export-playable" title="Download a zip that can be uploaded to itch.io as a playable game">playable zip</button>
+                </div>
             </div>
             <div class="section">
                 <h1>import</h1>
-                <p><input id="import-data" type="file" accept="application/json" title="load project from previous exported text file"></p>
+                <p><input id="import-data" type="file" accept="application/json" title="Load a project from previous exported text file"></p>
             </div>
         </div>
         <div id="drawing-sidebar" class="panel">
             <div class="section">
                 <h1>drawing boards tab</h1>
-                <p>right-click to drag drawings around, left-click to drag the pencil, click the palette to change color and brush size</p>
-                <p>start by adding a drawing in the <b>add new drawings</b> menu below</p>
+                <p>right-click to drag drawings around, left-click to draw with the brush</p>
+                <p>start by adding a drawing in the <b>drawing board</b> section below</p>
             </div>
             <div class="section">
-                <h1>add new drawings</h1>
-                <p>
-                    <select id="create-drawing-width" title="width of the drawing to create">
-                        <option value="24">24px</option>
-                        <option value="32">32px</option>
-                        <option value="48">48px</option>
-                        <option value="64">64px</option>
-                    </select>
-                    x
-                    <select id="create-drawing-height" title="height of the drawing to create">
-                        <option value="24">24px</option>
-                        <option value="32">32px</option>
-                        <option value="48">48px</option>
-                        <option value="64">64px</option>
-                    </select>
-                    
-                    <button id="create-drawing-button" title="create a new drawing">create</button>
-                </p>
+                <h1>drawing board</h1>
+                
+                <h2>create drawing</h2>
+                <div class="size-select">
+                <select id="create-drawing-width" title="Width of the drawing to create">
+                    <option value="24">24px</option>
+                    <option value="32">32px</option>
+                    <option value="48">48px</option>
+                    <option value="64">64px</option>
+                </select>
+                <div>x</div>
+                <select id="create-drawing-height" title="Height of the drawing to create">
+                    <option value="24">24px</option>
+                    <option value="32">32px</option>
+                    <option value="48">48px</option>
+                    <option value="64">64px</option>
+                </select>
+                
+                <button id="create-drawing-button" title="Create a new drawing and add it to this drawing board">create</button>
+                </div>
             </div>
             <div class="section" id="selected-drawing-section">
                 <h1>selected drawing</h1>
-                <p class="rename-delete">
-                    <input id="drawing-name" title="name of the currently selected drawing" class="rename"><button id="delete-drawing-button" title="delete the currently selected drawing">delete</button>
-                </p>
+                <h2>name</h2>
+                <div class="rename-delete">
+                    <input id="drawing-name" title="name of the currently selected drawing">
+                    <button id="delete-drawing-button" title="delete the currently selected drawing">delete</button>
+                </div>
             </div>
             <div class="section">
                 <h1>brush settings</h1>
+                <h2>size</h2>
                 <div id="brushes">
                     <div><button title="single pixel brush">1px</button></div>
                     <div><button title="2px diameter brush">2px</button></div>
                     <div><button title="3px diameter brush">3px</button></div>
                     <div><button title="4px diameter brush">4px</button></div>
                 </div>
-                <br>
+                <h2>color</h2>
                 <div id="palette">
                     <div><button title="eraser">X</button></div>
                     <div><button></button></div>
@@ -133,7 +136,7 @@
                 
                 <h2>name</h2>
                 <div class="rename-delete">
-                    <input id="scene-name-input" class="rename" title="name of the active scene">
+                    <input id="scene-name-input" title="name of the active scene">
                     <button id="delete-scene-button" title="delete the active scene">delete</button>
                 </div>    
 
@@ -145,7 +148,8 @@
 
                 <h2>name</h2>
                 <div class="rename-delete">
-                    <input id="object-name" title="name of the currently selected object" class="rename"><button id="delete-object-button" title="delete the currently selected object">delete</button>
+                    <input id="object-name" title="name of the currently selected object">
+                    <button id="delete-object-button" title="delete the currently selected object">delete</button>
                 </div>
 
                 <h2>drawing</h2>

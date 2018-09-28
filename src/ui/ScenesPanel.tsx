@@ -19,6 +19,7 @@ class DialogueView
         this.container.height = 100;
         this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
         this.container.interactive = true;
+        this.container.cursor = "pointer";
 
         this.panel = new Pixi.Graphics();
         this.panel.clear();
@@ -29,6 +30,7 @@ class DialogueView
         this.panel.drawRect(4, 4, 100 * 8 - 8, 30 * 8 - 8);
         this.panel.position = new Pixi.Point(30, 60);
         this.panel.scale = new Pixi.Point(.125, .125);
+
 
         this.text = new Pixi.Text("test test test test test test test test test test test test test test test ", {
             fontFamily: 'Arial', 
