@@ -1,5 +1,20 @@
 import { Point, PointLike } from 'pixi.js'
 
+export function lerp(v0: number, v1: number, t: number): number
+{
+    return (1 - t) * v0 + t * v1;
+}
+
+export function invLerp(v0: number, v1: number, v: number): number
+{
+    return (v - v0) / (v1 - v0);
+}
+
+export function mul(point: PointLike, factor: number): Point
+{
+    return new Point(point.x * factor, point.y * factor);
+}
+
 export function add(a: PointLike, b: PointLike)
 {
   return new Point(a.x + b.x, a.y + b.y);

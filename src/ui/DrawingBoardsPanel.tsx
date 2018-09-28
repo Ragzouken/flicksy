@@ -112,6 +112,7 @@ export default class DrawingBoardsPanel
     private pinDeleteButton: HTMLButtonElement;
 
     private cursorSprite: Pixi.Sprite;
+    private zoom = 0;
 
     public constructor(pixi: Pixi.Application)
     {
@@ -125,6 +126,15 @@ export default class DrawingBoardsPanel
         //this.container.cursor = "none";
         this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
         this.container.pivot = new Pixi.Point(80, 50);
+
+        document.getElementById("container")!.addEventListener("wheel", event =>
+        {
+            const wheel = event as WheelEvent;
+            this.zoom += wheel.deltaY * -0.005;
+            const scale = Math.pow(2, this.zoom);
+
+            this.container.scale = new Pixi.Point(scale, scale);
+        });
 
         this.container.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
         {
