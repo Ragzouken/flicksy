@@ -10,15 +10,6 @@
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
     <title>candle's amazing bitmap editing emporium</title>
   </head>
   <body>
@@ -49,6 +40,7 @@
             </div>
             <div class="section">
                 <h1>import</h1>
+                <h2>project data</h2>
                 <p><input id="import-data" type="file" accept="application/json" title="Load a project from previous exported text file"></p>
             </div>
         </div>
@@ -84,22 +76,22 @@
                 <h1>selected drawing</h1>
                 <h2>name</h2>
                 <div class="rename-delete">
-                    <input id="drawing-name" title="name of the currently selected drawing">
-                    <button id="delete-drawing-button" title="delete the currently selected drawing">delete</button>
+                    <input id="drawing-name" title="Name of the selected drawing">
+                    <button id="delete-drawing-button" title="Delete the selected drawing">delete</button>
                 </div>
             </div>
             <div class="section">
                 <h1>brush settings</h1>
                 <h2>size</h2>
                 <div id="brushes">
-                    <div><button title="single pixel brush">1px</button></div>
-                    <div><button title="2px diameter brush">2px</button></div>
-                    <div><button title="3px diameter brush">3px</button></div>
-                    <div><button title="4px diameter brush">4px</button></div>
+                    <div><button title="Use single pixel brush">1px</button></div>
+                    <div><button title="Use 2px diameter brush">2px</button></div>
+                    <div><button title="Use 3px diameter brush">3px</button></div>
+                    <div><button title="Use 4px diameter brush">4px</button></div>
                 </div>
                 <h2>color</h2>
                 <div id="palette">
-                    <div><button title="eraser">X</button></div>
+                    <div><button title="Erase instead of drawing">X</button></div>
                     <div><button></button></div>
                     <div><button></button></div>
                     <div><button></button></div>

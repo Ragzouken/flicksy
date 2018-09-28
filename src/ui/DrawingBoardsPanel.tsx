@@ -28,6 +28,7 @@ class PinnedDrawingView
         this.sprite = new Pixi.Sprite(pin.drawing.texture.texture);
         this.sprite.position = pin.position;
         this.sprite.interactive = true;
+        this.sprite.cursor = "none";
 
         const width = pin.drawing.texture.data.width;
         const height = pin.drawing.texture.data.height;
@@ -90,7 +91,7 @@ export default class DrawingBoardsPanel
     private project: FlicksyProject;
     private drawingBoard: DrawingBoard;
 
-    private dragType: "draw" | "move" | undefined;
+    private dragType: "draw" | "move" | "pan" | undefined;
     private dragOrigin: Pixi.Point;
     private dragPrev: Pixi.Point;
     private draggedPin: PinnedDrawingView | undefined;
@@ -120,7 +121,25 @@ export default class DrawingBoardsPanel
         this.pinContainer = new Pixi.Container();
         this.container.addChild(this.pinContainer);
 
+        this.container.interactive = true;
+        //this.container.cursor = "none";
+        this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
         this.container.pivot = new Pixi.Point(80, 50);
+
+        this.container.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
+        {
+            this.stopDragging();
+            this.dragType = "pan";
+            this.dragOrigin = utility.sub(this.container.position, event.data.getLocalPosition(this.container.parent));
+            event.stopPropagation();
+        });
+
+        // scene bounds
+        const bounds = new Pixi.Graphics();
+        bounds.lineStyle(1, 0xFFFFFF);
+        bounds.drawRect(-.5, -.5, 160 + 1, 100 + 1);
+        bounds.alpha = .25;
+        this.container.addChild(bounds);
 
         document.addEventListener("pointerup", () => this.stopDragging());
         
@@ -169,6 +188,7 @@ export default class DrawingBoardsPanel
     public show(): void
     {
         this.container.visible = true;
+        this.container.position = new Pixi.Point(0, 0);
         document.getElementById("drawing-sidebar")!.hidden = false;
         this.refresh();
     }
@@ -305,6 +325,12 @@ export default class DrawingBoardsPanel
             this.draw(this.dragPrev, m, base);
 
             this.dragPrev = m;
+        }
+        else if (this.dragType == "pan")
+        {
+            const position = utility.floor(utility.add(this.dragOrigin, event.data.getLocalPosition(this.container.parent)));
+
+            this.container.position = position;
         }
     }
 
