@@ -222,6 +222,7 @@ export default class ScenesPanel
         this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
         
         const mask = new Pixi.Graphics();
+        mask.beginFill(0x000000);
         mask.drawRect(0, 0, 160, 100);
         this.container.addChild(mask);
         this.objectContainer.mask = mask;
