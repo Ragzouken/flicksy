@@ -220,6 +220,11 @@ export default class ScenesPanel
         this.container.interactive = true;
         this.container.on("pointerdown", () => this.select(undefined));
         this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
+        
+        const mask = new Pixi.Graphics();
+        mask.drawRect(0, 0, 160, 100);
+        this.container.addChild(mask);
+        this.objectContainer.mask = mask;
 
         // scene bounds
         const bounds = new Pixi.Graphics();
