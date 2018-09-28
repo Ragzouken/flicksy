@@ -60,6 +60,7 @@
                     <option value="32">32px</option>
                     <option value="48">48px</option>
                     <option value="64">64px</option>
+                    <option value="160">160px</option>
                 </select>
                 <div>x</div>
                 <select id="create-drawing-height" title="Height of the drawing to create">
@@ -67,6 +68,7 @@
                     <option value="32">32px</option>
                     <option value="48">48px</option>
                     <option value="64">64px</option>
+                    <option value="100">100px</option>
                 </select>
                 
                 <button id="create-drawing-button" title="Create a new drawing and add it to this drawing board">create</button>
@@ -121,44 +123,44 @@
                 <p>start by adding an object in the <b>active scene</b> section below</p>
             </div>
             <div class="section">
-                <button id="create-scene-button">new scene</button>
+                <button id="create-scene-button" title="Add a new empty scene to the project">new scene</button>
                 <h1>scenes</h1>
                 
                 <h2>switch scene</h2>
-                <select id="active-scene-select" class="full-input"></select>
+                <select id="active-scene-select" class="full-input" title="Open a different scene"></select>
             </div>
             <div class="section">
                 <h1>active scene</h1>
                 
                 <h2>name</h2>
                 <div class="rename-delete">
-                    <input id="scene-name-input" title="name of the active scene">
-                    <button id="delete-scene-button" title="delete the active scene">delete</button>
+                    <input id="scene-name-input" title="Rename this scene">
+                    <button id="delete-scene-button" title="Delete this scene">delete</button>
                 </div>    
 
                 <h2>add object</h2>
-                <select id="create-object-drawing-select" class="full-input" title="choose a drawing for this object"></select>
+                <select id="create-object-drawing-select" class="full-input" title="Add a new object to this scene by choosing from the drawings in this project"></select>
             </div>
             <div class="section" id="selected-object-section">
                 <h1>selected object</h1>
 
                 <h2>name</h2>
                 <div class="rename-delete">
-                    <input id="object-name" title="name of the currently selected object">
-                    <button id="delete-object-button" title="delete the currently selected object">delete</button>
+                    <input id="object-name" title="Rename the selected object">
+                    <button id="delete-object-button" title="Delete the selected object">delete</button>
                 </div>
 
                 <h2>drawing</h2>
-                <select id="object-drawing-select" title="choose a drawing for this object"></select>
+                <select id="object-drawing-select" title="Change the drawing displayed for the selected object"></select>
                 
                 <h2>
-                    <label id="dialogue-preview">preview <input type="checkbox" id="show-dialogue-toggle"></label>
+                    <label id="dialogue-preview">preview <input type="checkbox" id="show-dialogue-toggle" title="Show a visual preview of the object's dialogue"></label>
                     dialogue
                 </h2>
-                <textarea id="object-dialogue-input" rows="8"></textarea>
+                <textarea id="object-dialogue-input" rows="8" title="The dialogue to show after clicking this object"></textarea>
                 
                 <h2>scene change</h2>
-                <select id="object-scene-select"></select>
+                <select id="object-scene-select" title="The scene to go to after clicking this object and closing any dialogue"></select>
             </div>
         </div>
     </div>

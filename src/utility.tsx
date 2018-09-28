@@ -1,5 +1,10 @@
 import { Point, PointLike } from 'pixi.js'
 
+export function clamp(min: number, max: number, value: number): number
+{
+    return Math.max(min, Math.min(max, value));
+}
+
 export function lerp(v0: number, v1: number, t: number): number
 {
     return (1 - t) * v0 + t * v1;

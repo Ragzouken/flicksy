@@ -139,8 +139,11 @@ export default class DrawingBoardsPanel
 
         document.getElementById("container")!.addEventListener("wheel", event =>
         {
+            if (!this.container.visible) return;
+
             const wheel = event as WheelEvent;
             this.zoom += wheel.deltaY * -0.005;
+            this.zoom = utility.clamp(-2, 1, this.zoom);
             const scale = Math.pow(2, this.zoom);
 
             this.container.scale = new Pixi.Point(scale, scale);
