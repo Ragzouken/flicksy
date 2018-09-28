@@ -32,6 +32,27 @@ button:disabled, select:disabled
     color: black;
 }
 
+ol
+{
+    padding-left: 20px;
+    margin: 8px 0px;
+}
+
+ol > li
+{
+    margin: 8px 0px;
+}
+
+ol > li:last-child
+{
+    margin: 0px;
+}
+
+em
+{
+    font-weight: bold;
+    color: #FFD800;
+}
 
 input, textarea
 {

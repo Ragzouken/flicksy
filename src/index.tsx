@@ -267,10 +267,9 @@ function setup()
     //pixi.stage.scale = new Pixi.Point(8, 8);
 
     drawingBoardsPanel = new DrawingBoardsPanel(pixi);
-    drawingBoardsPanel.brush = makeCircleBrush(1, 0xFFFFFF);
-
     drawingBoardsPanel.hide();
 
+    drawingBoardsPanel.brush = makeCircleBrush(1, 0xFFFFFFFF);
     scenesPanel = new ScenesPanel(pixi);
 
     const info = document.getElementById("info")! as HTMLDivElement;

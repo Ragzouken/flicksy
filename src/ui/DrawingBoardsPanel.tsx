@@ -128,7 +128,7 @@ export default class DrawingBoardsPanel
 
         this.container.interactive = true;
         //this.container.cursor = "none";
-        this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
+        this.container.hitArea = new Pixi.Rectangle(-1000, -1000, 2000, 2000);
         this.container.pivot = new Pixi.Point(80, 50);
 
         this.selectModeButton = document.getElementById("drawing-select-button")! as HTMLButtonElement;
