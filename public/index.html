@@ -47,7 +47,7 @@
         <div id="drawing-sidebar" class="panel">
             <div class="section">
                 <h1>drawing boards tab</h1>
-                <p>right-click to drag drawings around, left-click to draw with the brush</p>
+                <p>drag drawings around in <b>move</b> mode, draw on them in <b>draw</b> mode</p>
                 <p>start by adding a drawing in the <b>drawing board</b> section below</p>
             </div>
             <div class="section">
@@ -72,6 +72,10 @@
                 <button id="create-drawing-button" title="Create a new drawing and add it to this drawing board">create</button>
                 </div>
             </div>
+            <div class="line-tabs">
+                <button id="drawing-select-button" title="Switch to select mode, in which you can select drawings and drag them around">select & move</button>
+                <button id="drawing-draw-button" title="Switch to draw mode, in which you can edit drawings">draw</button>
+            </div>
             <div class="section" id="selected-drawing-section">
                 <h1>selected drawing</h1>
                 <h2>name</h2>
@@ -80,7 +84,7 @@
                     <button id="delete-drawing-button" title="Delete the selected drawing">delete</button>
                 </div>
             </div>
-            <div class="section">
+            <div class="section" id="brush-settings">
                 <h1>brush settings</h1>
                 <h2>size</h2>
                 <div id="brushes">

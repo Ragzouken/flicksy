@@ -26,6 +26,13 @@ button, select
     /*-webkit-appearance: none;*/
 }
 
+button:disabled, select:disabled
+{
+    background-color: rgb(161, 137, 0);
+    color: black;
+}
+
+
 input, textarea
 {
     border: 0;
@@ -85,6 +92,19 @@ select.full-input
 button
 {
     padding: 4px 8px;
+}
+
+.line-tabs
+{
+    margin: 12px;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.line-tabs > button
+{
+    flex: 1;
+    margin: 4px;
 }
 
 /* width */
