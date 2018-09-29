@@ -193,62 +193,79 @@ let bundled: boolean;
 
 async function findProject(): Promise<FlicksyProject>
 {
-    return fetch("./bundled-project.json")
-    .then(response => response.text())
-    .then(text =>
-    {
-        try
-        {
-            const data = parseProjectData(text);
-            bundled = true;
-            return data;
-        }
-        catch (e)
-        {
-            throw e; // Promise.reject("no project");
-        }
-    })
-    .catch(reason => 
-    {
-        console.log(reason);
+    const embed = document.getElementById("flicksy-data");
 
-        return localForage.getItem<FlicksyProjectData>("v1-test");
-    })
-    .then(projectData => 
-    {       
-        if (projectData)
-        {
-            return loadProject(projectData);
-        }
-        else
-        {
-            return newProject();
-        }
-    });
+    if (embed)
+    {
+        console.log(embed.innerHTML);
+        bundled = true;
+        return loadProject(parseProjectData(embed.innerHTML));
+    }
+
+    const projectData = await localForage.getItem<FlicksyProjectData>("v1-test");
+
+    if (projectData)
+    {
+        return loadProject(projectData);
+    }
+    else
+    {
+        return newProject();
+    }
 }
 
 async function exportPlayable2(project: FlicksyProject)
 {
-    const html = document.cloneNode(true) as Document;
-    const script = html.getElementsByTagName("script")[0] as HTMLScriptElement;
-    const source = await (await fetch(script.src)).text();
-    script.text = source;
-    script.removeAttribute("src");
+    const html = document.documentElement.cloneNode(true) as HTMLElement;
+    const head = html.getElementsByTagName("head")[0];
+    const body = html.getElementsByTagName("body")[0];
 
-    const data = html.createElement("script") as HTMLScriptElement;
+    const cssLink = Array.from(html.querySelectorAll("link")).find(e => e.rel == "stylesheet");
+    const jsScript = html.querySelector("script");
+
+    // remove existing canvas
+    const canvas = body.getElementsByTagName("canvas")[0];
+    canvas.parentElement!.removeChild(canvas);
+
+    // inline css
+    if (cssLink)
+    {
+        const cssText = await fetch(cssLink.href).then(response => response.text());
+        
+        cssLink.parentElement!.removeChild(cssLink);
+        const style = document.createElement("style");
+        style.innerHTML = cssText;
+        head.appendChild(style);
+    }
+    
+    // inline project (before js so it's loaded before scripts run)
+    const data = document.createElement("script") as HTMLScriptElement;
     data.id = "flicksy-data";
     data.type = "text/flicksy";
-    data.text = `\n${projectToJSON(project)}\n`;
-    html.body.appendChild(data);
+    data.innerHTML = `\n${projectToJSON(project)}\n`;
+    body.appendChild(data);
 
-    const blob = new Blob([html.documentElement.outerHTML], {type: "application/json"});
-    FileSaver.saveAs(blob, "playable.html");
+    // inline js
+    if (jsScript)
+    {
+        const jsText = await fetch(jsScript.src).then(response => response.text());
+
+        jsScript.removeAttribute("src");
+        jsScript.innerHTML = jsText;
+        body.appendChild(jsScript);
+    }
+    
+    // save html
+    const blob = new Blob([html.innerHTML], {type: "application/json"});
+    FileSaver.saveAs(blob, "playable-test.html");
+
+    return;
 }
 
 async function exportPlayable(project: FlicksyProject)
 {
-    //exportPlayable2(project);
-    //return;
+    exportPlayable2(project);
+    return;
 
     const template = await fetch("./playable-template.zip");
     const templateBlob = await template.blob();
