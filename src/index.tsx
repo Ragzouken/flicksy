@@ -6,6 +6,8 @@ import * as JSZip from 'jszip';
 import * as FileSaver from 'file-saver';
 import * as uuid from 'uuid/v4';
 
+import * as utility from './utility';
+
 import { base64ToUint8, uint8ToBase64 } from './Base64';
 
 import DrawingBoardsPanel from './ui/DrawingBoardsPanel';
@@ -273,12 +275,14 @@ function setup()
     scenesPanel = new ScenesPanel(pixi);
 
     const info = document.getElementById("info")! as HTMLDivElement;
+    const publish = document.getElementById("publish")! as HTMLDivElement;
 
     function hideAll()
     {
         drawingBoardsPanel.hide();
         scenesPanel.hide();
         info.hidden = true;
+        publish.hidden = true;
     }
 
     hideAll();
@@ -301,6 +305,12 @@ function setup()
         info.hidden = false;
     });
 
+    document.getElementById("publish-tab-button")!.addEventListener("click", () =>
+    {
+        hideAll();
+        publish.hidden = false;
+    });
+
     document.getElementById("drawing-tab-button")!.addEventListener("click", () =>
     {
         hideAll();
@@ -313,10 +323,26 @@ function setup()
         scenesPanel.show();
     });
 
-    document.getElementById("save")!.addEventListener("click", () =>
+    const save = document.getElementById("save")! as HTMLButtonElement;
+
+    async function doSave()
     {
+        save.disabled = true;
+        save.textContent = "saving..."
+
+        const delay = utility.delay(500);
+
         localForage.setItem("v1-test", project.toData());
-    });
+        await delay;
+
+        save.textContent = "saved!";
+        await utility.delay(200);
+        save.textContent = "save";
+
+        save.disabled = false;
+    }
+
+    save.addEventListener("click", () => doSave());
 
     document.getElementById("download")!.addEventListener("click", () =>
     {

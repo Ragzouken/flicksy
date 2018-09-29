@@ -23,6 +23,7 @@
             <button id="scene-tab-button">scene</button>
             <button id="playtest-button">play</button> 
             <button id="save" title="Save the project in the browser">save</button>
+            <button id="publish-tab-button">publish</button> 
         </div>
         <div id="info" class="panel">
             <div class="section">
@@ -33,7 +34,28 @@
                     <li>create some drawings in the <em>drawings</em> tab above</li>
                     <li>compose a scene in the <em>scenes</em> tab above</li>
                     <li>playtest by click the <em>play</em> button above</li>
-                    <li>export a playable game in the <em>export</em> section below</li>
+                    <li>export a playable game in the <em>publish</em> tab above</li>
+                </ol>
+            </div>
+            <div class="section">
+                <h1>import</h1>
+                <h2>project data</h2>
+                <p><input id="import-data" type="file" accept="application/json" title="Load a project from previous exported text file"></p>
+            </div>
+        </div>
+        <div id="publish" class="panel">
+            <div class="section">
+                <h1>publish</h1>
+                <h2>publish your flicksy game on itch.io</h2>    
+                <ol>
+                    <li>click the <em>playable zip</em> button in the <em>export</em> section below to download the game</li>
+                    <li>create an account on itch.io (<a href="https://itch.io/register">click here</a>)</li>
+                    <li>create a new project on itch.io (<a href="https://itch.io/game/new">click here</a>)</li>
+                    <li>enter your game's <em>Title</em></li>
+                    <li>set the <em>Kind of project</em> to <em>HTML</em></li>
+                    <li>in the <em>Uploads</em> section, click <em>Upload files</em> and find the playable zip file on your computer</li>
+                    <li>scroll down and click <em>Save & view page</em></li>
+                    <li>if everything is working, go back and in the <em>Visibility & access</em> section, set your game to <em>Public</em></li>
                 </ol>
             </div>
             <div class="section">
@@ -43,11 +65,6 @@
                     <button id="download" title="Download a zip of the drawings as image files">drawing images</button>
                     <button id="export-playable" title="Download a zip that can be uploaded to itch.io as a playable game">playable zip</button>
                 </div>
-            </div>
-            <div class="section">
-                <h1>import</h1>
-                <h2>project data</h2>
-                <p><input id="import-data" type="file" accept="application/json" title="Load a project from previous exported text file"></p>
             </div>
         </div>
         <div id="drawing-sidebar" class="panel">

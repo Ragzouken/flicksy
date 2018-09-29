@@ -1,5 +1,10 @@
 import { Point, PointLike } from 'pixi.js'
 
+export function delay(time: number)
+{
+    return new Promise(resolve => setTimeout(() => resolve(), time));
+}
+
 export function clamp(min: number, max: number, value: number): number
 {
     return Math.max(min, Math.min(max, value));

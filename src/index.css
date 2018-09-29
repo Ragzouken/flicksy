@@ -32,6 +32,11 @@ button:disabled, select:disabled
     color: black;
 }
 
+a
+{
+    color: #FFD800;
+}
+
 ol
 {
     padding-left: 20px;
