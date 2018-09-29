@@ -214,8 +214,10 @@ async function findProject(): Promise<FlicksyProject>
     }
 }
 
-async function exportPlayable2(project: FlicksyProject)
+async function exportPlayable(project: FlicksyProject)
 {
+    // clones the page and inlines the css, javascript, and project data
+
     const html = document.documentElement.cloneNode(true) as HTMLElement;
     const head = html.getElementsByTagName("head")[0];
     const body = html.getElementsByTagName("body")[0];
@@ -260,22 +262,6 @@ async function exportPlayable2(project: FlicksyProject)
     FileSaver.saveAs(blob, "playable-test.html");
 
     return;
-}
-
-async function exportPlayable(project: FlicksyProject)
-{
-    exportPlayable2(project);
-    return;
-
-    const template = await fetch("./playable-template.zip");
-    const templateBlob = await template.blob();
-    const templateZip = await JSZip.loadAsync(templateBlob);
-
-    templateZip.file("bundled-project.json", projectToJSON(project));
-    //templateZip.file("playable-template.zip", templateBlob);
-    const exportBlob = await templateZip.generateAsync({type: "blob"});
-
-    FileSaver.saveAs(exportBlob, "playable.zip");
 }
 
 function setup()
