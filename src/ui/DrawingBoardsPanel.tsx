@@ -276,6 +276,9 @@ export default class DrawingBoardsPanel
         this.drawModeButton.disabled = (this.mode == "draw");
 
         document.getElementById("brush-settings")!.hidden = (this.mode == "select");
+        
+        this.cursorSprite.visible = (this.mode == "draw");
+        this.pinViews.forEach(view => view.sprite.cursor = (this.mode == "select" ? "pointer" : "none"));
     }
 
     /** Switch the currently selected pin, or select nothing if undefined */
