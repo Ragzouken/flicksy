@@ -17,7 +17,7 @@ import { FlicksyProject, FlicksyProjectData } from './data/FlicksyProject';
 import ScenesPanel from './ui/ScenesPanel';
 import { Scene } from './data/Scene';
 
-const pixi = new Pixi.Application(320, 240);
+const pixi = new Pixi.Application(320, 240, { transparent: true });
 document.getElementById("root")!.appendChild(pixi.view);
 pixi.start();
 
@@ -177,8 +177,6 @@ function setProject(p: FlicksyProject)
 
 function newProject(): FlicksyProject
 {
-    console.log("new project");
-
     const project = new FlicksyProject();
     project.name = "unnamed project";
     project.uuid = uuid();
@@ -430,6 +428,11 @@ function setup()
         {
             setPlayback();
         }
+    });
+
+    utility.buttonClick("new-project", () =>
+    {
+        setProject(newProject());
     });
 }
 
