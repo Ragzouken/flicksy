@@ -276,6 +276,38 @@ export default class ScenesPanel
             this.refresh();
         });
 
+        utility.buttonClick("object-higher", () =>
+        {
+            if (this.selected)
+            {
+                const index = this.scene.objects.indexOf(this.selected);
+                const next = index + 1;
+
+                if (next < this.scene.objects.length)
+                {
+                    this.scene.objects[index] = this.scene.objects[next];
+                    this.scene.objects[next] = this.selected;
+                    this.refresh();
+                }
+            }
+        });
+
+        utility.buttonClick("object-lower", () =>
+        {
+            if (this.selected)
+            {
+                const index = this.scene.objects.indexOf(this.selected);
+                const next = index - 1;
+
+                if (next >= 0)
+                {
+                    this.scene.objects[index] = this.scene.objects[next];
+                    this.scene.objects[next] = this.selected;
+                    this.refresh();
+                }
+            }
+        });
+
         this.createObjectSelect = document.getElementById("create-object-drawing-select")! as HTMLSelectElement;
 
         this.createObjectSelect.addEventListener("change", () =>

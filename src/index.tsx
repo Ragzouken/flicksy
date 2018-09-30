@@ -269,8 +269,6 @@ function setup()
     doPalette();
     doBrushes();
 
-    //pixi.stage.scale = new Pixi.Point(8, 8);
-
     drawingBoardsPanel = new DrawingBoardsPanel(pixi);
     drawingBoardsPanel.hide();
 
@@ -289,42 +287,17 @@ function setup()
     }
 
     hideAll();
-    info.hidden = false;
 
-    document.getElementById("editor-button")!.addEventListener("click", () =>
-    {
-        setEditor();
-    });
+    info.hidden = false;    
     document.getElementById("editor-button")!.hidden = true;
 
-    document.getElementById("playtest-button")!.addEventListener("click", () =>
-    {
-        setPlayback();
-    });
-
-    document.getElementById("info-tab-button")!.addEventListener("click", () =>
-    {
-        hideAll();
-        info.hidden = false;
-    });
-
-    document.getElementById("publish-tab-button")!.addEventListener("click", () =>
-    {
-        hideAll();
-        publish.hidden = false;
-    });
-
-    document.getElementById("drawing-tab-button")!.addEventListener("click", () =>
-    {
-        hideAll();
-        drawingBoardsPanel.show();
-    });
-
-    document.getElementById("scene-tab-button")!.addEventListener("click", () =>
-    {
-        hideAll();
-        scenesPanel.show();
-    });
+    // tabs
+    utility.buttonClick("editor-button",      setEditor);
+    utility.buttonClick("playtest-button",    setPlayback);
+    utility.buttonClick("info-tab-button",    () => { hideAll(); info.hidden = false;       });
+    utility.buttonClick("publish-tab-button", () => { hideAll(); publish.hidden = false;    });
+    utility.buttonClick("drawing-tab-button", () => { hideAll(); drawingBoardsPanel.show(); });
+    utility.buttonClick("scene-tab-button",   () => { hideAll(); scenesPanel.show();        });
 
     const save = document.getElementById("save")! as HTMLButtonElement;
 

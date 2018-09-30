@@ -102,7 +102,6 @@ export default class DrawingBoardsPanel
     public selected: PinnedDrawing | undefined;
 
     // create drawing ui
-    private createDrawingButton: HTMLButtonElement;
     private createWidthInput: HTMLSelectElement;
     private createHeightInput: HTMLSelectElement;
 
@@ -112,7 +111,6 @@ export default class DrawingBoardsPanel
     // selected drawing ui
     private drawingSectionDiv: HTMLDivElement;
     private drawingNameInput: HTMLInputElement;
-    private pinDeleteButton: HTMLButtonElement;
 
     private cursorSprite: Pixi.Sprite;
     private zoom = 0;
@@ -167,11 +165,10 @@ export default class DrawingBoardsPanel
         document.addEventListener("pointerup", () => this.stopDragging());
         
         this.drawingSectionDiv = document.getElementById("selected-drawing-section")! as HTMLDivElement;
-        this.createDrawingButton = document.getElementById("create-drawing-button")! as HTMLButtonElement;
         this.createWidthInput = document.getElementById("create-drawing-width")! as HTMLSelectElement;
         this.createHeightInput = document.getElementById("create-drawing-height")! as HTMLSelectElement;
 
-        this.createDrawingButton.addEventListener("click", () =>
+        utility.buttonClick("create-drawing-button", () =>
         {
             const position = new Pixi.Point(utility.randomInt(48, 128), utility.randomInt(2, 96));
             const width = +this.createWidthInput.options[this.createWidthInput.selectedIndex].value;
@@ -184,9 +181,40 @@ export default class DrawingBoardsPanel
             this.refresh();
         });
 
-        this.drawingNameInput = document.getElementById("drawing-name")! as HTMLInputElement;
-        this.pinDeleteButton = document.getElementById("delete-drawing-button")! as HTMLButtonElement;
+        utility.buttonClick("pin-higher", () =>
+        {
+            if (this.selected)
+            {
+                const index = this.activeBoard.pinnedDrawings.indexOf(this.selected);
+                const next = index + 1;
 
+                if (next < this.activeBoard.pinnedDrawings.length)
+                {
+                    this.activeBoard.pinnedDrawings[index] = this.activeBoard.pinnedDrawings[next];
+                    this.activeBoard.pinnedDrawings[next] = this.selected;
+                    this.refresh();
+                }
+            }
+        });
+
+        utility.buttonClick("pin-lower", () =>
+        {
+            if (this.selected)
+            {
+                const index = this.activeBoard.pinnedDrawings.indexOf(this.selected);
+                const next = index - 1;
+
+                if (next >= 0)
+                {
+                    this.activeBoard.pinnedDrawings[index] = this.activeBoard.pinnedDrawings[next];
+                    this.activeBoard.pinnedDrawings[next] = this.selected;
+                    this.refresh();
+                }
+            }
+        });
+
+        this.drawingNameInput = document.getElementById("drawing-name")! as HTMLInputElement;
+        
         this.drawingNameInput.addEventListener("input", () =>
         {
             if (this.selected)
@@ -195,7 +223,7 @@ export default class DrawingBoardsPanel
             }
         });
 
-        this.pinDeleteButton.addEventListener("click", () =>
+        utility.buttonClick("delete-drawing-button", () =>
         {
             if (this.selected) this.removePin(this.selected);
         });
@@ -257,8 +285,6 @@ export default class DrawingBoardsPanel
         this.pinViews.forEach(view => view.setSelected(view.pin == pin));
 
         this.drawingSectionDiv.hidden = !pin;
-        this.drawingNameInput.disabled = !pin;
-        this.pinDeleteButton.disabled = !pin;
 
         if (pin)
         {

@@ -1,5 +1,10 @@
 import { Point, PointLike } from 'pixi.js'
 
+export function buttonClick(id: string, action: () => void)
+{
+    document.getElementById(id)!.addEventListener("click", action);
+}
+
 export function delay(time: number)
 {
     return new Promise(resolve => setTimeout(() => resolve(), time));
