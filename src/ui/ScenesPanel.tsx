@@ -58,13 +58,9 @@ class SceneObjectView
     /** The Pixi.Graphics for displaying the hover highlight */
     public readonly hover: Pixi.Graphics;
 
-    public showHover: boolean;
-
     public constructor(object: SceneObject)
     {
         this.object = object;
-
-        this.showHover = true;
 
         // create the sprite and move it to the pin position
         this.sprite = new Pixi.Sprite(object.drawing.texture.texture);
@@ -86,27 +82,6 @@ class SceneObjectView
 
         this.hover.visible = false;
         this.sprite.on("pointerout", () => this.hover.visible = false);
-        this.sprite.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
-        {
-            const solid = this.isSolidPixelAtEvent(event);
-
-            this.hover.visible = this.showHover && solid;
-
-            const interactable = this.object.dialogue.length > 0 || this.object.sceneChange;
-
-            if (solid && this.showHover)
-            {
-                this.sprite.cursor = "grab";
-            }
-            else if (solid && !this.showHover && interactable) 
-            {
-                this.sprite.cursor = "pointer";
-            }
-            else
-            {
-                this.sprite.cursor = "initial";
-            }
-        });
     }
 
     public isSolidPixelAtEvent(event: Pixi.interaction.InteractionEvent): boolean
@@ -404,6 +379,37 @@ export default class ScenesPanel
         });
 
         this.select(undefined);
+
+        this.container.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
+        {
+            let hovered = false;
+
+            for (let i = this.scene.objects.length - 1; i >= 0; i -= 1)
+            {
+                const object = this.scene.objects[i];
+                const view = this.objectViews.get(object)!;
+
+                const solid = view.isSolidPixelAtEvent(event);
+                const interactable = object.dialogue.length > 0 || object.sceneChange;
+
+                view.hover.visible = false;
+
+                if (solid && !this.playModeTest)
+                {
+                    view.sprite.cursor = "grab";
+                    view.hover.visible = !hovered;
+                    hovered = true;
+                }
+                else if (solid && this.playModeTest && interactable)
+                {
+                    view.sprite.cursor = "pointer";
+                }
+                else
+                {
+                    view.sprite.cursor = "initial";
+                }
+            }
+        });
     }
 
     public show(): void
@@ -430,7 +436,6 @@ export default class ScenesPanel
         this.playModeTest = on;
         this.select(undefined);
         this.refresh();
-        this.objectViews.forEach(view => view.showHover = !on);
     }
 
     public hideDialogue(): void
