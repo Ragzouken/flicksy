@@ -197,56 +197,28 @@ class ProjectInfo
     public name: string;
 }; 
 
-/**
- * Generate an initial project list containing any legacy saves that may exist.
- */
-async function initialiseProjectList(): Promise<ProjectInfo[]>
-{
-    const listing = [];
-    const project = await localForage.getItem<FlicksyProjectData>("v1-test");
-
-    if (project)
-    {
-        const info = new ProjectInfo();
-        info.uuid = project.uuid;
-        info.name = project.name;
-
-        listing.push(info);
-
-        await localForage.setItem(`projects-${info.uuid}`, project);
-        //await localForage.removeItem("v1-test");
-    }
-    
-    await localForage.setItem("projects", listing);
-
-    return listing;
-}
-
 /** 
- * Get a listing of all saved projects, comprised of pairs of project uuid and
- * project name + the last saved project
+ * Get a listing of all saved projects or empty if it doesn't exist yet
  */
 async function getProjectList(): Promise<ProjectInfo[]>
 {
-    let listing = await localForage.getItem<ProjectInfo[]>("projects");
-
-    if (!listing)
-    {
-        listing = await initialiseProjectList();
-    }
-
-    return listing;
+    const listing = await localForage.getItem<ProjectInfo[]>("projects");
+    
+    return listing || [];
 }
 
+/** Save the given project locally and update the saved projects listing */
 async function saveProject(project: FlicksyProject): Promise<void>
 {
-    const data = project.toData();
     const listing = await getProjectList();
-    const index = listing.findIndex(info => info.uuid == data.uuid);
 
+    // retrieve the existing entry from the listing or create a new one
     let info: ProjectInfo;
+    const index = listing.findIndex(info => info.uuid == project.uuid);
 
-    if (index > 0)
+    console.log(index);
+
+    if (index >= 0)
     {
         info = listing[index];
     }
@@ -256,11 +228,14 @@ async function saveProject(project: FlicksyProject): Promise<void>
         listing.push(info);
     }
 
-    info.uuid = data.uuid;
-    info.name = data.name;
+    // update the entry
+    info.uuid = project.uuid;
+    info.name = project.name;
 
-    await localForage.setItem(`projects-${info.uuid}`, data);
+    // save the new listing, the project data, and last open project
+    await localForage.setItem(`projects-${info.uuid}`, project.toData());
     await localForage.setItem("projects", listing);
+    await localForage.setItem("last-open", project.uuid);
 }
 
 async function findProject(): Promise<FlicksyProject>
@@ -274,11 +249,15 @@ async function findProject(): Promise<FlicksyProject>
         return loadProject(parseProjectData(embed.innerHTML));
     }
 
+    // check if there are any saved project listings
     const listing = await getProjectList();
     
     if (listing.length > 0)
     {
-        const uuid = listing[0].uuid;
+        // check for a last-open record, if there is none then default to the
+        // first entry. return the loaded project if it exists
+        const last = await localForage.getItem<string>("last-open");
+        const uuid = last || listing[0].uuid;
         const data = await localForage.getItem<FlicksyProjectData>(`projects-${uuid}`);
 
         if (data)
@@ -286,7 +265,20 @@ async function findProject(): Promise<FlicksyProject>
             return loadProject(data);
         }
     }
+    else
+    {
+        // check if there's a legacy save, and if there is: resave it
+        const data = await localForage.getItem<FlicksyProjectData>("v1-test");
 
+        if (data) 
+        {
+            const project = loadProject(data);
+            await saveProject(project);
+            return project;
+        }
+    }
+
+    // there are no existing saves, so create a new project
     return newProject();
 }
 
