@@ -331,6 +331,8 @@ export default class DrawingBoardsPanel
             view.sprite.interactive = true;
             view.sprite.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
             {
+                if (event.data.button == 1) return;
+
                 if (this.mode == "select" || event.data.button === 2)
                 {
                     this.startDragging(view, event);
