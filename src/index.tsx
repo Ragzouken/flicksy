@@ -253,7 +253,6 @@ async function findProject(): Promise<FlicksyProject>
 
     if (embed)
     {
-        console.log(embed.innerHTML);
         bundled = true;
         return loadProject(parseProjectData(embed.innerHTML));
     }
@@ -302,6 +301,10 @@ async function exportPlayable(project: FlicksyProject)
     const cssLink = Array.from(html.querySelectorAll("link")).find(e => e.rel == "stylesheet");
     const jsScript = html.querySelector("script");
 
+    // hide sidebar and editor button
+    (body.querySelector("#sidebar")! as HTMLDivElement).hidden = true;
+    (body.querySelector("#editor-button")! as HTMLButtonElement).hidden = true;
+
     // remove existing canvas
     const canvas = body.getElementsByTagName("canvas")[0];
     canvas.parentElement!.removeChild(canvas);
@@ -344,8 +347,6 @@ async function exportPlayable(project: FlicksyProject)
 
 function setup()
 {
-    document.getElementById("sidebar")!.hidden = true;
-
     doPalette();
     doBrushes();
 
