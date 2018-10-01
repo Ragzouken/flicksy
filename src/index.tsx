@@ -98,6 +98,8 @@ let scenesPanel: ScenesPanel;
 
 function refresh()
 {
+    (document.getElementById("project-name")! as HTMLInputElement).value = project.name;
+
     drawingBoardsPanel.refresh();
     scenesPanel.refresh();
 }
@@ -189,6 +191,78 @@ function newProject(): FlicksyProject
 
 let bundled: boolean;
 
+class ProjectInfo
+{ 
+    public uuid: string;
+    public name: string;
+}; 
+
+/**
+ * Generate an initial project list containing any legacy saves that may exist.
+ */
+async function initialiseProjectList(): Promise<ProjectInfo[]>
+{
+    const listing = [];
+    const project = await localForage.getItem<FlicksyProjectData>("v1-test");
+
+    if (project)
+    {
+        const info = new ProjectInfo();
+        info.uuid = project.uuid;
+        info.name = project.name;
+
+        listing.push(info);
+
+        await localForage.setItem(`projects-${info.uuid}`, project);
+        //await localForage.removeItem("v1-test");
+    }
+    
+    await localForage.setItem("projects", listing);
+
+    return listing;
+}
+
+/** 
+ * Get a listing of all saved projects, comprised of pairs of project uuid and
+ * project name + the last saved project
+ */
+async function getProjectList(): Promise<ProjectInfo[]>
+{
+    let listing = await localForage.getItem<ProjectInfo[]>("projects");
+
+    if (!listing)
+    {
+        listing = await initialiseProjectList();
+    }
+
+    return listing;
+}
+
+async function saveProject(project: FlicksyProject): Promise<void>
+{
+    const data = project.toData();
+    const listing = await getProjectList();
+    const index = listing.findIndex(info => info.uuid == data.uuid);
+
+    let info: ProjectInfo;
+
+    if (index > 0)
+    {
+        info = listing[index];
+    }
+    else
+    {
+        info = new ProjectInfo();
+        listing.push(info);
+    }
+
+    info.uuid = data.uuid;
+    info.name = data.name;
+
+    await localForage.setItem(`projects-${info.uuid}`, data);
+    await localForage.setItem("projects", listing);
+}
+
 async function findProject(): Promise<FlicksyProject>
 {
     const embed = document.getElementById("flicksy-data");
@@ -200,16 +274,20 @@ async function findProject(): Promise<FlicksyProject>
         return loadProject(parseProjectData(embed.innerHTML));
     }
 
-    const projectData = await localForage.getItem<FlicksyProjectData>("v1-test");
+    const listing = await getProjectList();
+    
+    if (listing.length > 0)
+    {
+        const uuid = listing[0].uuid;
+        const data = await localForage.getItem<FlicksyProjectData>(`projects-${uuid}`);
 
-    if (projectData)
-    {
-        return loadProject(projectData);
+        if (data)
+        {
+            return loadProject(data);
+        }
     }
-    else
-    {
-        return newProject();
-    }
+
+    return newProject();
 }
 
 async function exportPlayable(project: FlicksyProject)
@@ -256,8 +334,9 @@ async function exportPlayable(project: FlicksyProject)
     }
     
     // save html
-    const blob = new Blob([html.innerHTML], {type: "application/json"});
-    FileSaver.saveAs(blob, "playable-test.html");
+    const name = project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const blob = new Blob([html.innerHTML], {type: "text/html"});
+    FileSaver.saveAs(blob, `flicksy-${name}.html`);
 
     return;
 }
@@ -266,6 +345,13 @@ function setup()
 {
     doPalette();
     doBrushes();
+
+    const projectNameInput = document.getElementById("project-name")! as HTMLInputElement;
+
+    projectNameInput.addEventListener("change", () =>
+    {
+        project.name = projectNameInput.value;
+    });
 
     drawingBoardsPanel = new DrawingBoardsPanel(pixi);
     drawingBoardsPanel.hide();
@@ -306,7 +392,7 @@ function setup()
 
         const delay = utility.delay(500);
 
-        localForage.setItem("v1-test", project.toData());
+        await saveProject(project);
         await delay;
 
         save.textContent = "saved!";
