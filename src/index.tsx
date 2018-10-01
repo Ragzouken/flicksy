@@ -102,6 +102,15 @@ function refresh()
 
     drawingBoardsPanel.refresh();
     scenesPanel.refresh();
+
+    const select = document.getElementById("open-project-select")! as HTMLSelectElement;
+
+    getProjectList().then(listing =>
+    {
+        utility.repopulateSelect(select, 
+                                 listing.map(info => ({label: info.name, value: info.uuid})),
+                                 "select project");
+    });
 }
 
 function projectToJSON(project: FlicksyProject): string
@@ -203,7 +212,7 @@ class ProjectInfo
 async function getProjectList(): Promise<ProjectInfo[]>
 {
     const listing = await localForage.getItem<ProjectInfo[]>("projects");
-    
+
     return listing || [];
 }
 
@@ -374,6 +383,20 @@ function setup()
     utility.buttonClick("publish-tab-button", () => { hideAll(); publish.hidden = false;    });
     utility.buttonClick("drawing-tab-button", () => { hideAll(); drawingBoardsPanel.show(); });
     utility.buttonClick("scene-tab-button",   () => { hideAll(); scenesPanel.show();        });
+
+    const select = document.getElementById("open-project-select")! as HTMLSelectElement;
+    select.addEventListener("change", () =>
+    {
+        const uuid = select.value;
+
+        localForage.getItem<FlicksyProjectData>(`projects-${uuid}`).then(data =>
+        {
+            if (data)
+            {
+                setProject(loadProject(data));
+            } 
+        });
+    });
 
     const save = document.getElementById("save")! as HTMLButtonElement;
 

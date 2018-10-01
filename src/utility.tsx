@@ -51,13 +51,24 @@ export function randomInt(min: number, max: number)
 }
 
 export function repopulateSelect(select: HTMLSelectElement,
-                                 options: {"label": string, "value": string}[])
+                                 options: {"label": string, "value": string}[],
+                                 dummy?: string)
 {
     const index = select.selectedIndex;
 
     while (select.lastChild)
     {
         select.removeChild(select.lastChild);
+    }
+
+    if (dummy)
+    {
+        const child = document.createElement("option");
+        child.text = dummy;
+        child.disabled = true;
+        child.selected = true;
+
+        select.appendChild(child);
     }
 
     options.forEach(option => 
