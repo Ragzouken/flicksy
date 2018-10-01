@@ -344,6 +344,8 @@ async function exportPlayable(project: FlicksyProject)
 
 function setup()
 {
+    document.getElementById("sidebar")!.hidden = true;
+
     doPalette();
     doBrushes();
 
@@ -528,6 +530,10 @@ function setup()
         if (bundled)
         {
             setPlayback();
+        }
+        else
+        {
+            setEditor();
         }
     });
 
