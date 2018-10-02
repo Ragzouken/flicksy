@@ -110,6 +110,11 @@ function refresh()
         utility.repopulateSelect(select, 
                                  listing.map(info => ({label: info.name, value: info.uuid})),
                                  "select project");
+
+        if (project)
+        {
+            select.value = project.uuid;
+        }
     });
 }
 

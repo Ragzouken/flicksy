@@ -113,8 +113,10 @@ export default class DrawingBoardsPanel
     private drawingNameInput: HTMLInputElement;
 
     private cursorSprite: Pixi.Sprite;
-    private zoom = 0;
     private mode: "draw" | "select" = "select";
+
+    private pan = new Pixi.Point(0, 0);
+    private zoom = 0;
 
     public constructor(pixi: Pixi.Application)
     {
@@ -135,6 +137,29 @@ export default class DrawingBoardsPanel
         this.selectModeButton.addEventListener("click", () => this.setMode("select"));
         this.drawModeButton.addEventListener("click", () => this.setMode("draw"));
 
+        const getMouseViewPosition = () =>
+        {
+            return pixi.renderer.plugins.interaction.mouse.global as Pixi.Point;
+        }
+
+        const getMouseScenePosition = () =>
+        {
+            const view = getMouseViewPosition();
+            const scene = this.container.toLocal(view);
+
+            return scene;
+        }
+
+        const getCenterScenePosition = () =>
+        {
+            const view = new Pixi.Point(pixi.view.width / 2, pixi.view.height / 2);
+            //const scene = this.container.toLocal(view);
+
+            const scene = this.container.worldTransform.applyInverse(view);
+
+            return scene;
+        }
+
         document.getElementById("container")!.addEventListener("wheel", event =>
         {
             if (!this.container.visible) return;
@@ -144,7 +169,15 @@ export default class DrawingBoardsPanel
             this.zoom = utility.clamp(-2, 1, this.zoom);
             const scale = Math.pow(2, this.zoom);
 
+            const mouseView = getMouseViewPosition();
+            const mouseScenePrev = this.container.toLocal(mouseView);
+            
             this.container.scale = new Pixi.Point(scale, scale);
+
+            const mouseSceneNext = this.container.toLocal(mouseView);
+            const delta = utility.mul(utility.sub(mouseSceneNext, mouseScenePrev), scale);
+
+            this.container.position = utility.add(this.container.position, delta);
         });
 
         this.container.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
