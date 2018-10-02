@@ -387,6 +387,11 @@ function setup()
     utility.buttonClick("drawing-tab-button", () => { hideAll(); drawingBoardsPanel.show(); });
     utility.buttonClick("scene-tab-button",   () => { hideAll(); scenesPanel.show();        });
 
+    utility.buttonClick("reset-palette", () =>
+    {
+        doPalette();
+    });
+
     const select = document.getElementById("open-project-select")! as HTMLSelectElement;
     select.addEventListener("change", () =>
     {

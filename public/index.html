@@ -21,7 +21,7 @@
             <button id="info-tab-button">project</button>
             <button id="drawing-tab-button">drawings</button> 
             <button id="scene-tab-button">scene</button>
-            <button id="playtest-button">play</button> 
+            <button id="playtest-button" title="Playtest this game">play</button> 
             <button id="save" title="Save the project in the browser">save</button>
             <button id="publish-tab-button">publish</button> 
         </div>
@@ -40,7 +40,7 @@
             <div class="section">
                 <h1>project details</h1>
                 <h2>name</h2>
-                <input id="project-name" class="full-input">
+                <input id="project-name" class="full-input" title="Rename this project">
             </div>
             <div class="section">
                 <h1>switch project</h1>
@@ -49,7 +49,7 @@
                 <h2>import project data</h2>
                 <input id="import-data" type="file" accept="application/json" title="Load a project from previous exported text file">
                 <h2>open another project</h2>
-                <select id="open-project-select"><option>feature under construction</option></select>
+                <select id="open-project-select" title="Open another saved project"></select>
             </div>
         </div>
         <div id="publish" class="panel">
@@ -157,6 +157,8 @@
                     <div><button></button></div>
                     <div><button></button></div>
                 </div>
+                <br>
+                <button id="reset-palette" title="Replace all the palette with random colours">randomise palette</button>
             </div>
         </div>
         <div id="scene-sidebar" class="panel">
@@ -221,16 +223,6 @@
     <div id="container">
         <div id="root"></div>
     </div>
-    <button id="editor-button" hidden>editor</button>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+    <button id="editor-button" title="Exit playtesting and resume editing" hidden>editor</button>
   </body>
 </html>
