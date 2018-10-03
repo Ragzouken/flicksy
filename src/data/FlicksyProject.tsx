@@ -32,6 +32,7 @@ export interface FlicksyProjectData
 
     drawings: DrawingData[];
     scenes: SceneData[];
+    palette: number[];
 
     drawingBoards: DrawingBoardData[];
 }
@@ -46,11 +47,10 @@ export class FlicksyProject
     public drawings: Drawing[] = [];
     public drawingBoards: DrawingBoard[] = [];
     public scenes: Scene[] = [];
+    public palette: number[] = [];
 
     public fromData(data: FlicksyProjectData): FlicksyProject
     {
-        if (!data.scenes) data.scenes = [];
-
         this.uuid = data.uuid;
         this.name = data.name;
         
@@ -58,7 +58,8 @@ export class FlicksyProject
 
         this.drawings = data.drawings.map(drawing => (new Drawing).fromData(drawing));
         this.scenes = data.scenes.map(scene => (new Scene).fromData(scene, this));
-
+        this.palette = data.palette || [];
+        
         this.drawingBoards = data.drawingBoards.map(board => (new DrawingBoard).fromData(board, this));
 
         if (this.scenes.length == 0) this.createScene();
@@ -79,6 +80,7 @@ export class FlicksyProject
             drawings: this.drawings.map(drawing => drawing.toData()),
             drawingBoards: this.drawingBoards.map(board => board.toData()),
             scenes: this.scenes.map(scene => scene.toData()),
+            palette: this.palette,
         };
     }
 

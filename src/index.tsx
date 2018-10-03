@@ -11,11 +11,9 @@ import * as utility from './utility';
 import { base64ToUint8, uint8ToBase64 } from './Base64';
 
 import DrawingBoardsPanel from './ui/DrawingBoardsPanel';
-import { DrawingBoard } from './data/DrawingBoard';
 import { MTexture } from './MTexture';
 import { FlicksyProject, FlicksyProjectData } from './data/FlicksyProject';
 import ScenesPanel from './ui/ScenesPanel';
-import { Scene } from './data/Scene';
 
 const pixi = new Pixi.Application(320, 240, { transparent: true });
 document.getElementById("root")!.appendChild(pixi.view);
@@ -24,6 +22,15 @@ pixi.start();
 function rgb2num(r: number, g: number, b: number, a: number = 255)
 {
   return ((a << 24) | (b << 16) | (g << 8) | (r)) >>> 0;
+}
+
+function num2rgb(value: number): [number, number, number]
+{
+    const r = (value >>  0) & 0xFF;
+    const g = (value >>  8) & 0xFF;
+    const b = (value >> 16) & 0xFF;
+    
+    return [r, g, b];
 }
 
 function randomInt(min: number, max: number){
@@ -41,19 +48,13 @@ function doPalette()
 
     for (let i = 0; i < palette.children.length; ++i)
     {
-        const cell = palette.children[i];
-        const button = cell.children[0];
-        let r = randomInt(0, 255);
-        let g = randomInt(0, 255);
-        let b = randomInt(0, 255);
-        let c = rgb2num(r, g, b);
+        let r = 0, g = 0, b = 0, c = 0;
+        const button = palette.children[i];
 
-        if (i == 0)
+        if (i != 0)
         {
-            r = 0;
-            g = 0;
-            b = 0;
-            c = 0;
+            c = project.palette[i];
+            [r, g, b] = num2rgb(c);
         }
 
         button.setAttribute("style", `background-color: rgb(${r},${g},${b});`);
@@ -102,6 +103,7 @@ function refresh()
 
     drawingBoardsPanel.refresh();
     scenesPanel.refresh();
+    doPalette();
 
     const select = document.getElementById("open-project-select")! as HTMLSelectElement;
 
@@ -151,10 +153,30 @@ function parseProjectData(json: string): FlicksyProjectData
     return data;
 }
 
+function randomisePalette(project: FlicksyProject): void
+{
+    project.palette.length = 0;
+
+    for (let i = 0; i < 15; ++i)
+    {
+        const color = rgb2num(randomInt(0, 255), 
+                              randomInt(0, 255),
+                              randomInt(0, 255));
+        
+        project.palette.push(color);
+    }
+}
+
 function loadProject(data: FlicksyProjectData): FlicksyProject
 {
     const project = new FlicksyProject();
     project.fromData(data);
+
+    // repairs
+    if (project.palette.length < 15)
+    {
+        randomisePalette(project);
+    }
 
     return project;
 }
@@ -352,7 +374,6 @@ async function exportPlayable(project: FlicksyProject)
 
 function setup()
 {
-    doPalette();
     doBrushes();
 
     const projectNameInput = document.getElementById("project-name")! as HTMLInputElement;
@@ -394,6 +415,7 @@ function setup()
 
     utility.buttonClick("reset-palette", () =>
     {
+        randomisePalette(project);
         doPalette();
     });
 
