@@ -33,6 +33,38 @@ function num2rgb(value: number): [number, number, number]
     return [r, g, b];
 }
 
+function rgb2hex(color: [number, number, number]): string
+{
+    const [r, g, b] = color;
+    let rs = r.toString(16);
+    let gs = g.toString(16);
+    let bs = b.toString(16);
+
+    if (rs.length < 2) rs = "0" + rs;
+    if (gs.length < 2) gs = "0" + gs;
+    if (bs.length < 2) bs = "0" + bs;
+
+    return `#${rs}${gs}${bs}`;
+}
+
+function hex2rgb(color: string): [number, number, number]
+{
+    const matches = color.match(/^#([0-9a-f]{6})$/i);
+
+    if (matches) 
+    {
+        const match = matches[1];
+
+        return [
+            parseInt(match.substr(0,2),16),
+            parseInt(match.substr(2,2),16),
+            parseInt(match.substr(4,2),16)
+        ];
+    }
+    
+    return [0, 0, 0];
+}
+
 function randomInt(min: number, max: number){
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -48,18 +80,36 @@ function doPalette()
 
     for (let i = 0; i < palette.children.length; ++i)
     {
-        const button = palette.children[i];
-
-        button.addEventListener("click", () => 
-        {
-            drawingBoardsPanel.erasing = (i == 0);
-            brushColor = (i == 0) ? 0xFFFFFF : project.palette[i];
-            drawingBoardsPanel.brush = makeCircleBrush(brushSize, brushColor);
-            drawingBoardsPanel.refresh();
-        })
+        palette.children[i].addEventListener("click", () => setBrushColor(i));
     }
 
+    const input = document.getElementById("color-input")! as HTMLInputElement;
+    input.addEventListener("change", () =>
+    {
+        const [r, g, b] = hex2rgb(input.value);
+
+        project.palette[paletteIndex] = rgb2num(r, g, b);
+        
+        refreshPalette();
+    });
+
     refreshPalette();
+}
+
+let paletteIndex = 0;
+
+function setBrushColor(index: number)
+{
+    paletteIndex = index;
+
+    drawingBoardsPanel.erasing = (index == 0);
+    brushColor = (index == 0) ? 0xFFFFFF : project.palette[index];
+    drawingBoardsPanel.brush = makeCircleBrush(brushSize, brushColor);
+    drawingBoardsPanel.refresh();
+
+    const input = document.getElementById("color-input")! as HTMLInputElement;
+    input.hidden = (index == 0);
+    input.value = rgb2hex(num2rgb(project.palette[index]));
 }
 
 function refreshPalette()
@@ -225,6 +275,9 @@ function setProject(p: FlicksyProject)
     scenesPanel.setScene(p.scenes[0]);
 
     p.flicksyVersion = "alpha-1";
+
+    setBrushColor(1);
+
     refresh();
 }
 
