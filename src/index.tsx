@@ -48,6 +48,26 @@ function doPalette()
 
     for (let i = 0; i < palette.children.length; ++i)
     {
+        const button = palette.children[i];
+
+        button.addEventListener("click", () => 
+        {
+            drawingBoardsPanel.erasing = (i == 0);
+            brushColor = (i == 0) ? 0xFFFFFF : project.palette[i];
+            drawingBoardsPanel.brush = makeCircleBrush(brushSize, brushColor);
+            drawingBoardsPanel.refresh();
+        })
+    }
+
+    refreshPalette();
+}
+
+function refreshPalette()
+{
+    const palette = document.getElementById("palette")!;
+
+    for (let i = 0; i < palette.children.length; ++i)
+    {
         let r = 0, g = 0, b = 0, c = 0;
         const button = palette.children[i];
 
@@ -58,13 +78,6 @@ function doPalette()
         }
 
         button.setAttribute("style", `background-color: rgb(${r},${g},${b});`);
-        button.addEventListener("click", () => 
-        {
-            drawingBoardsPanel.erasing = (c == 0);
-            brushColor = c;
-            drawingBoardsPanel.brush = makeCircleBrush(brushSize, brushColor);
-            drawingBoardsPanel.refresh();
-        })
     }
 }
 
@@ -103,7 +116,7 @@ function refresh()
 
     drawingBoardsPanel.refresh();
     scenesPanel.refresh();
-    doPalette();
+    refreshPalette();
 
     const select = document.getElementById("open-project-select")! as HTMLSelectElement;
 
@@ -375,6 +388,7 @@ async function exportPlayable(project: FlicksyProject)
 function setup()
 {
     doBrushes();
+    doPalette();
 
     const projectNameInput = document.getElementById("project-name")! as HTMLInputElement;
 
@@ -416,7 +430,7 @@ function setup()
     utility.buttonClick("reset-palette", () =>
     {
         randomisePalette(project);
-        doPalette();
+        refreshPalette();
     });
 
     const select = document.getElementById("open-project-select")! as HTMLSelectElement;
