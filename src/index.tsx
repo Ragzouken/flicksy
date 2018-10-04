@@ -289,6 +289,8 @@ function newProject(): FlicksyProject
     
     project.createDrawingBoard();
     project.createScene();
+
+    randomisePalette(project);
     
     return project;
 }
