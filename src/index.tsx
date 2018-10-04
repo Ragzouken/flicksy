@@ -64,6 +64,8 @@ function doPalette()
 
 function refreshPalette()
 {
+    if (!project) return;
+
     const palette = document.getElementById("palette")!;
 
     for (let i = 0; i < palette.children.length; ++i)
