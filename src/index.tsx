@@ -103,7 +103,7 @@ function setBrushColor(index: number)
     paletteIndex = index;
 
     drawingBoardsPanel.erasing = (index == 0);
-    brushColor = (index == 0) ? 0xFFFFFF : project.palette[index];
+    brushColor = (index == 0) ? 0xFFFFFFFF : project.palette[index];
     drawingBoardsPanel.brush = makeCircleBrush(brushSize, brushColor);
     drawingBoardsPanel.refresh();
 
