@@ -5,6 +5,7 @@ import * as utility from './../utility';
 import { FlicksyProject } from '../data/FlicksyProject';
 import { SceneObject, Scene } from '../data/Scene';
 import { Drawing } from '../data/Drawing';
+import DrawingBoardsPanel from './DrawingBoardsPanel';
 
 class DialogueView
 {
@@ -178,6 +179,8 @@ export default class ScenesPanel
     private playModeTest: boolean;
     private dialoguingObject: SceneObject | undefined;
 
+    public drawingsPanel: DrawingBoardsPanel;
+
     public constructor(pixi: Pixi.Application)
     {
         this.pixi = pixi;
@@ -283,28 +286,48 @@ export default class ScenesPanel
             }
         });
 
+        utility.buttonClick("create-object-drawing-picker-button", () =>
+        {
+            this.drawingsPanel.show();
+            this.hide();
+            this.drawingsPanel.pickDrawingForScene(drawing =>
+            {
+                if (drawing)
+                {
+                    this.createObject(drawing);
+                }
+
+                this.drawingsPanel.hide();
+                this.show();
+            }, `pick a drawing for a new object in the scene <em>${this.scene.name}</em>`);
+        });
+
+        utility.buttonClick("object-pick-drawing-button", () =>
+        {
+            if (!this.selected) return;
+
+            this.drawingsPanel.show();
+            this.hide();
+            this.drawingsPanel.pickDrawingForScene(drawing =>
+            {
+                if (drawing && this.selected)
+                {
+                    this.selected.drawing = drawing;
+                }
+
+                this.drawingsPanel.hide();
+                this.show();
+            }, `pick the drawing for the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`);
+        });
+
         this.createObjectSelect = document.getElementById("create-object-drawing-select")! as HTMLSelectElement;
 
         this.createObjectSelect.addEventListener("change", () =>
         {
-            const position = new Pixi.Point(utility.randomInt(48, 128), utility.randomInt(2, 96));
-
-            const object = new SceneObject();
-            object.uuid = uuid();
-            object.name = `object ${this.activeScene.objects.length}`;
-            object.position = position;
-            object.drawing = this.project.drawings[0];
-            object.dialogue = "";
-
             if (this.createObjectSelect.selectedIndex >= 0)
             {
-                object.drawing = this.project.getDrawingByUUID(this.createObjectSelect.value)!;
+                this.createObject(this.project.getDrawingByUUID(this.createObjectSelect.value)!);
             }
-
-            this.scene.addObject(object);
-
-            this.select(object);
-            this.refresh();
         });
 
         this.objectNameInput = document.getElementById("object-name")! as HTMLInputElement;
@@ -588,6 +611,26 @@ export default class ScenesPanel
             this.objectContainer.addChild(view.sprite);
             this.objectViews.set(object, view);
         }
+    }
+
+    public createObject(drawing: Drawing): SceneObject
+    {
+        const position = new Pixi.Point(utility.randomInt(48, 128), utility.randomInt(2, 96));
+
+        const object = new SceneObject();
+        object.uuid = uuid();
+        object.name = `object ${this.activeScene.objects.length}`;
+        object.position = position;
+        object.drawing = this.project.drawings[0];
+        object.dialogue = "";
+        object.drawing = drawing;
+
+        this.scene.addObject(object);
+
+        this.select(object);
+        this.refresh();
+
+        return object;
     }
 
     private stopDragging(): void

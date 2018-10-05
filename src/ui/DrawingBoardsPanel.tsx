@@ -4,6 +4,7 @@ import * as utility from './../utility';
 
 import { DrawingBoard, PinnedDrawing } from '../data/DrawingBoard';
 import { MTexture } from '../MTexture';
+import { Drawing } from '../data/Drawing';
 import { FlicksyProject } from '../data/FlicksyProject';
 
 /** Manages the pixi state for displaying a PinnedDrawing */
@@ -117,6 +118,8 @@ export default class DrawingBoardsPanel
 
     private pan = new Pixi.Point(0, 0);
     private zoom = 0;
+
+    private pickerCallback: ((drawing: Drawing | undefined) => void) | undefined;
 
     public constructor(pixi: Pixi.Application)
     {
@@ -366,6 +369,12 @@ export default class DrawingBoardsPanel
             {
                 if (event.data.button == 1) return;
 
+                if (this.pickerCallback)
+                {
+                    this.pickDrawing(view.pin.drawing);
+                    return;
+                }
+             
                 if (this.mode == "select" || event.data.button === 2)
                 {
                     this.startDragging(view, event);
@@ -387,6 +396,27 @@ export default class DrawingBoardsPanel
             this.pinContainer.addChild(view.sprite);
             this.pinViews.set(pin, view);
         }
+    }
+
+    public pickDrawingForScene(callback: (drawing: Drawing | undefined) => void,
+                               context: string): void
+    {
+        this.setMode("select");
+        this.pickerCallback = callback;
+        document.getElementById("drawing-sidebar")!.hidden = true;
+        document.getElementById("pick-drawing")!.hidden = false;
+        document.getElementById("pick-drawing-context")!.innerHTML = context;
+    }
+
+    private pickDrawing(drawing: Drawing | undefined): void
+    {
+        const callback = this.pickerCallback;
+
+        document.getElementById("drawing-sidebar")!.hidden = false;
+        document.getElementById("pick-drawing")!.hidden = true;
+        this.pickerCallback = undefined;
+
+        if (callback) callback(drawing);
     }
 
     private stopDragging(): void

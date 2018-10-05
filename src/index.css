@@ -169,6 +169,18 @@ button
     background: #FFD800; 
 }
 
+.right-pair
+{
+    display: flex;
+}
+
+.right-pair > *:first-child 
+{
+    flex: 1;
+    min-width: 0;
+    margin-right: 6px;
+}
+
 #sidebar
 {
     width: 320px;

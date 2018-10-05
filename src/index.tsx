@@ -19,57 +19,7 @@ const pixi = new Pixi.Application(320, 240, { transparent: true });
 document.getElementById("root")!.appendChild(pixi.view);
 pixi.start();
 
-function rgb2num(r: number, g: number, b: number, a: number = 255)
-{
-  return ((a << 24) | (b << 16) | (g << 8) | (r)) >>> 0;
-}
-
-function num2rgb(value: number): [number, number, number]
-{
-    const r = (value >>  0) & 0xFF;
-    const g = (value >>  8) & 0xFF;
-    const b = (value >> 16) & 0xFF;
-    
-    return [r, g, b];
-}
-
-function rgb2hex(color: [number, number, number]): string
-{
-    const [r, g, b] = color;
-    let rs = r.toString(16);
-    let gs = g.toString(16);
-    let bs = b.toString(16);
-
-    if (rs.length < 2) rs = "0" + rs;
-    if (gs.length < 2) gs = "0" + gs;
-    if (bs.length < 2) bs = "0" + bs;
-
-    return `#${rs}${gs}${bs}`;
-}
-
-function hex2rgb(color: string): [number, number, number]
-{
-    const matches = color.match(/^#([0-9a-f]{6})$/i);
-
-    if (matches) 
-    {
-        const match = matches[1];
-
-        return [
-            parseInt(match.substr(0,2),16),
-            parseInt(match.substr(2,2),16),
-            parseInt(match.substr(4,2),16)
-        ];
-    }
-    
-    return [0, 0, 0];
-}
-
-function randomInt(min: number, max: number){
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-let brushColor = 0xFF00FF;
+let brushColor: number;
 let brushSize = 1;
 
 const white = 0xFFFFFFFF;
@@ -86,9 +36,9 @@ function doPalette()
     const input = document.getElementById("color-input")! as HTMLInputElement;
     input.addEventListener("change", () =>
     {
-        const [r, g, b] = hex2rgb(input.value);
+        const [r, g, b] = utility.hex2rgb(input.value);
 
-        project.palette[paletteIndex] = rgb2num(r, g, b);
+        project.palette[paletteIndex] = utility.rgb2num(r, g, b);
         
         refreshPalette();
     });
@@ -103,13 +53,13 @@ function setBrushColor(index: number)
     paletteIndex = index;
 
     drawingBoardsPanel.erasing = (index == 0);
-    brushColor = (index == 0) ? 0xFFFFFFFF : project.palette[index];
+    brushColor = (index == 0) ? white : project.palette[index];
     drawingBoardsPanel.brush = makeCircleBrush(brushSize, brushColor);
     drawingBoardsPanel.refresh();
 
     const input = document.getElementById("color-input")! as HTMLInputElement;
     input.hidden = (index == 0);
-    input.value = rgb2hex(num2rgb(project.palette[index]));
+    input.value = utility.rgb2hex(utility.num2rgb(project.palette[index]));
 }
 
 function refreshPalette()
@@ -120,16 +70,10 @@ function refreshPalette()
 
     for (let i = 0; i < palette.children.length; ++i)
     {
-        let r = 0, g = 0, b = 0, c = 0;
+        const hex = (i == 0) ? "#000000" : utility.num2hex(project.palette[i]);
         const button = palette.children[i];
 
-        if (i != 0)
-        {
-            c = project.palette[i];
-            [r, g, b] = num2rgb(c);
-        }
-
-        button.setAttribute("style", `background-color: rgb(${r},${g},${b});`);
+        button.setAttribute("style", `background-color: ${hex};`);
     }
 }
 
@@ -224,9 +168,9 @@ function randomisePalette(project: FlicksyProject): void
 
     for (let i = 0; i < 15; ++i)
     {
-        const color = rgb2num(randomInt(0, 255), 
-                              randomInt(0, 255),
-                              randomInt(0, 255));
+        const color = utility.rgb2num(utility.randomInt(0, 255), 
+                                      utility.randomInt(0, 255),
+                                      utility.randomInt(0, 255));
         
         project.palette.push(color);
     }
@@ -457,8 +401,10 @@ function setup()
     drawingBoardsPanel = new DrawingBoardsPanel(pixi);
     drawingBoardsPanel.hide();
 
-    drawingBoardsPanel.brush = makeCircleBrush(1, 0xFFFFFFFF);
+    drawingBoardsPanel.brush = makeCircleBrush(1, white);
     scenesPanel = new ScenesPanel(pixi);
+
+    scenesPanel.drawingsPanel = drawingBoardsPanel;
 
     const info = document.getElementById("info")! as HTMLDivElement;
     const publish = document.getElementById("publish")! as HTMLDivElement;
