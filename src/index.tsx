@@ -1,127 +1,17 @@
 import './index.css';
 
 import * as localForage from 'localforage';
-import * as FileSaver from 'file-saver';
 import * as uuid from 'uuid/v4';
 
 import * as utility from './utility';
 
-import { base64ToUint8, uint8ToBase64 } from './Base64';
-
-import { MTexture } from './MTexture';
+import { base64ToUint8 } from './Base64';
 import { FlicksyProject, FlicksyProjectData } from './data/FlicksyProject';
 
 import FlicksyEditor from './ui/FlicksyEditor';
 
 const editor = new FlicksyEditor(document.getElementById("root")!,
                                  document.getElementById("root")!);
-
-let brushColor: number;
-let brushSize = 1;
-
-const white = 0xFFFFFFFF;
-
-function doPalette()
-{
-    const palette = document.getElementById("palette")!;
-
-    for (let i = 0; i < palette.children.length; ++i)
-    {
-        palette.children[i].addEventListener("click", () => setBrushColor(i));
-    }
-
-    const input = document.getElementById("color-input")! as HTMLInputElement;
-    input.addEventListener("change", () =>
-    {
-        const [r, g, b] = utility.hex2rgb(input.value);
-
-        editor.project.palette[paletteIndex] = utility.rgb2num(r, g, b);
-        
-        refreshPalette();
-    });
-
-    refreshPalette();
-}
-
-let paletteIndex = 0;
-
-function setBrushColor(index: number)
-{
-    paletteIndex = index;
-
-    editor.drawingBoardsPanel.erasing = (index == 0);
-    brushColor = (index == 0) ? white : editor.project.palette[index];
-    editor.drawingBoardsPanel.brush = makeCircleBrush(brushSize, brushColor);
-    editor.drawingBoardsPanel.refresh();
-
-    const input = document.getElementById("color-input")! as HTMLInputElement;
-    input.hidden = (index == 0);
-    input.value = utility.rgb2hex(utility.num2rgb(editor.project.palette[index]));
-}
-
-function refreshPalette()
-{
-    if (!editor.project) return;
-
-    const palette = document.getElementById("palette")!;
-
-    for (let i = 0; i < palette.children.length; ++i)
-    {
-        const hex = (i == 0) ? "#000000" : utility.num2hex(editor.project.palette[i]);
-        const button = palette.children[i];
-
-        button.setAttribute("style", `background-color: ${hex};`);
-    }
-}
-
-function doBrushes()
-{
-  const brushes = document.getElementById("brushes")!;
-  
-  for (let i = 0; i < brushes.children.length; ++i)
-  {
-    const cell = brushes.children[i];
-    const button = cell.children[0];
-    button.addEventListener("click", () => 
-    {
-        brushSize = i + 1;
-        editor.drawingBoardsPanel.brush = makeCircleBrush(brushSize, brushColor);
-        editor.drawingBoardsPanel.refresh();
-    });
-  }
-}
-
-function makeCircleBrush(circumference: number, color: number): MTexture
-{
-    const brush = new MTexture(circumference, circumference);
-    brush.circleTest(color == 0 ? white : color);
-
-    return brush;
-}
-
-function refresh()
-{
-    editor.refresh(); 
-
-    refreshPalette();
-}
-
-function projectToJSON(project: FlicksyProject): string
-{
-    const json = JSON.stringify(project.toData(), (key, value) =>
-    {
-        if (value instanceof Uint8ClampedArray)
-        {
-            return { "_type": "Uint8ClampedArray", "data": uint8ToBase64(value) }
-        }
-        else
-        {
-            return value;
-        }
-    });
-
-    return json;
-}
 
 function parseProjectData(json: string): FlicksyProjectData
 {
@@ -139,7 +29,7 @@ function parseProjectData(json: string): FlicksyProjectData
     return data;
 }
 
-function randomisePalette(project: FlicksyProject): void
+export function randomisePalette(project: FlicksyProject): void
 {
     project.palette.length = 0;
 
@@ -167,33 +57,26 @@ export function loadProject(data: FlicksyProjectData): FlicksyProject
     return project;
 }
 
+const sidebar = document.getElementById("sidebar")! as HTMLElement;
+const editorButton = document.getElementById("editor-button")! as HTMLElement;
+
 function setEditor()
 {
-    document.getElementById("sidebar")!.hidden = false;
-    document.getElementById("editor-button")!.hidden = true;
+    sidebar.hidden = false;
+    editorButton.hidden = true;
+
     editor.scenesPanel.hide();
     editor.scenesPanel.setPlayTestMode(false);
 }
 
 function setPlayback()
 {
-    document.getElementById("sidebar")!.hidden = true;
+    sidebar.hidden = true;
+    editorButton.hidden = false;
+
     editor.scenesPanel.setScene(editor.project.scenes[0]);
     editor.scenesPanel.show();
     editor.scenesPanel.setPlayTestMode(true);
-
-    document.getElementById("editor-button")!.hidden = false;
-}
-
-export function setProject(p: FlicksyProject)
-{
-    editor.setProject(p);
-
-    p.flicksyVersion = "alpha-1";
-
-    setBrushColor(1);
-
-    refresh();
 }
 
 export function newProject(): FlicksyProject
@@ -292,74 +175,9 @@ async function findProject(): Promise<FlicksyProject>
     return newProject();
 }
 
-export async function exportPlayable(project: FlicksyProject)
-{
-    // clones the page and inlines the css, javascript, and project data
-
-    const html = document.documentElement.cloneNode(true) as HTMLElement;
-    const head = html.getElementsByTagName("head")[0];
-    const body = html.getElementsByTagName("body")[0];
-
-    const cssLink = Array.from(html.querySelectorAll("link")).find(e => e.rel == "stylesheet");
-    const jsScript = html.querySelector("script");
-
-    // hide sidebar and editor button
-    (body.querySelector("#sidebar")! as HTMLDivElement).hidden = true;
-    (body.querySelector("#editor-button")! as HTMLButtonElement).hidden = true;
-
-    // remove existing canvas
-    const canvas = body.getElementsByTagName("canvas")[0];
-    canvas.parentElement!.removeChild(canvas);
-
-    // inline css
-    if (cssLink)
-    {
-        const cssText = await fetch(cssLink.href).then(response => response.text());
-        
-        cssLink.parentElement!.removeChild(cssLink);
-        const style = document.createElement("style");
-        style.innerHTML = cssText;
-        head.appendChild(style);
-    }
-    
-    // inline project (before js so it's loaded before scripts run)
-    const data = document.createElement("script") as HTMLScriptElement;
-    data.id = "flicksy-data";
-    data.type = "text/flicksy";
-    data.innerHTML = `\n${projectToJSON(project)}\n`;
-    body.appendChild(data);
-
-    // inline js
-    if (jsScript)
-    {
-        const jsText = await fetch(jsScript.src).then(response => response.text());
-
-        jsScript.removeAttribute("src");
-        jsScript.innerHTML = jsText;
-        body.appendChild(jsScript);
-    }
-    
-    // save html
-    const name = project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const blob = new Blob([html.innerHTML], {type: "text/html"});
-    FileSaver.saveAs(blob, `flicksy-${name}.html`);
-
-    return;
-}
-
 function setup()
 {
-    doBrushes();
-    doPalette();
-
-    editor.drawingBoardsPanel.brush = makeCircleBrush(1, white);
-
-    utility.buttonClick("reset-palette", () =>
-    {
-        randomisePalette(editor.project);
-        refreshPalette();
-    });
-
+    // tabs
     function hideAll(show?: {show: () => void})
     {
         editor.projectsPanel.hide();
@@ -401,17 +219,18 @@ function setup()
 
     save.addEventListener("click", () => doSave());
 
+    // play embeded game or open editor
     const embed = document.getElementById("flicksy-data");
 
     if (embed)
     {
-        setProject(loadProject(parseProjectData(embed.innerHTML)));
+        editor.setProject(loadProject(parseProjectData(embed.innerHTML)));
         setPlayback();
         document.getElementById("editor-button")!.hidden = true;
     }
     else
     {
-        findProject().then(setProject).then(setEditor);
+        findProject().then(p => editor.setProject(p)).then(setEditor);
     }
 }
 

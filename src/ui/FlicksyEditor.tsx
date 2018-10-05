@@ -76,9 +76,13 @@ export default class FlicksyEditor
     public setProject(project: FlicksyProject): void
     {
         this.project = project;
+        project.flicksyVersion = "alpha-1";
 
         this.drawingBoardsPanel.setDrawingBoard(project.drawingBoards[0]);
+        this.drawingBoardsPanel.setBrushColor(1);
         this.scenesPanel.setScene(project.scenes[0]);
+
+        this.refresh();
     }
 
     public refresh(): void

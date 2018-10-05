@@ -5,8 +5,16 @@ import * as utility from './../utility';
 import { DrawingBoard, PinnedDrawing } from '../data/DrawingBoard';
 import { MTexture } from '../MTexture';
 import { Drawing } from '../data/Drawing';
-import { FlicksyProject } from '../data/FlicksyProject';
 import FlicksyEditor from './FlicksyEditor';
+import { randomisePalette } from '..';
+
+function makeCircleBrush(circumference: number, color: number): MTexture
+{
+    const brush = new MTexture(circumference, circumference);
+    brush.circleTest(color == 0 ? 0xFFFFFFFF : color);
+
+    return brush;
+}
 
 /** Manages the pixi state for displaying a PinnedDrawing */
 class PinnedDrawingView
@@ -97,7 +105,11 @@ export default class DrawingBoardsPanel
     private draggedPin: PinnedDrawingView | undefined;
 
     public brush: MTexture;
-    public erasing: boolean; 
+    public erasing: boolean;
+
+    public paletteIndex: number;
+    private brushColor: number; 
+    private brushSize: number;
 
     public selected: PinnedDrawing | undefined;
 
@@ -115,7 +127,6 @@ export default class DrawingBoardsPanel
     private cursorSprite: Pixi.Sprite;
     private mode: "draw" | "select" = "select";
 
-    private pan = new Pixi.Point(0, 0);
     private zoom = 0;
 
     private pickerCallback: ((drawing: Drawing | undefined) => void) | undefined;
@@ -257,6 +268,49 @@ export default class DrawingBoardsPanel
             if (this.selected) this.removePin(this.selected);
         });
 
+        this.brushSize = 1;
+        this.brushColor = 0xFFFFFFFF;
+        const brushes = document.getElementById("brushes")!;
+  
+        for (let i = 0; i < brushes.children.length; ++i)
+        {
+            const cell = brushes.children[i];
+            const button = cell.children[0];
+            button.addEventListener("click", () => 
+            {
+                this.brushSize = i + 1;
+                editor.drawingBoardsPanel.brush = makeCircleBrush(this.brushSize, this.brushColor);
+                editor.drawingBoardsPanel.refresh();
+            });
+        }
+
+        this.brush = makeCircleBrush(this.brushSize, this.brushColor);
+
+        const palette = document.getElementById("palette")!;
+
+        for (let i = 0; i < palette.children.length; ++i)
+        {
+            palette.children[i].addEventListener("click", () => editor.drawingBoardsPanel.setBrushColor(i));
+        }
+
+        const input = document.getElementById("color-input")! as HTMLInputElement;
+        input.addEventListener("change", () =>
+        {
+            const [r, g, b] = utility.hex2rgb(input.value);
+
+            editor.project.palette[editor.drawingBoardsPanel.paletteIndex] = utility.rgb2num(r, g, b);
+            
+            this.refreshPalette();
+        });
+
+        this.refreshPalette();
+
+        utility.buttonClick("reset-palette", () =>
+        {
+            randomisePalette(editor.project);
+            this.refresh();
+        });
+
         this.cursorSprite = new Pixi.Sprite();
         this.cursorSprite.visible = true;
         this.cursorSprite.interactive = false;
@@ -308,6 +362,8 @@ export default class DrawingBoardsPanel
         
         this.cursorSprite.visible = (this.mode == "draw");
         this.pinViews.forEach(view => view.sprite.cursor = (this.mode == "select" ? "pointer" : "none"));
+
+        this.refreshPalette();
     }
 
     /** Switch the currently selected pin, or select nothing if undefined */
@@ -484,5 +540,34 @@ export default class DrawingBoardsPanel
 
         canvas.context.globalCompositeOperation = "source-over";
         canvas.update();
+    }
+
+    public setBrushColor(index: number)
+    {
+        this.paletteIndex = index;
+
+        this.erasing = (index == 0);
+        this.brushColor = (index == 0) ? 0xFFFFFFFF : this.editor.project.palette[index];
+        this.brush = makeCircleBrush(this.brushSize, this.brushColor);
+        this.refresh();
+
+        const input = document.getElementById("color-input")! as HTMLInputElement;
+        input.hidden = (index == 0);
+        input.value = utility.rgb2hex(utility.num2rgb(this.editor.project.palette[index]));
+    }
+
+    public refreshPalette(): void
+    {
+        if (!this.editor.project) return;
+
+        const palette = document.getElementById("palette")!;
+
+        for (let i = 0; i < palette.children.length; ++i)
+        {
+            const hex = (i == 0) ? "#000000" : utility.num2hex(this.editor.project.palette[i]);
+            const button = palette.children[i];
+
+            button.setAttribute("style", `background-color: ${hex};`);
+        }
     }
 }

@@ -6,7 +6,7 @@ import * as utility from '../utility';
 import FlicksyEditor from "./FlicksyEditor";
 
 import { FlicksyProjectData } from '../data/FlicksyProject';
-import { getProjectList, newProject, setProject, loadProject } from "../index"; 
+import { getProjectList, newProject, loadProject } from "../index"; 
 
 export default class ProjectsPanel
 {
@@ -31,7 +31,7 @@ export default class ProjectsPanel
 
         utility.buttonClick("new-project", () =>
         {
-            setProject(newProject());
+            this.editor.setProject(newProject());
         });
 
         this.projectSelect.addEventListener("change", () =>
@@ -43,7 +43,7 @@ export default class ProjectsPanel
             {
                 if (data)
                 {
-                    setProject(loadProject(data));
+                    this.editor.setProject(loadProject(data));
                 } 
             });
         });
@@ -69,7 +69,7 @@ export default class ProjectsPanel
                         return value;
                     });
 
-                    setProject(loadProject(data));
+                    this.editor.setProject(loadProject(data));
                 };
                 reader.readAsText(file);
             }
