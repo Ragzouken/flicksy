@@ -5,6 +5,7 @@ import { FlicksyProject } from '../data/FlicksyProject';
 import DrawingBoardsPanel from './DrawingBoardsPanel';
 import ScenesPanel from './ScenesPanel';
 import ProjectsPanel from './ProjectsPanel';
+import PublishPanel from './PublishPanel';
 
 const resolution = [160, 120];
 
@@ -12,6 +13,7 @@ export default class FlicksyEditor
 {
     public readonly pixi: Pixi.Application;
     public readonly projectsPanel: ProjectsPanel;
+    public readonly publishPanel: PublishPanel;
     public readonly drawingBoardsPanel: DrawingBoardsPanel;
     public readonly scenesPanel: ScenesPanel;
 
@@ -32,6 +34,7 @@ export default class FlicksyEditor
         this.pixi.stage.interactive = true;
 
         this.projectsPanel = new ProjectsPanel(this);
+        this.publishPanel = new PublishPanel(this);
         this.drawingBoardsPanel = new DrawingBoardsPanel(this);
         this.scenesPanel = new ScenesPanel(this);
         this.scenesPanel.drawingsPanel = this.drawingBoardsPanel;
@@ -81,6 +84,7 @@ export default class FlicksyEditor
     public refresh(): void
     {
         this.projectsPanel.refresh();
+        this.publishPanel.refresh();
         this.drawingBoardsPanel.refresh();
         this.scenesPanel.refresh();
     }

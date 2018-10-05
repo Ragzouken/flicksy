@@ -1,7 +1,6 @@
 import './index.css';
 
 import * as localForage from 'localforage';
-import * as JSZip from 'jszip';
 import * as FileSaver from 'file-saver';
 import * as uuid from 'uuid/v4';
 
@@ -293,7 +292,7 @@ async function findProject(): Promise<FlicksyProject>
     return newProject();
 }
 
-async function exportPlayable(project: FlicksyProject)
+export async function exportPlayable(project: FlicksyProject)
 {
     // clones the page and inlines the css, javascript, and project data
 
@@ -361,14 +360,12 @@ function setup()
         refreshPalette();
     });
 
-    const publish = document.getElementById("publish")! as HTMLDivElement;
-
     function hideAll(show?: {show: () => void})
     {
         editor.projectsPanel.hide();
         editor.drawingBoardsPanel.hide();
         editor.scenesPanel.hide();
-        publish.hidden = true;
+        editor.publishPanel.hide();
 
         if (show) show.show();
     }
@@ -378,10 +375,10 @@ function setup()
     // tabs
     utility.buttonClick("editor-button",      setEditor);
     utility.buttonClick("playtest-button",    setPlayback);
-    utility.buttonClick("info-tab-button",    () => { hideAll(editor.projectsPanel);      });
-    utility.buttonClick("publish-tab-button", () => { hideAll(); publish.hidden = false;  });
-    utility.buttonClick("drawing-tab-button", () => { hideAll(editor.drawingBoardsPanel); });
-    utility.buttonClick("scene-tab-button",   () => { hideAll(editor.scenesPanel);        });
+    utility.buttonClick("info-tab-button",    () => hideAll(editor.projectsPanel));
+    utility.buttonClick("publish-tab-button", () => hideAll(editor.publishPanel));
+    utility.buttonClick("drawing-tab-button", () => hideAll(editor.drawingBoardsPanel));
+    utility.buttonClick("scene-tab-button",   () => hideAll(editor.scenesPanel));
 
     const save = document.getElementById("save")! as HTMLButtonElement;
 
@@ -403,50 +400,6 @@ function setup()
     }
 
     save.addEventListener("click", () => doSave());
-
-    document.getElementById("download")!.addEventListener("click", () =>
-    {
-        const zip = new JSZip();
-        const drawings = zip.folder("drawings");
-        
-        for (let drawing of editor.project.drawings)
-        {
-            const name = drawing.name + ".png";
-            const url = drawing.texture.canvas.toDataURL("image/png");
-            const data = url.substring(22);
-
-            drawings.file(name, data, {base64: true});
-        }
-
-        zip.generateAsync({type: "blob"})
-           .then(function(content) 
-        {
-            FileSaver.saveAs(content, "drawings.zip");
-        });
-    });
-
-    document.getElementById("download-data")!.addEventListener("click", () =>
-    {
-        const json = JSON.stringify(editor.project.toData(), (key, value) =>
-        {
-            if (value instanceof Uint8ClampedArray)
-            {
-                return { "_type": "Uint8ClampedArray", "data": uint8ToBase64(value) }
-            }
-            else
-            {
-                return value;
-            }
-        });
-
-        const blob = new Blob([json], {type: "application/json"});
-        FileSaver.saveAs(blob, "project.flicksy.json");
-    });
-
-    document.getElementById("export-playable")!.addEventListener("click", () =>
-    {
-        exportPlayable(editor.project);
-    });
 
     const embed = document.getElementById("flicksy-data");
 
