@@ -145,20 +145,10 @@ export default class DrawingBoardsPanel
             return pixi.renderer.plugins.interaction.mouse.global as Pixi.Point;
         }
 
-        const getMouseScenePosition = () =>
-        {
-            const view = getMouseViewPosition();
-            const scene = this.container.toLocal(view);
-
-            return scene;
-        }
-
         const getCenterScenePosition = () =>
         {
             const view = new Pixi.Point(pixi.view.width / 2, pixi.view.height / 2);
-            //const scene = this.container.toLocal(view);
-
-            const scene = this.container.worldTransform.applyInverse(view);
+            const scene = this.container.toLocal(view);
 
             return scene;
         }
@@ -206,9 +196,12 @@ export default class DrawingBoardsPanel
 
         utility.buttonClick("create-drawing-button", () =>
         {
-            const position = new Pixi.Point(utility.randomInt(48, 128), utility.randomInt(2, 96));
             const width = +this.createWidthInput.options[this.createWidthInput.selectedIndex].value;
             const height = +this.createHeightInput.options[this.createHeightInput.selectedIndex].value;
+
+            const position = getCenterScenePosition();
+            position.x = Math.floor(position.x - width / 2);
+            position.y = Math.floor(position.y - height / 2);
 
             const drawing = this.project.createDrawing(width, height);
             drawing.name = `drawing ${this.activeBoard.pinnedDrawings.length}`;
