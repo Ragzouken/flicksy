@@ -7,6 +7,8 @@
     "jszip": "^3.1.5",
     "localforage": "^1.7.2",
     "pixi.js": "^4.8.2",
+    "react": "^16.5.2",
+    "react-dom": "^16.5.2",
     "react-scripts-ts": "^2.17.0",
     "uuid": "^3.3.2"
   },
@@ -23,6 +25,8 @@
     "@types/jszip": "^3.1.4",
     "@types/node": "^10.11.4",
     "@types/pixi.js": "^4.8.1",
+    "@types/react": "^16.4.14",
+    "@types/react-dom": "^16.0.8",
     "@types/uuid": "^3.4.4",
     "typescript": "^2.9.2"
   },

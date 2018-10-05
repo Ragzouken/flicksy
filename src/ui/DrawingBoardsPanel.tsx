@@ -6,6 +6,7 @@ import { DrawingBoard, PinnedDrawing } from '../data/DrawingBoard';
 import { MTexture } from '../MTexture';
 import { Drawing } from '../data/Drawing';
 import { FlicksyProject } from '../data/FlicksyProject';
+import FlicksyEditor from './FlicksyEditor';
 
 /** Manages the pixi state for displaying a PinnedDrawing */
 class PinnedDrawingView
@@ -83,13 +84,11 @@ export default class DrawingBoardsPanel
 {
     public get activeBoard(): DrawingBoard { return this.drawingBoard }
 
-    private pixi: Pixi.Application;
+    private readonly editor: FlicksyEditor;
     private container: Pixi.Container;
     private pinContainer: Pixi.Container;
 
     private pinViews = new Map<PinnedDrawing, PinnedDrawingView>();
-    
-    private project: FlicksyProject;
     private drawingBoard: DrawingBoard;
 
     private dragType: "draw" | "move" | "pan" | undefined;
@@ -121,11 +120,12 @@ export default class DrawingBoardsPanel
 
     private pickerCallback: ((drawing: Drawing | undefined) => void) | undefined;
 
-    public constructor(pixi: Pixi.Application)
+    public constructor(editor: FlicksyEditor)
     {
-        this.pixi = pixi;
+        this.editor = editor;
+
         this.container = new Pixi.Container();
-        this.pixi.stage.addChild(this.container);
+        editor.pixi.stage.addChild(this.container);
         this.pinContainer = new Pixi.Container();
         this.container.addChild(this.pinContainer);
 
@@ -142,12 +142,12 @@ export default class DrawingBoardsPanel
 
         const getMouseViewPosition = () =>
         {
-            return pixi.renderer.plugins.interaction.mouse.global as Pixi.Point;
+            return editor.pixi.renderer.plugins.interaction.mouse.global as Pixi.Point;
         }
 
         const getCenterScenePosition = () =>
         {
-            const view = new Pixi.Point(pixi.view.width / 2, pixi.view.height / 2);
+            const view = new Pixi.Point(editor.pixi.view.width / 2, editor.pixi.view.height / 2);
             const scene = this.container.toLocal(view);
 
             return scene;
@@ -203,7 +203,7 @@ export default class DrawingBoardsPanel
             position.x = Math.floor(position.x - width / 2);
             position.y = Math.floor(position.y - height / 2);
 
-            const drawing = this.project.createDrawing(width, height);
+            const drawing = this.editor.project.createDrawing(width, height);
             drawing.name = `drawing ${this.activeBoard.pinnedDrawings.length}`;
             const pin = this.activeBoard.pinDrawing(drawing, position);
             this.select(pin);
@@ -339,12 +339,7 @@ export default class DrawingBoardsPanel
             this.pinViews.delete(pin);
         }
 
-        this.project.removeOrphans();
-    }
-
-    public setProject(project: FlicksyProject): void
-    {
-        this.project = project;
+        this.editor.project.removeOrphans();
     }
 
     /** Replace the DrawingBoard that should be displayed */

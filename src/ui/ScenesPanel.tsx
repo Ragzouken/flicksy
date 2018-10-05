@@ -6,6 +6,7 @@ import { FlicksyProject } from '../data/FlicksyProject';
 import { SceneObject, Scene } from '../data/Scene';
 import { Drawing } from '../data/Drawing';
 import DrawingBoardsPanel from './DrawingBoardsPanel';
+import FlicksyEditor from './FlicksyEditor';
 
 class DialogueView
 {
@@ -140,14 +141,13 @@ export default class ScenesPanel
 {
     public get activeScene(): Scene { return this.scene }
 
-    private pixi: Pixi.Application;
+    private readonly editor: FlicksyEditor;
     private container: Pixi.Container;
     private overlayContainer: Pixi.Container;
     private objectContainer: Pixi.Container;
 
     private objectViews = new Map<SceneObject, SceneObjectView>();
     
-    private project: FlicksyProject;
     private scene: Scene;
 
     private dragOrigin: Pixi.Point;
@@ -181,11 +181,12 @@ export default class ScenesPanel
 
     public drawingsPanel: DrawingBoardsPanel;
 
-    public constructor(pixi: Pixi.Application)
+    public constructor(editor: FlicksyEditor)
     {
-        this.pixi = pixi;
+        this.editor = editor;
+
         this.container = new Pixi.Container();
-        this.pixi.stage.addChild(this.container);
+        editor.pixi.stage.addChild(this.container);
         this.objectContainer = new Pixi.Container();
         this.container.addChild(this.objectContainer);
         this.overlayContainer = new Pixi.Container();
@@ -224,8 +225,8 @@ export default class ScenesPanel
 
         this.createSceneButton.addEventListener("click", () =>
         {
-            const scene = this.project.createScene();
-            scene.name = `scene ${this.project.scenes.length}`;
+            const scene = this.editor.project.createScene();
+            scene.name = `scene ${this.editor.project.scenes.length}`;
 
             this.select(undefined);
             this.setScene(scene);
@@ -236,18 +237,18 @@ export default class ScenesPanel
 
         this.sceneDeleteButton.addEventListener("click", () =>
         {
-            if (this.project.scenes.length == 1) return;
+            if (this.editor.project.scenes.length == 1) return;
 
-            const index = this.project.scenes.indexOf(this.scene);
-            this.project.scenes.splice(index, 1);
+            const index = this.editor.project.scenes.indexOf(this.scene);
+            this.editor.project.scenes.splice(index, 1);
 
-            this.setScene(this.project.scenes[0]);
+            this.setScene(this.editor.project.scenes[0]);
             this.refresh();
         });
 
         this.activeSceneSelect.addEventListener("change", () =>
         {
-            const scene = this.project.scenes[this.activeSceneSelect.selectedIndex];
+            const scene = this.editor.project.scenes[this.activeSceneSelect.selectedIndex];
 
             this.select(undefined);
             this.setScene(scene);
@@ -326,7 +327,7 @@ export default class ScenesPanel
         {
             if (this.createObjectSelect.selectedIndex >= 0)
             {
-                this.createObject(this.project.getDrawingByUUID(this.createObjectSelect.value)!);
+                this.createObject(this.editor.project.getDrawingByUUID(this.createObjectSelect.value)!);
             }
         });
 
@@ -347,7 +348,7 @@ export default class ScenesPanel
             if (this.dialoguingObject
              && this.dialoguingObject.sceneChange)
             {
-                this.setScene(this.project.getSceneByUUID(this.dialoguingObject.sceneChange)!);
+                this.setScene(this.editor.project.getSceneByUUID(this.dialoguingObject.sceneChange)!);
                 this.setPlayTestMode(true);
             }
 
@@ -358,7 +359,7 @@ export default class ScenesPanel
 
         this.objectSceneChangeSelect.addEventListener("change", () =>
         {
-            const scene = this.project.getSceneByUUID(this.objectSceneChangeSelect.value);
+            const scene = this.editor.project.getSceneByUUID(this.objectSceneChangeSelect.value);
 
             if (this.selected && scene)
             {
@@ -375,7 +376,7 @@ export default class ScenesPanel
         {
             if (this.objectDrawingSelect.selectedIndex >= 0)
             {
-                const drawing = this.project.getDrawingByUUID(this.objectDrawingSelect.value);
+                const drawing = this.editor.project.getDrawingByUUID(this.objectDrawingSelect.value);
                 
                 if (drawing && this.selected)
                 {
@@ -488,7 +489,7 @@ export default class ScenesPanel
         }
 
         utility.repopulateSelect(this.createObjectSelect, 
-                                 this.project.drawings.map(drawingToOption));
+                                 this.editor.project.drawings.map(drawingToOption));
 
         const label = document.createElement("option") as HTMLOptionElement;
         this.createObjectSelect.insertBefore(label, this.createObjectSelect.firstChild);
@@ -497,19 +498,19 @@ export default class ScenesPanel
         label.disabled = true;
 
         utility.repopulateSelect(this.objectDrawingSelect, 
-                                 this.project.drawings.map(drawingToOption));
+                                 this.editor.project.drawings.map(drawingToOption));
 
         utility.repopulateSelect(this.activeSceneSelect,
-                                 this.project.scenes.map(scene => ({ "label": scene.name, "value": scene.uuid })));
-        this.activeSceneSelect.selectedIndex = this.project.scenes.indexOf(this.scene);
+                                 this.editor.project.scenes.map(scene => ({ "label": scene.name, "value": scene.uuid })));
+        this.activeSceneSelect.selectedIndex = this.editor.project.scenes.indexOf(this.scene);
 
         utility.repopulateSelect(this.objectSceneChangeSelect,
-            this.project.scenes.map(scene => ({ "label": scene.name, "value": scene.uuid })));
+            this.editor.project.scenes.map(scene => ({ "label": scene.name, "value": scene.uuid })));
 
         if (this.selected && this.selected.sceneChange)
         {
-            const scene = this.project.getSceneByUUID(this.selected.sceneChange)!;
-            this.objectSceneChangeSelect.selectedIndex = this.project.scenes.indexOf(scene);
+            const scene = this.editor.project.getSceneByUUID(this.selected.sceneChange)!;
+            this.objectSceneChangeSelect.selectedIndex = this.editor.project.scenes.indexOf(scene);
         }
 
         this.select(this.selected);
@@ -532,11 +533,11 @@ export default class ScenesPanel
         {
             if (object.sceneChange)
             {
-                const scene = this.project.getSceneByUUID(object.sceneChange)!;
-                this.objectSceneChangeSelect.selectedIndex = this.project.scenes.indexOf(scene);
+                const scene = this.editor.project.getSceneByUUID(object.sceneChange)!;
+                this.objectSceneChangeSelect.selectedIndex = this.editor.project.scenes.indexOf(scene);
             }
 
-            this.objectDrawingSelect.selectedIndex = this.project.drawings.indexOf(object.drawing);
+            this.objectDrawingSelect.selectedIndex = this.editor.project.drawings.indexOf(object.drawing);
 
             this.objectNameInput.value = object.name;
             this.objectDialogueInput.value = object.dialogue;
@@ -566,11 +567,6 @@ export default class ScenesPanel
         }
     }
 
-    public setProject(project: FlicksyProject): void
-    {
-        this.project = project;
-    }
-
     public setScene(scene: Scene): void
     {
         this.clear();
@@ -595,7 +591,7 @@ export default class ScenesPanel
                         }
                         else if (view.object.sceneChange)
                         {
-                            this.setScene(this.project.getSceneByUUID(view.object.sceneChange)!);
+                            this.setScene(this.editor.project.getSceneByUUID(view.object.sceneChange)!);
                             this.setPlayTestMode(true);
                         }
                     }
@@ -621,7 +617,7 @@ export default class ScenesPanel
         object.uuid = uuid();
         object.name = `object ${this.activeScene.objects.length}`;
         object.position = position;
-        object.drawing = this.project.drawings[0];
+        object.drawing = this.editor.project.drawings[0];
         object.dialogue = "";
         object.drawing = drawing;
 
