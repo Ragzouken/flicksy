@@ -183,7 +183,7 @@ function setPlayback()
     editor.scenesPanel.show();
     editor.scenesPanel.setPlayTestMode(true);
 
-    document.getElementById("editor-button")!.hidden = bundled;
+    document.getElementById("editor-button")!.hidden = false;
 }
 
 export function setProject(p: FlicksyProject)
@@ -210,8 +210,6 @@ export function newProject(): FlicksyProject
     
     return project;
 }
-
-let bundled: boolean;
 
 class ProjectInfo
 { 
@@ -262,14 +260,6 @@ async function saveProject(project: FlicksyProject): Promise<void>
 
 async function findProject(): Promise<FlicksyProject>
 {
-    const embed = document.getElementById("flicksy-data");
-
-    if (embed)
-    {
-        bundled = true;
-        return loadProject(parseProjectData(embed.innerHTML));
-    }
-
     // check if there are any saved project listings
     const listing = await getProjectList();
     
@@ -365,34 +355,33 @@ function setup()
 
     editor.drawingBoardsPanel.brush = makeCircleBrush(1, white);
 
-    const publish = document.getElementById("publish")! as HTMLDivElement;
-
-    function hideAll()
-    {
-        editor.projectsPanel.hide();
-        editor.drawingBoardsPanel.hide();
-        editor.scenesPanel.hide();
-        publish.hidden = true;
-    }
-
-    hideAll();
-
-    editor.projectsPanel.show();
-    document.getElementById("editor-button")!.hidden = true;
-
-    // tabs
-    utility.buttonClick("editor-button",      setEditor);
-    utility.buttonClick("playtest-button",    setPlayback);
-    utility.buttonClick("info-tab-button",    () => { hideAll(); editor.projectsPanel.show();      });
-    utility.buttonClick("publish-tab-button", () => { hideAll(); publish.hidden = false;           });
-    utility.buttonClick("drawing-tab-button", () => { hideAll(); editor.drawingBoardsPanel.show(); });
-    utility.buttonClick("scene-tab-button",   () => { hideAll(); editor.scenesPanel.show();        });
-
     utility.buttonClick("reset-palette", () =>
     {
         randomisePalette(editor.project);
         refreshPalette();
     });
+
+    const publish = document.getElementById("publish")! as HTMLDivElement;
+
+    function hideAll(show?: {show: () => void})
+    {
+        editor.projectsPanel.hide();
+        editor.drawingBoardsPanel.hide();
+        editor.scenesPanel.hide();
+        publish.hidden = true;
+
+        if (show) show.show();
+    }
+
+    hideAll(editor.projectsPanel);
+
+    // tabs
+    utility.buttonClick("editor-button",      setEditor);
+    utility.buttonClick("playtest-button",    setPlayback);
+    utility.buttonClick("info-tab-button",    () => { hideAll(editor.projectsPanel);      });
+    utility.buttonClick("publish-tab-button", () => { hideAll(); publish.hidden = false;  });
+    utility.buttonClick("drawing-tab-button", () => { hideAll(editor.drawingBoardsPanel); });
+    utility.buttonClick("scene-tab-button",   () => { hideAll(editor.scenesPanel);        });
 
     const save = document.getElementById("save")! as HTMLButtonElement;
 
@@ -459,17 +448,18 @@ function setup()
         exportPlayable(editor.project);
     });
 
-    findProject().then(setProject).then(() =>
+    const embed = document.getElementById("flicksy-data");
+
+    if (embed)
     {
-        if (bundled)
-        {
-            setPlayback();
-        }
-        else
-        {
-            setEditor();
-        }
-    });
+        setProject(loadProject(parseProjectData(embed.innerHTML)));
+        setPlayback();
+        document.getElementById("editor-button")!.hidden = true;
+    }
+    else
+    {
+        findProject().then(setProject).then(setEditor);
+    }
 }
 
 setup();
