@@ -1,4 +1,4 @@
-import { MTexture } from "../MTexture";
+import { MTexture } from "../tools/MTexture";
 import { FlicksyData } from "./FlicksyProject";
 
 export interface DrawingData

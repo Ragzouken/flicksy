@@ -3,7 +3,7 @@ import { Point } from 'pixi.js';
 
 import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
 import { DrawingData, Drawing } from './Drawing';
-import { MTexture } from '../MTexture';
+import { MTexture } from '../tools/MTexture';
 import { SceneData, Scene } from './Scene';
 
 export interface FlicksyData<T, TData>

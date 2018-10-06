@@ -133,3 +133,8 @@ export function repopulateSelect(select: HTMLSelectElement,
 
     select.selectedIndex = index;
 }
+
+export function getElement<TElement extends HTMLElement>(id: string): TElement    
+{
+    return document.getElementById(id)! as TElement;
+}

@@ -1,6 +1,6 @@
 import * as uuid from 'uuid/v4';
 import * as Pixi from 'pixi.js';
-import * as utility from './../utility';
+import * as utility from '../tools/utility';
 
 import { FlicksyProject } from '../data/FlicksyProject';
 import { SceneObject, Scene } from '../data/Scene';
@@ -179,8 +179,6 @@ export default class ScenesPanel
     private playModeTest: boolean;
     private dialoguingObject: SceneObject | undefined;
 
-    public drawingsPanel: DrawingBoardsPanel;
-
     public constructor(editor: FlicksyEditor)
     {
         this.editor = editor;
@@ -289,16 +287,16 @@ export default class ScenesPanel
 
         utility.buttonClick("create-object-drawing-picker-button", () =>
         {
-            this.drawingsPanel.show();
+            this.editor.drawingBoardsPanel.show();
             this.hide();
-            this.drawingsPanel.pickDrawingForScene(drawing =>
+            this.editor.drawingBoardsPanel.pickDrawingForScene(drawing =>
             {
                 if (drawing)
                 {
                     this.createObject(drawing);
                 }
 
-                this.drawingsPanel.hide();
+                this.editor.drawingBoardsPanel.hide();
                 this.show();
             }, `pick a drawing for a new object in the scene <em>${this.scene.name}</em>`);
         });
@@ -307,16 +305,16 @@ export default class ScenesPanel
         {
             if (!this.selected) return;
 
-            this.drawingsPanel.show();
+            this.editor.drawingBoardsPanel.show();
             this.hide();
-            this.drawingsPanel.pickDrawingForScene(drawing =>
+            this.editor.drawingBoardsPanel.pickDrawingForScene(drawing =>
             {
                 if (drawing && this.selected)
                 {
                     this.selected.drawing = drawing;
                 }
 
-                this.drawingsPanel.hide();
+                this.editor.drawingBoardsPanel.hide();
                 this.show();
             }, `pick the drawing for the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`);
         });

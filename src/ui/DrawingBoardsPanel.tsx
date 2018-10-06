@@ -1,12 +1,12 @@
 import * as Pixi from 'pixi.js';
 
-import * as utility from './../utility';
+import * as utility from '../tools/utility';
 
 import { DrawingBoard, PinnedDrawing } from '../data/DrawingBoard';
-import { MTexture } from '../MTexture';
+import { MTexture } from '../tools/MTexture';
 import { Drawing } from '../data/Drawing';
 import FlicksyEditor from './FlicksyEditor';
-import { randomisePalette } from '..';
+import { randomisePalette } from '../tools/saving';
 
 function makeCircleBrush(circumference: number, color: number): MTexture
 {

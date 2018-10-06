@@ -1,8 +1,8 @@
 import * as FileSaver from 'file-saver';
 import * as JSZip from 'jszip';
 
-import { buttonClick } from "../utility";
-import { uint8ToBase64 } from "../Base64";
+import { buttonClick } from "../tools/utility";
+import { uint8ToBase64 } from "../tools/base64";
 
 import FlicksyEditor from "./FlicksyEditor";
 import { FlicksyProject } from '../data/FlicksyProject';

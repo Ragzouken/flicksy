@@ -1,12 +1,12 @@
 import * as localForage from 'localforage'; 
-import { base64ToUint8, uint8ToBase64 } from '../Base64';
+import { base64ToUint8 } from '../tools/base64';
 
-import * as utility from '../utility';
+import * as utility from '../tools/utility';
 
 import FlicksyEditor from "./FlicksyEditor";
 
 import { FlicksyProjectData } from '../data/FlicksyProject';
-import { getProjectList, newProject, loadProject } from "../index"; 
+import { getProjectList, newProject, loadProject } from "../tools/saving"; 
 
 export default class ProjectsPanel
 {
