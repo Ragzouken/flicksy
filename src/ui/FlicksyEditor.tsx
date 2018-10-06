@@ -9,11 +9,10 @@ import ProjectsPanel from './ProjectsPanel';
 import PublishPanel from './PublishPanel';
 import { saveProject } from '../tools/saving';
 
-const resolution = [160, 120];
-
 export default class FlicksyEditor
 {
     public readonly pixi: Pixi.Application;
+
     public readonly projectsPanel: ProjectsPanel;
     public readonly publishPanel: PublishPanel;
     public readonly drawingBoardsPanel: DrawingBoardsPanel;
@@ -21,22 +20,22 @@ export default class FlicksyEditor
 
     public project: FlicksyProject;
 
-    private readonly sidebarContainer: HTMLElement;
     private readonly returnToEditorButton: HTMLButtonElement;
 
     private readonly pixiCanvasContainer: HTMLElement;
     private readonly saveButton: HTMLButtonElement;
 
-    public constructor(sidebarContainer: HTMLElement,
-                       canvasContainer: HTMLElement)
+    public constructor(private sidebarContainer: HTMLElement,
+                       private canvasContainer: HTMLElement,
+                       private resolution: [number, number])
     {
         this.pixiCanvasContainer = document.getElementById("container")! as HTMLDivElement;
 
         // transparent prevents flickering on silk browser
-        this.pixi = new Pixi.Application(resolution[0], 
-                                         resolution[1], 
+        this.pixi = new Pixi.Application(this.resolution[0], 
+                                         this.resolution[1], 
                                          { transparent: true });
-        canvasContainer.appendChild(this.pixi.view);
+        this.canvasContainer.appendChild(this.pixi.view);
         this.pixi.start();
 
         // create all the other ui
@@ -56,7 +55,6 @@ export default class FlicksyEditor
         utility.buttonClick("scene-tab-button",   () => this.setActivePanel(this.scenesPanel));
 
         // editor vs playback
-        this.sidebarContainer = utility.getElement("sidebar");
         this.returnToEditorButton = utility.getElement("editor-button");
 
         // save button
@@ -186,7 +184,7 @@ export default class FlicksyEditor
         // this part adjusts the ratio:    
         this.pixi.renderer.resize(w,h);
 
-        const [referenceWidth, referenceHeight] = resolution;
+        const [referenceWidth, referenceHeight] = this.resolution;
         const margin = 4;
 
         const scale = Math.min(w / (referenceWidth  + margin), 

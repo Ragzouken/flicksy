@@ -6,8 +6,9 @@ import { jsonToProject, findProject } from './tools/saving';
 
 async function start()
 {
-    const editor = new FlicksyEditor(utility.getElement("root"), 
-                                     utility.getElement("root"));
+    const editor = new FlicksyEditor(utility.getElement("sidebar"), 
+                                     utility.getElement("root"),
+                                     [160, 100]);
 
     // play embeded game or open editor
     const embed = document.getElementById("flicksy-data");
