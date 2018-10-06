@@ -1,17 +1,16 @@
 import * as Pixi from 'pixi.js';
-
-import * as utility from '../tools/utility';
-
+import { Drawing } from '../data/Drawing';
 import { DrawingBoard, PinnedDrawing } from '../data/DrawingBoard';
 import { MTexture } from '../tools/MTexture';
-import { Drawing } from '../data/Drawing';
-import FlicksyEditor from './FlicksyEditor';
 import { randomisePalette } from '../tools/saving';
+import * as utility from '../tools/utility';
+import FlicksyEditor from './FlicksyEditor';
+import Panel from './Panel';
 
 function makeCircleBrush(circumference: number, color: number): MTexture
 {
     const brush = new MTexture(circumference, circumference);
-    brush.circleTest(color == 0 ? 0xFFFFFFFF : color);
+    brush.circleTest(color === 0 ? 0xFFFFFFFF : color);
 
     return brush;
 }
@@ -88,9 +87,15 @@ class PinnedDrawingView
     }
 }
 
-export default class DrawingBoardsPanel
+// tslint:disable-next-line:max-classes-per-file
+export default class DrawingBoardsPanel implements Panel
 {
     public get activeBoard(): DrawingBoard { return this.drawingBoard }
+
+    public selected: PinnedDrawing | undefined;
+    public brush: MTexture;
+    public erasing: boolean;
+    public paletteIndex: number;
 
     private readonly editor: FlicksyEditor;
     private container: Pixi.Container;
@@ -104,14 +109,9 @@ export default class DrawingBoardsPanel
     private dragPrev: Pixi.Point;
     private draggedPin: PinnedDrawingView | undefined;
 
-    public brush: MTexture;
-    public erasing: boolean;
-
-    public paletteIndex: number;
     private brushColor: number; 
     private brushSize: number;
 
-    public selected: PinnedDrawing | undefined;
 
     // create drawing ui
     private createWidthInput: HTMLSelectElement;
@@ -141,7 +141,7 @@ export default class DrawingBoardsPanel
         this.container.addChild(this.pinContainer);
 
         this.container.interactive = true;
-        //this.container.cursor = "none";
+        // this.container.cursor = "none";
         this.container.hitArea = new Pixi.Rectangle(-1000, -1000, 2000, 2000);
         this.container.pivot = new Pixi.Point(80, 50);
 
@@ -166,7 +166,7 @@ export default class DrawingBoardsPanel
 
         document.getElementById("container")!.addEventListener("wheel", event =>
         {
-            if (!this.container.visible) return;
+            if (!this.container.visible) { return; }
 
             const wheel = event as WheelEvent;
             this.zoom += wheel.deltaY * -0.005;
@@ -265,7 +265,7 @@ export default class DrawingBoardsPanel
 
         utility.buttonClick("delete-drawing-button", () =>
         {
-            if (this.selected) this.removePin(this.selected);
+            if (this.selected) { this.removePin(this.selected); }
         });
 
         this.brushSize = 1;
@@ -339,12 +339,6 @@ export default class DrawingBoardsPanel
         this.refresh();
     }
 
-    private clear(): void
-    {
-        this.pinViews.forEach(view => view.destroy());
-        this.pinViews.clear();
-    }
-
     /** Resynchronise this display to the data in the underlying DrawingBoard */
     public refresh(): void
     {
@@ -353,15 +347,15 @@ export default class DrawingBoardsPanel
                                                  Math.floor(this.brush.data.height / 2));
 
         this.setDrawingBoard(this.drawingBoard);
-        this.select(this.mode == "select" ? this.selected : undefined);
+        this.select(this.mode === "select" ? this.selected : undefined);
 
-        this.selectModeButton.disabled = (this.mode == "select");
-        this.drawModeButton.disabled = (this.mode == "draw");
+        this.selectModeButton.disabled = (this.mode === "select");
+        this.drawModeButton.disabled = (this.mode === "draw");
 
-        document.getElementById("brush-settings")!.hidden = (this.mode == "select");
+        document.getElementById("brush-settings")!.hidden = (this.mode === "select");
         
-        this.cursorSprite.visible = (this.mode == "draw");
-        this.pinViews.forEach(view => view.sprite.cursor = (this.mode == "select" ? "pointer" : "none"));
+        this.cursorSprite.visible = (this.mode === "draw");
+        this.pinViews.forEach(view => view.sprite.cursor = (this.mode === "select" ? "pointer" : "none"));
 
         this.refreshPalette();
     }
@@ -370,7 +364,7 @@ export default class DrawingBoardsPanel
     public select(pin: PinnedDrawing | undefined): void
     {
         this.selected = pin;
-        this.pinViews.forEach(view => view.setSelected(view.pin == pin));
+        this.pinViews.forEach(view => view.setSelected(view.pin === pin));
 
         this.drawingSectionDiv.hidden = !pin;
 
@@ -382,7 +376,7 @@ export default class DrawingBoardsPanel
 
     public removePin(pin: PinnedDrawing)
     {
-        if (pin == this.selected)
+        if (pin === this.selected)
         {
             this.select(undefined);
         }
@@ -404,14 +398,14 @@ export default class DrawingBoardsPanel
         this.clear();
         this.drawingBoard = board;
         
-        for (let pin of board.pinnedDrawings)
+        for (const pin of board.pinnedDrawings)
         {
             const view = new PinnedDrawingView(pin);
 
             view.sprite.interactive = true;
             view.sprite.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
             {
-                if (event.data.button == 1) return;
+                if (event.data.button === 1) { return; }
 
                 if (this.pickerCallback)
                 {
@@ -419,11 +413,11 @@ export default class DrawingBoardsPanel
                     return;
                 }
              
-                if (this.mode == "select" || event.data.button === 2)
+                if (this.mode === "select" || event.data.button === 2)
                 {
                     this.startDragging(view, event);
                     
-                    if (this.mode == "select") 
+                    if (this.mode === "select") 
                     {
                         this.select(view.pin);
                     }
@@ -452,6 +446,74 @@ export default class DrawingBoardsPanel
         document.getElementById("pick-drawing-context")!.innerHTML = context;
     }
 
+
+    public setBrushColor(index: number)
+    {
+        this.paletteIndex = index;
+
+        this.erasing = (index === 0);
+        this.brushColor = (index === 0) ? 0xFFFFFFFF : this.editor.project.palette[index];
+        this.brush = makeCircleBrush(this.brushSize, this.brushColor);
+        this.refresh();
+
+        const input = document.getElementById("color-input")! as HTMLInputElement;
+        input.hidden = (index === 0);
+        input.value = utility.rgb2hex(utility.num2rgb(this.editor.project.palette[index]));
+    }
+
+    public refreshPalette(): void
+    {
+        if (!this.editor.project) { return; }
+
+        const palette = document.getElementById("palette")!;
+
+        for (let i = 0; i < palette.children.length; ++i)
+        {
+            const hex = (i === 0) ? "#000000" : utility.num2hex(this.editor.project.palette[i]);
+            const button = palette.children[i];
+
+            button.setAttribute("style", `background-color: ${hex};`);
+        }
+    }
+
+    /** 
+     * Update the dragging (pin moving or pin drawing) based on a mouse 
+     * movement event
+     */
+    public updateDragging(event: Pixi.interaction.InteractionEvent): void
+    {
+        this.cursorSprite.position = utility.floor(event.data.getLocalPosition(this.container));
+
+        if (this.dragType === "move" && this.draggedPin)
+        {
+            const position = utility.floor(utility.add(this.dragOrigin, event.data.getLocalPosition(this.container)));
+
+            this.draggedPin.pin.position = position;
+            this.draggedPin.sprite.position = position;
+        }
+        else if (this.dragType === "draw" && this.draggedPin)
+        {
+            const base = this.draggedPin.pin.drawing.texture;
+            const m = event.data.getLocalPosition(this.draggedPin.sprite);
+
+            this.draw(this.dragPrev, m, base);
+
+            this.dragPrev = m;
+        }
+        else if (this.dragType === "pan")
+        {
+            const position = utility.floor(utility.add(this.dragOrigin, event.data.getLocalPosition(this.container.parent)));
+
+            this.container.position = position;
+        }
+    }
+
+    private clear(): void
+    {
+        this.pinViews.forEach(view => view.destroy());
+        this.pinViews.clear();
+    }
+
     private pickDrawing(drawing: Drawing | undefined): void
     {
         const callback = this.pickerCallback;
@@ -460,7 +522,7 @@ export default class DrawingBoardsPanel
         document.getElementById("pick-drawing")!.hidden = true;
         this.pickerCallback = undefined;
 
-        if (callback) callback(drawing);
+        if (callback) { callback(drawing); }
     }
 
     private stopDragging(): void
@@ -476,38 +538,6 @@ export default class DrawingBoardsPanel
         this.draggedPin = view;
         this.dragType = "move";
         this.dragOrigin = utility.sub(view.sprite.position, event.data.getLocalPosition(this.container));
-    }
-
-    /** 
-     * Update the dragging (pin moving or pin drawing) based on a mouse 
-     * movement event
-     */
-    public updateDragging(event: Pixi.interaction.InteractionEvent): void
-    {
-        this.cursorSprite.position = utility.floor(event.data.getLocalPosition(this.container));
-
-        if (this.dragType == "move" && this.draggedPin)
-        {
-            const position = utility.floor(utility.add(this.dragOrigin, event.data.getLocalPosition(this.container)));
-
-            this.draggedPin.pin.position = position;
-            this.draggedPin.sprite.position = position;
-        }
-        else if (this.dragType == "draw" && this.draggedPin)
-        {
-            const base = this.draggedPin.pin.drawing.texture;
-            const m = event.data.getLocalPosition(this.draggedPin.sprite);
-
-            this.draw(this.dragPrev, m, base);
-
-            this.dragPrev = m;
-        }
-        else if (this.dragType == "pan")
-        {
-            const position = utility.floor(utility.add(this.dragOrigin, event.data.getLocalPosition(this.container.parent)));
-
-            this.container.position = position;
-        }
     }
 
     private startDrawing(view: PinnedDrawingView, event: Pixi.interaction.InteractionEvent): void
@@ -540,34 +570,5 @@ export default class DrawingBoardsPanel
 
         canvas.context.globalCompositeOperation = "source-over";
         canvas.update();
-    }
-
-    public setBrushColor(index: number)
-    {
-        this.paletteIndex = index;
-
-        this.erasing = (index == 0);
-        this.brushColor = (index == 0) ? 0xFFFFFFFF : this.editor.project.palette[index];
-        this.brush = makeCircleBrush(this.brushSize, this.brushColor);
-        this.refresh();
-
-        const input = document.getElementById("color-input")! as HTMLInputElement;
-        input.hidden = (index == 0);
-        input.value = utility.rgb2hex(utility.num2rgb(this.editor.project.palette[index]));
-    }
-
-    public refreshPalette(): void
-    {
-        if (!this.editor.project) return;
-
-        const palette = document.getElementById("palette")!;
-
-        for (let i = 0; i < palette.children.length; ++i)
-        {
-            const hex = (i == 0) ? "#000000" : utility.num2hex(this.editor.project.palette[i]);
-            const button = palette.children[i];
-
-            button.setAttribute("style", `background-color: ${hex};`);
-        }
     }
 }

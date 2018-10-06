@@ -1,13 +1,11 @@
 import * as Pixi from 'pixi.js';
-import * as utility from '../tools/utility';
-
 import { FlicksyProject } from '../data/FlicksyProject';
-
+import { saveProject } from '../tools/saving';
+import * as utility from '../tools/utility';
 import DrawingBoardsPanel from './DrawingBoardsPanel';
-import ScenesPanel from './ScenesPanel';
 import ProjectsPanel from './ProjectsPanel';
 import PublishPanel from './PublishPanel';
-import { saveProject } from '../tools/saving';
+import ScenesPanel from './ScenesPanel';
 
 export default class FlicksyEditor
 {
@@ -105,20 +103,6 @@ export default class FlicksyEditor
     }
 
     /**
-     * Hide all sidebar panels and then show the given one.
-     * @param panel The sidebar panel that should be shown
-     */
-    private setActivePanel(panel: {show: () => void}): void
-    {
-        this.projectsPanel.hide();
-        this.drawingBoardsPanel.hide();
-        this.scenesPanel.hide();
-        this.publishPanel.hide();
-
-        panel.show();
-    }
-
-    /**
      * Switch the UI to playback mode: hide the sidebar, open the first scene
      * in the project, and set the scene UI to playback mode. Optionally 
      * displays a button to re-enter editor mode.
@@ -142,6 +126,20 @@ export default class FlicksyEditor
     {
         this.returnToEditorButton.hidden = true;
         this.sidebarContainer.hidden = false;
+    }
+
+    /**
+     * Hide all sidebar panels and then show the given one.
+     * @param panel The sidebar panel that should be shown
+     */
+    private setActivePanel(panel: {show: () => void}): void
+    {
+        this.projectsPanel.hide();
+        this.drawingBoardsPanel.hide();
+        this.scenesPanel.hide();
+        this.publishPanel.hide();
+
+        panel.show();
     }
 
     /**
@@ -189,7 +187,7 @@ export default class FlicksyEditor
 
         const scale = Math.min(w / (referenceWidth  + margin), 
                                 h / (referenceHeight + margin));
-        //const scale = Math.floor(Math.min(w / referenceWidth, h / referenceHeight));
+        // const scale = Math.floor(Math.min(w / referenceWidth, h / referenceHeight));
 
         this.pixi.stage.scale = new Pixi.Point(scale, scale);
         this.pixi.stage.position = new Pixi.Point(w / 2, h / 2);

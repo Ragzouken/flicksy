@@ -1,12 +1,10 @@
-import * as uuid from 'uuid/v4';
 import * as Pixi from 'pixi.js';
-import * as utility from '../tools/utility';
-
-import { FlicksyProject } from '../data/FlicksyProject';
-import { SceneObject, Scene } from '../data/Scene';
+import * as uuid from 'uuid/v4';
 import { Drawing } from '../data/Drawing';
-import DrawingBoardsPanel from './DrawingBoardsPanel';
+import { Scene, SceneObject } from '../data/Scene';
+import * as utility from '../tools/utility';
 import FlicksyEditor from './FlicksyEditor';
+import Panel from './Panel';
 
 class DialogueView
 {
@@ -35,20 +33,21 @@ class DialogueView
 
 
         this.text = new Pixi.Text("test test test test test test test test test test test test test test test ", {
+            fill : 0xffffff,
             fontFamily: 'Arial', 
             fontSize: 32, 
-            fill : 0xffffff,
             wordWrap: true,
             wordWrapWidth: 100 * 8 - 8 * 8,
         });
         this.text.position = new Pixi.Point(4 * 8, 4 * 8);
-        //this.text.texture.baseTexture.scaleMode = 1;
+        // this.text.texture.baseTexture.scaleMode = 1;
 
         this.panel.addChild(this.text);
         this.container.addChild(this.panel);
     }
 }
 
+// tslint:disable-next-line:max-classes-per-file
 class SceneObjectView
 {
     /** The SceneObject that this view corresponds to */
@@ -90,7 +89,7 @@ class SceneObjectView
     {
         event.data.getLocalPosition(this.sprite);
 
-        if (!this.sprite.containsPoint(event.data.global)) return false;
+        if (!this.sprite.containsPoint(event.data.global)) { return false; }
 
         return this.isSolidPixelAt(event.data.getLocalPosition(this.sprite));
     }
@@ -137,11 +136,13 @@ class SceneObjectView
     }
 }
 
-export default class ScenesPanel
+// tslint:disable-next-line:max-classes-per-file
+export default class ScenesPanel implements Panel
 {
     public get activeScene(): Scene { return this.scene }
 
-    private readonly editor: FlicksyEditor;
+    public selected: SceneObject | undefined;
+
     private container: Pixi.Container;
     private overlayContainer: Pixi.Container;
     private objectContainer: Pixi.Container;
@@ -152,8 +153,6 @@ export default class ScenesPanel
 
     private dragOrigin: Pixi.Point;
     private draggedObject: SceneObjectView | undefined;
-
-    public selected: SceneObject | undefined;
 
     // scenes ui
     private createSceneButton: HTMLButtonElement;
@@ -179,10 +178,8 @@ export default class ScenesPanel
     private playModeTest: boolean;
     private dialoguingObject: SceneObject | undefined;
 
-    public constructor(editor: FlicksyEditor)
+    public constructor(private readonly editor: FlicksyEditor)
     {
-        this.editor = editor;
-
         this.container = new Pixi.Container();
         editor.pixi.stage.addChild(this.container);
         this.objectContainer = new Pixi.Container();
@@ -211,8 +208,6 @@ export default class ScenesPanel
         bounds.alpha = 1;
         this.overlayContainer.addChild(bounds);
 
-        //this.container.position = new Pixi.Point(1, 1);
-
         document.addEventListener("pointerup", () => this.stopDragging());
 
         this.objectSection = document.getElementById("selected-object-section")! as HTMLDivElement;
@@ -235,7 +230,7 @@ export default class ScenesPanel
 
         this.sceneDeleteButton.addEventListener("click", () =>
         {
-            if (this.editor.project.scenes.length == 1) return;
+            if (this.editor.project.scenes.length === 1) { return; }
 
             const index = this.editor.project.scenes.indexOf(this.scene);
             this.editor.project.scenes.splice(index, 1);
@@ -303,7 +298,7 @@ export default class ScenesPanel
 
         utility.buttonClick("object-pick-drawing-button", () =>
         {
-            if (!this.selected) return;
+            if (!this.selected) { return; }
 
             this.editor.drawingBoardsPanel.show();
             this.hide();
@@ -338,7 +333,7 @@ export default class ScenesPanel
 
         this.objectNameInput.addEventListener("input", () => 
         {
-            if (this.selected) this.selected.name = this.objectNameInput.value;
+            if (this.selected) { this.selected.name = this.objectNameInput.value; }
         });
 
         this.objectDialoguePreview.container.on("pointerdown", () => 
@@ -367,7 +362,7 @@ export default class ScenesPanel
 
         this.objectDeleteButton.addEventListener("click", () =>
         {
-            if (this.selected) this.removeObject(this.selected);
+            if (this.selected) { this.removeObject(this.selected); }
         });
 
         this.objectDrawingSelect.addEventListener("change", () =>
@@ -447,12 +442,6 @@ export default class ScenesPanel
         document.getElementById("scene-sidebar")!.hidden = true;
     }
 
-    private clear(): void
-    {
-        this.objectViews.forEach(view => view.destroy());
-        this.objectViews.clear();
-    }
-
     public setPlayTestMode(on: boolean): void
     {
         this.playModeTest = on;
@@ -518,7 +507,7 @@ export default class ScenesPanel
     public select(object: SceneObject | undefined): void
     {
         this.selected = object;
-        this.objectViews.forEach(view => view.setSelected(view.object == object));
+        this.objectViews.forEach(view => view.setSelected(view.object === object));
 
         this.objectSection.hidden = !object;
         this.objectNameInput.disabled = !object;
@@ -551,7 +540,7 @@ export default class ScenesPanel
 
     public removeObject(object: SceneObject)
     {
-        if (object == this.selected)
+        if (object === this.selected)
         {
             this.select(undefined);
         }
@@ -572,7 +561,7 @@ export default class ScenesPanel
 
         this.sceneNameInput.value = scene.name;
         
-        for (let object of scene.objects)
+        for (const object of scene.objects)
         {
             const view = new SceneObjectView(object);
 
@@ -627,6 +616,23 @@ export default class ScenesPanel
         return object;
     }
 
+    public updateDragging(event: Pixi.interaction.InteractionEvent): void
+    {
+        if (this.draggedObject)
+        {
+            const position = utility.floor(utility.add(this.dragOrigin, event.data.getLocalPosition(this.overlayContainer)));
+
+            this.draggedObject.object.position = position;
+            this.draggedObject.sprite.position = position;
+        }
+    }
+
+    private clear(): void
+    {
+        this.objectViews.forEach(view => view.destroy());
+        this.objectViews.clear();
+    }
+
     private stopDragging(): void
     {
         this.draggedObject = undefined;
@@ -640,16 +646,5 @@ export default class ScenesPanel
         this.dragOrigin = utility.sub(view.sprite.position, event.data.getLocalPosition(this.overlayContainer));
 
         this.select(view.object);
-    }
-
-    public updateDragging(event: Pixi.interaction.InteractionEvent): void
-    {
-        if (this.draggedObject)
-        {
-            const position = utility.floor(utility.add(this.dragOrigin, event.data.getLocalPosition(this.overlayContainer)));
-
-            this.draggedObject.object.position = position;
-            this.draggedObject.sprite.position = position;
-        }
     }
 }

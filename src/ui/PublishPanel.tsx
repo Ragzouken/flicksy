@@ -1,11 +1,10 @@
 import * as FileSaver from 'file-saver';
 import * as JSZip from 'jszip';
-
-import { buttonClick } from "../tools/utility";
-import { uint8ToBase64 } from "../tools/base64";
-
-import FlicksyEditor from "./FlicksyEditor";
 import { FlicksyProject } from '../data/FlicksyProject';
+import { uint8ToBase64 } from "../tools/base64";
+import { buttonClick } from "../tools/utility";
+import FlicksyEditor from "./FlicksyEditor";
+import Panel from './Panel';
 
 function projectToJSON(project: FlicksyProject): string
 {
@@ -32,7 +31,7 @@ async function exportPlayable(project: FlicksyProject)
     const head = html.getElementsByTagName("head")[0];
     const body = html.getElementsByTagName("body")[0];
 
-    const cssLink = Array.from(html.querySelectorAll("link")).find(e => e.rel == "stylesheet");
+    const cssLink = Array.from(html.querySelectorAll("link")).find(e => e.rel === "stylesheet");
     const jsScript = html.querySelector("script");
 
     // hide sidebar and editor button
@@ -79,16 +78,12 @@ async function exportPlayable(project: FlicksyProject)
     return;
 }
 
-export default class PublishPanel
+export default class PublishPanel implements Panel
 {
-    private readonly editor: FlicksyEditor;
-
     private readonly sidebar: HTMLElement;
 
-    public constructor(editor: FlicksyEditor)
+    public constructor(private readonly editor: FlicksyEditor)
     {
-        this.editor = editor;
-
         this.sidebar = document.getElementById("publish")! as HTMLDivElement;
 
         buttonClick("export-playable", () => exportPlayable(editor.project));
@@ -114,7 +109,7 @@ export default class PublishPanel
             const zip = new JSZip();
             const drawings = zip.folder("drawings");
             
-            for (let drawing of editor.project.drawings)
+            for (const drawing of editor.project.drawings)
             {
                 const name = drawing.name + ".png";
                 const url = drawing.texture.canvas.toDataURL("image/png");
@@ -124,16 +119,13 @@ export default class PublishPanel
             }
 
             zip.generateAsync({type: "blob"})
-            .then(function(content) 
-            {
-                FileSaver.saveAs(content, "drawings.zip");
-            });
+            .then(content => FileSaver.saveAs(content, "drawings.zip"));
         });
     }
 
     public refresh(): void
     {
-
+        return;
     }
 
     public show(): void

@@ -5,6 +5,14 @@ import * as utility from './utility';
 import { FlicksyProjectData, FlicksyProject } from "../data/FlicksyProject";
 import { base64ToUint8 } from "./base64";
 
+export async function loadProjectFromUUID(uuid: string): Promise<FlicksyProject>
+{
+    const data = await localForage.getItem<FlicksyProjectData>(`projects-${uuid}`);
+    const project = loadProject(data);
+    
+    return project;
+}
+
 export function jsonToProject(json: string): FlicksyProject
 {
     const data = parseProjectData(json);

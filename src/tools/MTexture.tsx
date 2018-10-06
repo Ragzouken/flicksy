@@ -1,4 +1,4 @@
-import { BaseTexture, Texture, SCALE_MODES } from "pixi.js";
+import { BaseTexture, SCALE_MODES, Texture } from "pixi.js";
 
 export type PlotFunction = (x: number, y: number) => number;
 

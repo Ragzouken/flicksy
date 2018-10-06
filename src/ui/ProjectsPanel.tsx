@@ -1,53 +1,36 @@
-import * as localForage from 'localforage'; 
-import { base64ToUint8 } from '../tools/base64';
-
+import { getProjectList, jsonToProject, loadProjectFromUUID, newProject } from "../tools/saving";
 import * as utility from '../tools/utility';
-
 import FlicksyEditor from "./FlicksyEditor";
+import Panel from "./Panel";
 
-import { FlicksyProjectData } from '../data/FlicksyProject';
-import { getProjectList, newProject, loadProject } from "../tools/saving"; 
-
-export default class ProjectsPanel
+export default class ProjectsPanel implements Panel
 {
-    private readonly editor: FlicksyEditor;
-
     private readonly sidebar: HTMLElement;
     private readonly projectNameInput: HTMLInputElement;
     private readonly projectSelect: HTMLSelectElement;
 
-    public constructor(editor: FlicksyEditor)
+    public constructor(private readonly editor: FlicksyEditor)
     {
-        this.editor = editor;
-
         this.sidebar = document.getElementById("info")! as HTMLElement;
         this.projectNameInput = document.getElementById("project-name")! as HTMLInputElement;
         this.projectSelect = document.getElementById("open-project-select")! as HTMLSelectElement;
 
+        // rename project
         this.projectNameInput.addEventListener("change", () =>
         {
             editor.project.name = this.projectNameInput.value;
         });
 
-        utility.buttonClick("new-project", () =>
+        // create blank new project
+        utility.buttonClick("new-project", () => this.editor.setProject(newProject()));
+        
+        // open saved project
+        this.projectSelect.addEventListener("change", () => 
         {
-            this.editor.setProject(newProject());
+            loadProjectFromUUID(this.projectSelect.value);
         });
 
-        this.projectSelect.addEventListener("change", () =>
-        {
-            const uuid = this.projectSelect.value;
-    
-            // TODO: do actual loading somewhere centralised
-            localForage.getItem<FlicksyProjectData>(`projects-${uuid}`).then(data =>
-            {
-                if (data)
-                {
-                    this.editor.setProject(loadProject(data));
-                } 
-            });
-        });
-
+        // import project data
         const importButton = document.getElementById("import-data")! as HTMLInputElement;
         importButton.addEventListener("change", () =>
         {
@@ -58,19 +41,10 @@ export default class ProjectsPanel
 
                 reader.onload = progress =>
                 {
-                    const data = JSON.parse(reader.result as string, (key, value) =>
-                    {
-                        if (value.hasOwnProperty("_type")
-                        && value._type == "Uint8ClampedArray")
-                        {
-                            return base64ToUint8(value.data);
-                        }
-
-                        return value;
-                    });
-
-                    this.editor.setProject(loadProject(data));
+                    const project = jsonToProject(reader.result as string);
+                    this.editor.setProject(project);
                 };
+
                 reader.readAsText(file);
             }
         });
@@ -78,8 +52,10 @@ export default class ProjectsPanel
 
     public refresh(): void
     {
+        // copy project name to name input
         this.projectNameInput.value = this.editor.project.name;
 
+        // refresh saved project menu
         getProjectList().then(listing =>
         {
             utility.repopulateSelect(this.projectSelect, 
