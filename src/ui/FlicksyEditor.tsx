@@ -45,6 +45,16 @@ export default class FlicksyEditor
         this.drawingBoardsPanel = new DrawingBoardsPanel(this);
         this.scenesPanel = new ScenesPanel(this);
 
+        this.setActivePanel(this.projectsPanel);
+
+        // tabs
+        utility.buttonClick("editor-button",      () => this.enterEditor());
+        utility.buttonClick("playtest-button",    () => this.enterPlayback(true));
+        utility.buttonClick("info-tab-button",    () => this.setActivePanel(this.projectsPanel));
+        utility.buttonClick("publish-tab-button", () => this.setActivePanel(this.publishPanel));
+        utility.buttonClick("drawing-tab-button", () => this.setActivePanel(this.drawingBoardsPanel));
+        utility.buttonClick("scene-tab-button",   () => this.setActivePanel(this.scenesPanel));
+
         // editor vs playback
         this.sidebarContainer = utility.getElement("sidebar");
         this.returnToEditorButton = utility.getElement("editor-button");
