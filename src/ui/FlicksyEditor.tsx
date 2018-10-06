@@ -77,18 +77,27 @@ export default class FlicksyEditor
         });
     }
 
+    /**
+     * Set the project that should be displayed and editable within this UI
+     * @param project The project the editor should operate on
+     */
     public setProject(project: FlicksyProject): void
     {
         this.project = project;
-        project.flicksyVersion = "alpha-1";
 
+        // default to the first drawing board and first palette colour
         this.drawingBoardsPanel.setDrawingBoard(project.drawingBoards[0]);
         this.drawingBoardsPanel.setBrushColor(1);
+        
+        // default to the first scene
         this.scenesPanel.setScene(project.scenes[0]);
 
         this.refresh();
     }
 
+    /**
+     * Force all UI to refresh to reflect the current project state.
+     */
     public refresh(): void
     {
         this.projectsPanel.refresh();
@@ -97,7 +106,11 @@ export default class FlicksyEditor
         this.scenesPanel.refresh();
     }
 
-    public setActivePanel(panel: {show: () => void}): void
+    /**
+     * Hide all sidebar panels and then show the given one.
+     * @param panel The sidebar panel that should be shown
+     */
+    private setActivePanel(panel: {show: () => void}): void
     {
         this.projectsPanel.hide();
         this.drawingBoardsPanel.hide();
@@ -107,6 +120,12 @@ export default class FlicksyEditor
         panel.show();
     }
 
+    /**
+     * Switch the UI to playback mode: hide the sidebar, open the first scene
+     * in the project, and set the scene UI to playback mode. Optionally 
+     * displays a button to re-enter editor mode.
+     * @param escapable Show the button to re-enter editor mode
+     */
     public enterPlayback(escapable: boolean): void
     {
         this.returnToEditorButton.hidden = !escapable;
@@ -118,12 +137,19 @@ export default class FlicksyEditor
         this.scenesPanel.setPlayTestMode(true);
     }
 
+    /**
+     * Switch the UI to editor mode, which displays the sidebar.
+     */
     public enterEditor(): void
     {
         this.returnToEditorButton.hidden = true;
         this.sidebarContainer.hidden = false;
     }
 
+    /**
+     * Save the open project. Displays visual feedback on the save button
+     * itself and disables the save button during the process.
+     */
     private async saveProject(): Promise<void>
     {
         // prevent saving while already saving
@@ -144,6 +170,10 @@ export default class FlicksyEditor
         this.saveButton.disabled = false;
     }
 
+    /** 
+     * Resize the canvas and update the pixi renderer so that the scene frame
+     * fills the entire space with the correct aspect ratio and a small margin.
+     */
     private resizePixiCanvas(): void
     {
         const w = this.pixiCanvasContainer.clientWidth;

@@ -53,6 +53,8 @@ export function loadProject(data: FlicksyProjectData): FlicksyProject
     {
         randomisePalette(project);
     }
+    
+    project.flicksyVersion = "alpha-1";
 
     return project;
 }
@@ -76,6 +78,9 @@ export async function getProjectList(): Promise<ProjectInfo[]>
 /** Save the given project locally and update the saved projects listing */
 export async function saveProject(project: FlicksyProject): Promise<void>
 {
+    // save the project as it was at the time the save button was clicked
+    const data = project.toData();
+
     const listing = await getProjectList();
 
     // retrieve the existing entry from the listing or create a new one
@@ -99,7 +104,7 @@ export async function saveProject(project: FlicksyProject): Promise<void>
     info.name = project.name;
 
     // save the new listing, the project data, and last open project
-    await localForage.setItem(`projects-${info.uuid}`, project.toData());
+    await localForage.setItem(`projects-${info.uuid}`, data);
     await localForage.setItem("projects", listing);
     await localForage.setItem("last-open", project.uuid);
 }
