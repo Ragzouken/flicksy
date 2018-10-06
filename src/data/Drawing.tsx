@@ -45,7 +45,7 @@ export class Drawing implements FlicksyData<Drawing, DrawingData>
 
     public getPixel(x: number, y: number): number
     {
-        if (this.texture.needsFetch) this.texture.fetch();
+        if (this.texture.needsFetch) { this.texture.fetch(); }
 
         return this.texture.getPixel(x, y);
     }

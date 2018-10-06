@@ -1,10 +1,9 @@
-import * as uuid from 'uuid/v4';
 import { Point } from 'pixi.js';
-
-import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
-import { DrawingData, Drawing } from './Drawing';
+import * as uuid4 from 'uuid/v4';
 import { MTexture } from '../tools/MTexture';
-import { SceneData, Scene } from './Scene';
+import { Drawing, DrawingData } from './Drawing';
+import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
+import { Scene, SceneData } from './Scene';
 
 export interface FlicksyData<T, TData>
 {
@@ -62,7 +61,7 @@ export class FlicksyProject
         
         this.drawingBoards = data.drawingBoards.map(board => (new DrawingBoard).fromData(board, this));
 
-        if (this.scenes.length == 0) this.createScene();
+        if (this.scenes.length === 0) { this.createScene(); }
 
         this.removeOrphans();
 
@@ -86,18 +85,18 @@ export class FlicksyProject
 
     public getDrawingByUUID(uuid: string): Drawing | undefined
     {
-        return this.drawings.find(drawing => drawing.uuid == uuid);
+        return this.drawings.find(drawing => drawing.uuid === uuid);
     }
 
     public getSceneByUUID(uuid: string): Scene | undefined
     {
-        return this.scenes.find(scene => scene.uuid == uuid);
+        return this.scenes.find(scene => scene.uuid === uuid);
     }
 
     public createDrawing(width: number, height: number): Drawing
     {
         const drawing = new Drawing();
-        drawing.uuid = uuid();
+        drawing.uuid = uuid4();
         drawing.name = "unnamed drawing";
         drawing.texture = new MTexture(width, height);
 
@@ -109,7 +108,7 @@ export class FlicksyProject
     public createScene(): Scene
     {
         const scene = new Scene();
-        scene.uuid = uuid();
+        scene.uuid = uuid4();
         scene.name = "unnamed scene";
 
         this.scenes.push(scene);
@@ -120,7 +119,7 @@ export class FlicksyProject
     public createDrawingBoard(): DrawingBoard
     {
         const board = new DrawingBoard();
-        board.uuid = uuid();
+        board.uuid = uuid4();
         board.name = "unnamed drawing board";
 
         this.drawingBoards.push(board);
@@ -130,7 +129,7 @@ export class FlicksyProject
 
     public removeOrphans(): void
     {
-        var counts = new Map<Drawing, number>();
+        const counts = new Map<Drawing, number>();
 
         function countEntity(entity: {drawing: Drawing})
         {
@@ -144,7 +143,7 @@ export class FlicksyProject
 
         counts.forEach((count, drawing) => 
         {
-            if (count == 0)
+            if (count === 0)
             {
                 const index = this.drawings.indexOf(drawing);
                 this.drawings.splice(index, 1);

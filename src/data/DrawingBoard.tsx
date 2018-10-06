@@ -1,8 +1,6 @@
-import * as uuid from 'uuid/v4'
-
-import { Point } from "pixi.js"
-import { FlicksyData, FlicksyProject, PositionedDrawing, DrawingArrangement } from './FlicksyProject'
-import { Drawing } from "./Drawing"
+import { Point } from "pixi.js";
+import { Drawing } from "./Drawing";
+import { DrawingArrangement, FlicksyData, FlicksyProject, PositionedDrawing } from './FlicksyProject';
 
 export interface PinnedDrawingData
 {
@@ -32,10 +30,6 @@ export class PinnedDrawing implements PositionedDrawing, FlicksyData<PinnedDrawi
         {
             this.drawing = drawing;
         }
-        else
-        {
-            console.log(`could not load drawing of uuid ${data.drawing}`);
-        }
 
         return this;
     }
@@ -50,6 +44,7 @@ export class PinnedDrawing implements PositionedDrawing, FlicksyData<PinnedDrawi
 }
 
 /** A named collection of Drawings arranged spatially */
+// tslint:disable-next-line:max-classes-per-file
 export class DrawingBoard implements DrawingArrangement
 {
     public uuid: string;
@@ -92,6 +87,6 @@ export class DrawingBoard implements DrawingArrangement
     {
         const index = this.pinnedDrawings.indexOf(pin);
 
-        if (index >= 0) this.pinnedDrawings.splice(index, 1);
+        if (index >= 0) { this.pinnedDrawings.splice(index, 1); }
     }
 }

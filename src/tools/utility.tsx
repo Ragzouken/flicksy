@@ -76,9 +76,9 @@ export function rgb2hex(color: [number, number, number]): string
     let gs = g.toString(16);
     let bs = b.toString(16);
 
-    if (rs.length < 2) rs = "0" + rs;
-    if (gs.length < 2) gs = "0" + gs;
-    if (bs.length < 2) bs = "0" + bs;
+    if (rs.length < 2) { rs = "0" + rs; }
+    if (gs.length < 2) { gs = "0" + gs; }
+    if (bs.length < 2) { bs = "0" + bs; }
 
     return `#${rs}${gs}${bs}`;
 }
@@ -101,8 +101,14 @@ export function hex2rgb(color: string): [number, number, number]
     return [0, 0, 0];
 }
 
+interface Option
+{
+    label: string,
+    value: string,
+}
+
 export function repopulateSelect(select: HTMLSelectElement,
-                                 options: {"label": string, "value": string}[],
+                                 options: Option[],
                                  dummy?: string)
 {
     const index = select.selectedIndex;

@@ -1,8 +1,7 @@
 import './index.css';
-
+import { findProject, jsonToProject } from './tools/saving';
 import * as utility from './tools/utility';
 import FlicksyEditor from './ui/FlicksyEditor';
-import { jsonToProject, findProject } from './tools/saving';
 
 async function start()
 {

@@ -97,7 +97,6 @@ export default class DrawingBoardsPanel implements Panel
     public erasing: boolean;
     public paletteIndex: number;
 
-    private readonly editor: FlicksyEditor;
     private container: Pixi.Container;
     private pinContainer: Pixi.Container;
 
@@ -131,10 +130,8 @@ export default class DrawingBoardsPanel implements Panel
 
     private pickerCallback: ((drawing: Drawing | undefined) => void) | undefined;
 
-    public constructor(editor: FlicksyEditor)
+    public constructor(private readonly editor: FlicksyEditor)
     {
-        this.editor = editor;
-
         this.container = new Pixi.Container();
         editor.pixi.stage.addChild(this.container);
         this.pinContainer = new Pixi.Container();

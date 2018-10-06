@@ -1,8 +1,8 @@
 import * as http from 'http';
 
-export var url = function (response: string)
+export function url(response: string)
 {
-    var gist = JSON.parse(response).gists[0];
+    const gist = JSON.parse(response).gists[0];
     return 'http://gist.github.com/' + gist.repo;
 };
 
@@ -18,7 +18,7 @@ export function postGist(content: string, callback: (url: string) => void)
 
     const json = JSON.stringify(data);
 
-    var options = {
+    const options = {
         host: 'gist.github.com',
         port: 80,
         path: '/api/v3/gists',
@@ -30,9 +30,9 @@ export function postGist(content: string, callback: (url: string) => void)
         }
     };
   
-    var req = http.request(options, function(res) 
+    const req = http.request(options, res => 
     {
-        var body = "";
+        let body = "";
 
         res.setEncoding('utf8');
         

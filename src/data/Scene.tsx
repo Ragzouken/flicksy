@@ -1,8 +1,7 @@
+import { Point } from "pixi.js";
 import * as uuid from 'uuid/v4';
-import { Point } from "pixi.js"
-
-import { FlicksyData, FlicksyProject } from './FlicksyProject'
-import { Drawing } from "./Drawing"
+import { Drawing } from "./Drawing";
+import { FlicksyData, FlicksyProject } from './FlicksyProject';
 
 export interface SceneObjectData
 {
@@ -46,10 +45,6 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
         {
             this.drawing = drawing;
         }
-        else
-        {
-            console.log(`could not load drawing of uuid ${data.drawing}`);
-        }
 
         this.dialogue = data.dialogue || "";
         this.sceneChange = data.sceneChange;
@@ -71,6 +66,7 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
     }
 }
 
+// tslint:disable-next-line:max-classes-per-file
 export class Scene implements FlicksyData<Scene, SceneData>
 {
     public uuid: string;
@@ -107,6 +103,6 @@ export class Scene implements FlicksyData<Scene, SceneData>
     {
         const index = this.objects.indexOf(object);
 
-        if (index >= 0) this.objects.splice(index, 1);
+        if (index >= 0) { this.objects.splice(index, 1); }
     }
 }

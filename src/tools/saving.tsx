@@ -1,9 +1,8 @@
-import * as uuid from 'uuid/v4';
 import * as localForage from 'localforage';
-import * as utility from './utility';
-
-import { FlicksyProjectData, FlicksyProject } from "../data/FlicksyProject";
+import * as uuid4 from 'uuid/v4';
+import { FlicksyProject, FlicksyProjectData } from "../data/FlicksyProject";
 import { base64ToUint8 } from "./base64";
+import * as utility from './utility';
 
 export async function loadProjectFromUUID(uuid: string): Promise<FlicksyProject>
 {
@@ -26,7 +25,7 @@ export function parseProjectData(json: string): FlicksyProjectData
     const data = JSON.parse(json, (key, value) =>
     {
         if (value.hasOwnProperty("_type")
-            && value._type == "Uint8ClampedArray")
+            && value._type === "Uint8ClampedArray")
         {
             return base64ToUint8(value.data);
         }
@@ -41,7 +40,7 @@ export function newProject(): FlicksyProject
 {
     const project = new FlicksyProject();
     project.name = "unnamed project";
-    project.uuid = uuid();
+    project.uuid = uuid4();
     
     project.createDrawingBoard();
     project.createScene();
@@ -92,10 +91,9 @@ export async function saveProject(project: FlicksyProject): Promise<void>
     const listing = await getProjectList();
 
     // retrieve the existing entry from the listing or create a new one
-    let info: ProjectInfo;
-    const index = listing.findIndex(info => info.uuid == project.uuid);
+    const index = listing.findIndex(i => i.uuid === project.uuid);
 
-    console.log(index);
+    let info: ProjectInfo;
 
     if (index >= 0)
     {
