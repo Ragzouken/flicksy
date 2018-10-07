@@ -101,6 +101,45 @@ export function hex2rgb(color: string): [number, number, number]
     return [0, 0, 0];
 }
 
+export function swapArrayElements<TElement>(array: TElement[], 
+                                            prev: number,
+                                            next: number): void
+{
+    if (prev < 0 || prev >= array.length) { return };
+    if (next < 0) { next = 0; }
+    if (next >= array.length) { next = array.length - 1; }
+
+    [array[prev], array[next]] = [array[next], array[prev]];
+}
+
+export function minimum<T>(array: T[], select: (element: T) => number): number
+{
+    let min = select(array[0]);
+
+    for (const element of array)
+    {
+        const value = select(element);
+        
+        min = min <= value ? min : value;
+    }
+
+    return min;
+}
+
+export function maximum<T>(array: T[], select: (element: T) => number): number
+{
+    let max = select(array[0]);
+
+    for (const element of array)
+    {
+        const value = select(element);
+        
+        max = max >= value ? max : value;
+    }
+
+    return max;
+}
+
 interface Option
 {
     label: string,

@@ -1,4 +1,4 @@
-import { getProjectList, jsonToProject, loadProjectFromUUID, newProject } from "../tools/saving";
+import { fileToProject, getProjectList, loadProjectFromUUID, newProject } from "../tools/saving";
 import * as utility from '../tools/utility';
 import FlicksyEditor from "./FlicksyEditor";
 import Panel from "./Panel";
@@ -11,9 +11,9 @@ export default class ProjectsPanel implements Panel
 
     public constructor(private readonly editor: FlicksyEditor)
     {
-        this.sidebar = document.getElementById("info")! as HTMLElement;
-        this.projectNameInput = document.getElementById("project-name")! as HTMLInputElement;
-        this.projectSelect = document.getElementById("open-project-select")! as HTMLSelectElement;
+        this.sidebar = utility.getElement("info");
+        this.projectNameInput = utility.getElement("project-name");
+        this.projectSelect = utility.getElement("open-project-select");
 
         // rename project
         this.projectNameInput.addEventListener("change", () =>
@@ -36,16 +36,8 @@ export default class ProjectsPanel implements Panel
         {
             if (importButton.files && importButton.files[0])
             {
-                const file = importButton.files[0];
-                const reader = new FileReader();
-
-                reader.onload = progress =>
-                {
-                    const project = jsonToProject(reader.result as string);
-                    this.editor.setProject(project);
-                };
-
-                reader.readAsText(file);
+                fileToProject(importButton.files[0])
+                .then(project => this.editor.setProject(project));
             }
         });
     }

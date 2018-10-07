@@ -1,7 +1,8 @@
+import * as FileSaver from 'file-saver';
 import * as localForage from 'localforage';
 import * as uuid4 from 'uuid/v4';
 import { FlicksyProject, FlicksyProjectData } from "../data/FlicksyProject";
-import { base64ToUint8 } from "./base64";
+import { base64ToUint8, uint8ToBase64 } from "./base64";
 import * as utility from './utility';
 
 export async function loadProjectFromUUID(uuid: string): Promise<FlicksyProject>
@@ -14,13 +15,52 @@ export async function loadProjectFromUUID(uuid: string): Promise<FlicksyProject>
 
 export function jsonToProject(json: string): FlicksyProject
 {
-    const data = parseProjectData(json);
+    const data = jsonToProjectData(json);
     const project = loadProject(data);
 
     return project;
 }
 
-export function parseProjectData(json: string): FlicksyProjectData
+export function projectToJson(project: FlicksyProject): string
+{
+    return projectDataToJson(project.toData());
+}
+
+export function fileToProject(file: File): Promise<FlicksyProject>
+{
+    return new Promise((resolve, reject) =>
+    {
+        const reader = new FileReader();
+
+        reader.onload = progress =>
+        {
+            const project = jsonToProject(reader.result as string);
+            
+            resolve(project);
+        };
+
+        reader.readAsText(file);
+    });
+}
+
+export function projectDataToJson(data: FlicksyProjectData): string
+{
+    const json = JSON.stringify(data, (key, value) =>
+    {
+        if (value instanceof Uint8ClampedArray)
+        {
+            return { "_type": "Uint8ClampedArray", "data": uint8ToBase64(value) }
+        }
+        else
+        {
+            return value;
+        }
+    });
+
+    return json;
+} 
+
+export function jsonToProjectData(json: string): FlicksyProjectData
 {
     const data = JSON.parse(json, (key, value) =>
     {
@@ -162,4 +202,59 @@ export function randomisePalette(project: FlicksyProject): void
         
         project.palette.push(color);
     }
+}
+
+export async function exportPlayable(project: FlicksyProject)
+{
+    // clones the page and inlines the css, javascript, and project data
+
+    const html = document.documentElement.cloneNode(true) as HTMLElement;
+    const head = html.getElementsByTagName("head")[0];
+    const body = html.getElementsByTagName("body")[0];
+
+    const cssLink = Array.from(html.querySelectorAll("link")).find(e => e.rel === "stylesheet");
+    const jsScript = html.querySelector("script");
+
+    // hide sidebar and editor button
+    (body.querySelector("#sidebar")! as HTMLDivElement).hidden = true;
+    (body.querySelector("#editor-button")! as HTMLButtonElement).hidden = true;
+
+    // remove existing canvas
+    const canvas = body.getElementsByTagName("canvas")[0];
+    canvas.parentElement!.removeChild(canvas);
+
+    // inline css
+    if (cssLink)
+    {
+        const cssText = await fetch(cssLink.href).then(response => response.text());
+        
+        cssLink.parentElement!.removeChild(cssLink);
+        const style = document.createElement("style");
+        style.innerHTML = cssText;
+        head.appendChild(style);
+    }
+    
+    // inline project (before js so it's loaded before scripts run)
+    const data = document.createElement("script") as HTMLScriptElement;
+    data.id = "flicksy-data";
+    data.type = "text/flicksy";
+    data.innerHTML = `\n${projectToJson(project)}\n`;
+    body.appendChild(data);
+
+    // inline js
+    if (jsScript)
+    {
+        const jsText = await fetch(jsScript.src).then(response => response.text());
+
+        jsScript.removeAttribute("src");
+        jsScript.innerHTML = jsText;
+        body.appendChild(jsScript);
+    }
+    
+    // save html
+    const name = project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const blob = new Blob([html.innerHTML], {type: "text/html"});
+    FileSaver.saveAs(blob, `flicksy-${name}.html`);
+
+    return;
 }

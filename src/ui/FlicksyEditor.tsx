@@ -3,6 +3,7 @@ import { FlicksyProject } from '../data/FlicksyProject';
 import { saveProject } from '../tools/saving';
 import * as utility from '../tools/utility';
 import DrawingBoardsPanel from './DrawingBoardsPanel';
+import Panel from './Panel';
 import ProjectsPanel from './ProjectsPanel';
 import PublishPanel from './PublishPanel';
 import ScenesPanel from './ScenesPanel';
@@ -25,7 +26,7 @@ export default class FlicksyEditor
 
     public constructor(private sidebarContainer: HTMLElement,
                        private canvasContainer: HTMLElement,
-                       private resolution: [number, number])
+                       public resolution: [number, number])
     {
         this.pixiCanvasContainer = document.getElementById("container")! as HTMLDivElement;
 
@@ -129,10 +130,19 @@ export default class FlicksyEditor
     }
 
     /**
+     * Return the position of the mouse in the coordinate space of the the
+     * canvas.
+     */
+    public getMousePositionView(): Pixi.Point
+    {
+        return this.pixi.renderer.plugins.interaction.mouse.global as Pixi.Point;
+    }
+
+    /**
      * Hide all sidebar panels and then show the given one.
      * @param panel The sidebar panel that should be shown
      */
-    private setActivePanel(panel: {show: () => void}): void
+    private setActivePanel(panel: Panel): void
     {
         this.projectsPanel.hide();
         this.drawingBoardsPanel.hide();
