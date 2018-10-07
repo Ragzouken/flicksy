@@ -127,6 +127,7 @@ export default class FlicksyEditor
     {
         this.returnToEditorButton.hidden = true;
         this.sidebarContainer.hidden = false;
+        this.scenesPanel.setPlayTestMode(false);
     }
 
     /**
