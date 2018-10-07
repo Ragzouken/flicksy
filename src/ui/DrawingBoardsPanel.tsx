@@ -276,6 +276,7 @@ export default class DrawingBoardsPanel implements Panel
             editor.project.palette[editor.drawingBoardsPanel.paletteIndex] = utility.rgb2num(r, g, b);
             
             this.refreshPalette();
+            this.setBrushColor(this.paletteIndex);
         });
 
         this.refreshPalette();
