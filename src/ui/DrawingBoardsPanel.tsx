@@ -355,6 +355,14 @@ export default class DrawingBoardsPanel implements Panel
 
     public reframe(): void
     {
+        if (this.drawingBoard.drawings.length === 0)
+        {
+            this.container.scale.set(1, 1);
+            this.container.position.set(-80, -50);
+
+            return;
+        }
+
         const xmin = utility.minimum(this.drawingBoard.drawings, drawing => drawing.position.x);
         const ymin = utility.minimum(this.drawingBoard.drawings, drawing => drawing.position.y);
         const xmax = utility.maximum(this.drawingBoard.drawings, drawing => drawing.position.x + drawing.drawing.texture.data.width);
