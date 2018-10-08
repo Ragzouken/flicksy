@@ -18,3 +18,12 @@ Flicksy is written in [typescript](https://www.npmjs.com/package/typescript) and
 6. ctrl+shift+' to open a new terminal
 7. npm install (install all dependencies)
 8. npm start (run live-updating development version)
+
+## express
+
+```
+git clone https://github.com/Ragzouken/flicksy.git
+cd flicksy
+npm install
+npm start
+```
