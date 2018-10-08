@@ -1,5 +1,11 @@
 # flicksy
 
+Flicksy is a tool for drawing and assembling graphical hypertext games. You can get an idea of the basic idea by playing the [demo game](https://candle.itch.io/flicksy-tutorial).
+
+Flicksy is inspired by [Bitsy](https://ledoux.itch.io/bitsy) and [Flickgame](https://www.flickgame.org/).
+
+If you run into any problems please report them to me [on twitter](https://twitter.com/ragzouken), email me at ragzouken@gmail.com, or report them here on github.
+
 Flicksy is written in [typescript](https://www.npmjs.com/package/typescript) and built with [node](https://nodejs.org/) and [create-react-app](https://www.npmjs.com/package/react-scripts-ts). 
 
 # development setup
