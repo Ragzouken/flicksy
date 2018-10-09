@@ -4,6 +4,7 @@ import { DrawingBoard, PinnedDrawing } from '../data/DrawingBoard';
 import { MTexture } from '../tools/MTexture';
 import { randomisePalette } from '../tools/saving';
 import * as utility from '../tools/utility';
+import DrawingDisplay from './DrawingDisplay';
 import FlicksyEditor from './FlicksyEditor';
 import Panel from './Panel';
 
@@ -106,6 +107,7 @@ export default class DrawingBoardsPanel implements Panel
     private brushColor: number; 
     private brushSize: number;
 
+    private displayTest = new DrawingDisplay();
 
     // create drawing ui
     private createWidthInput: HTMLSelectElement;
@@ -134,6 +136,8 @@ export default class DrawingBoardsPanel implements Panel
         editor.pixi.stage.addChild(this.container);
         this.pinContainer = new Pixi.Container();
         this.container.addChild(this.pinContainer);
+
+        this.container.addChild(this.displayTest.container);
 
         this.container.interactive = true;
         // this.container.cursor = "none";
@@ -412,6 +416,9 @@ export default class DrawingBoardsPanel implements Panel
         this.clear();
         this.drawingBoard = board;
         
+        // this.displayTest.setDisplay(this.drawingBoard.drawings);
+        // return;
+
         for (const pin of board.pinnedDrawings)
         {
             const view = new PinnedDrawingView(pin);

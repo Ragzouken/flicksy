@@ -352,11 +352,17 @@ export default class ScenesPanel implements Panel
 
         this.objectSceneChangeSelect.addEventListener("change", () =>
         {
+            if (!this.selected) { return; }
+
             const scene = this.editor.project.getSceneByUUID(this.objectSceneChangeSelect.value);
 
-            if (this.selected && scene)
+            if (scene)
             {
                 this.selected.sceneChange = scene.uuid;
+            }
+            else
+            {
+                this.selected.sceneChange = undefined;
             }
         });
 
@@ -488,11 +494,13 @@ export default class ScenesPanel implements Panel
                                  this.editor.project.drawings.map(drawingToOption));
 
         utility.repopulateSelect(this.activeSceneSelect,
-                                 this.editor.project.scenes.map(scene => ({ "label": scene.name, "value": scene.uuid })));
+                                 this.editor.project.scenes.map(scene => ({ label: scene.name, value: scene.uuid })));
         this.activeSceneSelect.selectedIndex = this.editor.project.scenes.indexOf(this.scene);
 
-        utility.repopulateSelect(this.objectSceneChangeSelect,
-            this.editor.project.scenes.map(scene => ({ "label": scene.name, "value": scene.uuid })));
+        const scenes = this.editor.project.scenes.map(scene => ({ label: `go to: ${scene.name}`, value: scene.uuid }));
+        scenes.splice(0, 0, { label: "nothing", value: "" });
+
+        utility.repopulateSelect(this.objectSceneChangeSelect, scenes);
 
         if (this.selected && this.selected.sceneChange)
         {
@@ -522,6 +530,10 @@ export default class ScenesPanel implements Panel
             {
                 const scene = this.editor.project.getSceneByUUID(object.sceneChange)!;
                 this.objectSceneChangeSelect.selectedIndex = this.editor.project.scenes.indexOf(scene);
+            }
+            else
+            {
+                this.objectSceneChangeSelect.selectedIndex = 0;
             }
 
             this.objectDrawingSelect.selectedIndex = this.editor.project.drawings.indexOf(object.drawing);

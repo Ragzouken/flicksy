@@ -17,6 +17,9 @@ export class Drawing implements FlicksyData<Drawing, DrawingData>
 
     public texture: MTexture;
 
+    public get width(): number { return this.texture.data.width; }
+    public get height(): number { return this.texture.data.height; }
+
     public fromData(data: DrawingData): Drawing
     {
         this.uuid = data.uuid;
