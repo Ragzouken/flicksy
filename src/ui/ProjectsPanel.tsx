@@ -27,7 +27,10 @@ export default class ProjectsPanel implements Panel
         // open saved project
         this.projectSelect.addEventListener("change", () => 
         {
-            loadProjectFromUUID(this.projectSelect.value);
+            loadProjectFromUUID(this.projectSelect.value).then(project =>
+            {
+                this.editor.setProject(project);
+            });
         });
 
         // import project data
