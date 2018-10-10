@@ -161,7 +161,6 @@ export default class ScenesPanel implements Panel
     private sceneDeleteButton: HTMLButtonElement;
 
     // create object ui
-    private createObjectButton: HTMLButtonElement;
     private createObjectSelect: HTMLSelectElement;
 
     // selected object ui
@@ -405,34 +404,68 @@ export default class ScenesPanel implements Panel
 
         this.container.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
         {
-            let hovered = false;
+            const view = this.getFirstViewUnderEvent(event);
 
-            for (let i = this.scene.objects.length - 1; i >= 0; i -= 1)
+            this.objectViews.forEach(v => v.hover.visible = false);
+
+            if (view)
             {
-                const object = this.scene.objects[i];
-                const view = this.objectViews.get(object)!;
+                const interactable = view.object.dialogue.length > 0 
+                                  || view.object.sceneChange;
 
-                const solid = view.isSolidPixelAtEvent(event);
-                const interactable = object.dialogue.length > 0 || object.sceneChange;
+                view.hover.visible = !this.playModeTest;
+                this.container.cursor = this.playModeTest && interactable
+                                      ? "pointer"
+                                      : "grab";
+            }
+            else
+            {
+                this.container.cursor = "initial";
+            }
+        });
 
-                view.hover.visible = false;
+        this.container.on("pointerdown", (event: Pixi.interaction.InteractionEvent) => 
+        {
+            const view = this.getFirstViewUnderEvent(event);
 
-                if (solid && !this.playModeTest)
+            if (view)
+            {
+                if (this.playModeTest)
                 {
-                    view.sprite.cursor = "grab";
-                    view.hover.visible = !hovered;
-                    hovered = true;
-                }
-                else if (solid && this.playModeTest && interactable)
-                {
-                    view.sprite.cursor = "pointer";
+                    if (view.object.dialogue.length > 0)
+                    {
+                        this.showDialogue(view.object);
+                    }
+                    else if (view.object.sceneChange)
+                    {
+                        this.setScene(this.editor.project.getSceneByUUID(view.object.sceneChange)!);
+                        this.setPlayTestMode(true);
+                    }
                 }
                 else
                 {
-                    view.sprite.cursor = "initial";
+                    this.startDragging(view, event);
                 }
+
+                event.stopPropagation();
             }
         });
+    }
+
+    public getFirstViewUnderEvent(event: Pixi.interaction.InteractionEvent): SceneObjectView | undefined
+    {
+        for (let i = this.scene.objects.length - 1; i >= 0; i -= 1)
+        {
+            const object = this.scene.objects[i];
+            const view = this.objectViews.get(object)!;
+
+            if (view.isSolidPixelAtEvent(event))
+            {
+                return view;
+            }
+        }
+
+        return undefined;
     }
 
     public show(): void
@@ -575,32 +608,6 @@ export default class ScenesPanel implements Panel
         for (const object of scene.objects)
         {
             const view = new SceneObjectView(object);
-
-            view.sprite.interactive = true;
-            view.sprite.on("pointerdown", (event: Pixi.interaction.InteractionEvent) =>
-            {
-                if (view.isSolidPixelAtEvent(event))
-                {
-                    if (this.playModeTest)
-                    {
-                        if (view.object.dialogue.length > 0)
-                        {
-                            this.showDialogue(view.object);
-                        }
-                        else if (view.object.sceneChange)
-                        {
-                            this.setScene(this.editor.project.getSceneByUUID(view.object.sceneChange)!);
-                            this.setPlayTestMode(true);
-                        }
-                    }
-                    else
-                    {
-                        this.startDragging(view, event);
-                    }
-
-                    event.stopPropagation();
-                }
-            });
 
             this.objectContainer.addChild(view.sprite);
             this.objectViews.set(object, view);

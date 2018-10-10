@@ -54,13 +54,12 @@ class PinnedDrawingView implements View<PinnedDrawing>
     public set model(model: PinnedDrawing)
     {
         this.pin = model;
+
+        this.refreshBorders();
     }
 
-    public refresh(): void
+    public refreshBorders(): void
     {
-        this.sprite.texture = this.pin.drawing.texture.texture;
-        this.sprite.position = this.pin.position;
-
         const width = this.pin.drawing.width;
         const height = this.pin.drawing.height;
 
@@ -82,6 +81,12 @@ class PinnedDrawingView implements View<PinnedDrawing>
         this.hover.alpha = 0.5;
     }
 
+    public refresh(): void
+    {
+        this.sprite.texture = this.pin.drawing.texture.texture;
+        this.sprite.position = this.pin.position;
+    }
+
     /** Set whether this view should display the selection highlight or not */
     public setSelected(selected: boolean)
     {
@@ -90,9 +95,7 @@ class PinnedDrawingView implements View<PinnedDrawing>
 
     public setDimmed(dimmed: boolean)
     {
-        const value = dimmed ? 32 : 255;
-
-        this.sprite.tint = utility.rgb2num(value, value, value);
+        this.sprite.alpha = dimmed ? .1 : 1;
     }
 
     /** Destroy the contained pixi state */
@@ -550,7 +553,6 @@ export default class DrawingBoardsPanel implements Panel
     {
         const view = new PinnedDrawingView();
 
-        view.sprite.interactive = true;
         view.sprite.on("pointerdown", (event: interaction.InteractionEvent) =>
         {
             if (event.data.button === 1) { return; }
@@ -558,10 +560,8 @@ export default class DrawingBoardsPanel implements Panel
             if (this.pickerCallback)
             {
                 this.pickDrawing(view.pin.drawing);
-                return;
             }
-            
-            if (this.mode === "select" || event.data.button === 2)
+            else if (this.mode === "select" || event.data.button === 2)
             {
                 this.startDragging(view, event);
                 
@@ -569,14 +569,13 @@ export default class DrawingBoardsPanel implements Panel
                 {
                     this.select(view.pin);
                 }
-
-                event.stopPropagation();
             }
             else
             {
                 this.startDrawing(view, event);
-                event.stopPropagation();
             }
+
+            event.stopPropagation();
         });
 
         this.pinContainer.addChild(view.sprite);
