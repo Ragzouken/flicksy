@@ -528,8 +528,7 @@ export default class ScenesPanel implements Panel
         {
             if (object.sceneChange)
             {
-                const scene = this.editor.project.getSceneByUUID(object.sceneChange)!;
-                this.objectSceneChangeSelect.selectedIndex = this.editor.project.scenes.indexOf(scene);
+                this.objectSceneChangeSelect.value = object.sceneChange;
             }
             else
             {
