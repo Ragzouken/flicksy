@@ -49,6 +49,7 @@ export class MTexture
         }
 
         this.context.putImageData(this.data, 0, 0);
+        this.needsFetch = false;
     }
 
     public plot(func: PlotFunction): void
