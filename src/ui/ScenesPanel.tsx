@@ -2,6 +2,7 @@ import * as Pixi from 'pixi.js';
 import * as uuid from 'uuid/v4';
 import { Drawing } from '../data/Drawing';
 import { Scene, SceneObject } from '../data/Scene';
+import ModelViewMapping, { View } from '../tools/ModelViewMapping';
 import * as utility from '../tools/utility';
 import FlicksyEditor from './FlicksyEditor';
 import Panel from './Panel';
@@ -48,10 +49,10 @@ class DialogueView
 }
 
 // tslint:disable-next-line:max-classes-per-file
-class SceneObjectView
+class SceneObjectView implements View<SceneObject>
 {
     /** The SceneObject that this view corresponds to */
-    public readonly object: SceneObject;
+    public object: SceneObject;
     /** The Pixi.Sprite for displaying the drawing content */
     public readonly sprite: Pixi.Sprite;
     /** The Pixi.Graphics for displaying the selection highlight */
@@ -59,13 +60,21 @@ class SceneObjectView
     /** The Pixi.Graphics for displaying the hover highlight */
     public readonly hover: Pixi.Graphics;
 
-    public constructor(object: SceneObject)
+    public get model(): SceneObject
+    {
+        return this.object;
+    }
+
+    public set model(object: SceneObject)
     {
         this.object = object;
+        this.refresh();
+    }
 
+    public constructor()
+    {
         // create the sprite and move it to the pin position
-        this.sprite = new Pixi.Sprite(object.drawing.texture.texture);
-        this.sprite.position = object.position;
+        this.sprite = new Pixi.Sprite();
         this.sprite.interactive = true;
 
         // create the selection highlight as a child of the sprite
@@ -76,13 +85,10 @@ class SceneObjectView
         this.hover = new Pixi.Graphics();
         this.sprite.addChild(this.hover);
 
-        this.refresh();
-
         // turn off the selection highlight by default
         this.setSelected(false);
 
         this.hover.visible = false;
-        this.sprite.on("pointerout", () => this.hover.visible = false);
     }
 
     public isSolidPixelAtEvent(event: Pixi.interaction.InteractionEvent): boolean
@@ -107,8 +113,8 @@ class SceneObjectView
         this.sprite.texture = this.object.drawing.texture.texture;
         this.sprite.position = this.object.position;
 
-        const width = this.object.drawing.texture.data.width;
-        const height = this.object.drawing.texture.data.height;
+        const width = this.object.drawing.width;
+        const height = this.object.drawing.height;
 
         this.select.clear();
         this.select.lineStyle(.5, 0xFFFFFF);
@@ -143,12 +149,12 @@ export default class ScenesPanel implements Panel
 
     public selected: SceneObject | undefined;
 
-    private container: Pixi.Container;
-    private overlayContainer: Pixi.Container;
-    private objectContainer: Pixi.Container;
+    private readonly container: Pixi.Container;
+    private readonly overlayContainer: Pixi.Container;
+    private readonly objectContainer: Pixi.Container;
 
-    private objectViews = new Map<SceneObject, SceneObjectView>();
-    
+    private readonly objectViews: ModelViewMapping<SceneObject, SceneObjectView>;
+
     private scene: Scene;
 
     private dragOrigin: Pixi.Point;
@@ -160,14 +166,10 @@ export default class ScenesPanel implements Panel
     private sceneNameInput: HTMLInputElement;
     private sceneDeleteButton: HTMLButtonElement;
 
-    // create object ui
-    private createObjectSelect: HTMLSelectElement;
-
     // selected object ui
     private objectSection: HTMLDivElement;
     private objectNameInput: HTMLInputElement;
     private objectDeleteButton: HTMLButtonElement;
-    private objectDrawingSelect: HTMLSelectElement;
     private objectDialogueInput: HTMLTextAreaElement;
     private objectDialogueShowToggle: HTMLInputElement;
     private objectSceneChangeSelect: HTMLSelectElement;
@@ -179,6 +181,11 @@ export default class ScenesPanel implements Panel
 
     public constructor(private readonly editor: FlicksyEditor)
     {
+        this.objectViews = new ModelViewMapping<SceneObject, SceneObjectView>(
+            () => this.createSceneObjectView(),
+            (view, active) => view.sprite.visible = active  
+        );
+
         this.container = new Pixi.Container();
         editor.pixi.stage.addChild(this.container);
         this.objectContainer = new Pixi.Container();
@@ -313,22 +320,11 @@ export default class ScenesPanel implements Panel
             }, `pick the drawing for the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`);
         });
 
-        this.createObjectSelect = document.getElementById("create-object-drawing-select")! as HTMLSelectElement;
-
-        this.createObjectSelect.addEventListener("change", () =>
-        {
-            if (this.createObjectSelect.selectedIndex >= 0)
-            {
-                this.createObject(this.editor.project.getDrawingByUUID(this.createObjectSelect.value)!);
-            }
-        });
-
-        this.objectNameInput = document.getElementById("object-name")! as HTMLInputElement;
-        this.objectDeleteButton = document.getElementById("delete-object-button")! as HTMLButtonElement;
-        this.objectDrawingSelect = document.getElementById("object-drawing-select")! as HTMLSelectElement;
-        this.objectDialogueInput = document.getElementById("object-dialogue-input")! as HTMLTextAreaElement;
-        this.objectDialogueShowToggle = document.getElementById("show-dialogue-toggle")! as HTMLInputElement;
-        this.objectSceneChangeSelect = document.getElementById("object-scene-select")! as HTMLSelectElement;
+        this.objectNameInput = utility.getElement("object-name");
+        this.objectDeleteButton = utility.getElement("delete-object-button");
+        this.objectDialogueInput = utility.getElement("object-dialogue-input");
+        this.objectDialogueShowToggle = utility.getElement("show-dialogue-toggle");
+        this.objectSceneChangeSelect = utility.getElement("object-scene-select");
 
         this.objectNameInput.addEventListener("input", () => 
         {
@@ -368,20 +364,6 @@ export default class ScenesPanel implements Panel
         this.objectDeleteButton.addEventListener("click", () =>
         {
             if (this.selected) { this.removeObject(this.selected); }
-        });
-
-        this.objectDrawingSelect.addEventListener("change", () =>
-        {
-            if (this.objectDrawingSelect.selectedIndex >= 0)
-            {
-                const drawing = this.editor.project.getDrawingByUUID(this.objectDrawingSelect.value);
-                
-                if (drawing && this.selected)
-                {
-                    this.selected.drawing = drawing;
-                    this.objectViews.get(this.selected)!.refresh();
-                }
-            }
         });
 
         this.objectDialogueInput.addEventListener("input", () =>
@@ -507,24 +489,8 @@ export default class ScenesPanel implements Panel
     /** Resynchronise this display to the data in the underlying Scene */
     public refresh(): void
     {
-        this.setScene(this.scene);
-
-        function drawingToOption(drawing: Drawing)
-        {
-            return { "label": drawing.name, "value": drawing.uuid };
-        }
-
-        utility.repopulateSelect(this.createObjectSelect, 
-                                 this.editor.project.drawings.map(drawingToOption));
-
-        const label = document.createElement("option") as HTMLOptionElement;
-        this.createObjectSelect.insertBefore(label, this.createObjectSelect.firstChild);
-        label.text = "create object from drawing";
-        label.selected = true;
-        label.disabled = true;
-
-        utility.repopulateSelect(this.objectDrawingSelect, 
-                                 this.editor.project.drawings.map(drawingToOption));
+        this.sceneNameInput.value = this.scene.name;
+        this.refreshObjectViews();
 
         utility.repopulateSelect(this.activeSceneSelect,
                                  this.editor.project.scenes.map(scene => ({ label: scene.name, value: scene.uuid })));
@@ -553,7 +519,6 @@ export default class ScenesPanel implements Panel
         this.objectSection.hidden = !object;
         this.objectNameInput.disabled = !object;
         this.objectDeleteButton.disabled = !object;
-        this.objectDrawingSelect.disabled = !object;
         this.objectDialogueInput.disabled = !object;
         this.objectSceneChangeSelect.disabled = !object;
 
@@ -567,8 +532,6 @@ export default class ScenesPanel implements Panel
             {
                 this.objectSceneChangeSelect.selectedIndex = 0;
             }
-
-            this.objectDrawingSelect.selectedIndex = this.editor.project.drawings.indexOf(object.drawing);
 
             this.objectNameInput.value = object.name;
             this.objectDialogueInput.value = object.dialogue;
@@ -590,28 +553,13 @@ export default class ScenesPanel implements Panel
         }
 
         this.scene.removeObject(object);
-
-        if (this.objectViews.has(object))
-        {
-            this.objectViews.get(object)!.destroy();
-            this.objectViews.delete(object);
-        }
+        this.refreshObjectViews();
     }
 
     public setScene(scene: Scene): void
     {
-        this.clear();
         this.scene = scene;
-
-        this.sceneNameInput.value = scene.name;
-        
-        for (const object of scene.objects)
-        {
-            const view = new SceneObjectView(object);
-
-            this.objectContainer.addChild(view.sprite);
-            this.objectViews.set(object, view);
-        }
+        this.refresh();
     }
 
     public createObject(drawing: Drawing): SceneObject
@@ -645,10 +593,25 @@ export default class ScenesPanel implements Panel
         }
     }
 
-    private clear(): void
+    private createSceneObjectView(): SceneObjectView
     {
-        this.objectViews.forEach(view => view.destroy());
-        this.objectViews.clear();
+        const view = new SceneObjectView();
+
+        this.objectContainer.addChild(view.sprite);
+
+        return view;
+    }
+
+    private refreshObjectViews(): void
+    {
+        this.objectViews.setModels(this.scene.objects);
+        this.objectViews.refresh();
+        
+        // reorder the sprites
+        this.scene.objects.forEach((object, index) => 
+        {
+            this.objectContainer.setChildIndex(this.objectViews.get(object)!.sprite, index);
+        });
     }
 
     private stopDragging(): void
