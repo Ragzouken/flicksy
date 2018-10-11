@@ -50,3 +50,20 @@ export function pageBounds(drawings: PositionedDrawing[]): Rectangle
 
     return bounds;
 }
+
+export function pageFirstObjectUnderUnderPoint<TDrawing extends PositionedDrawing>(objects: TDrawing[],
+                                                                                   point: Point,
+                                                                                   precision: HitPrecision): TDrawing | undefined
+{
+    for (let i = objects.length - 1; i >= 0; i -= 1)
+    {
+        const object = objects[i];
+
+        if (positionedDrawingContains(object, point, precision))
+        {
+            return object;
+        }
+    }
+
+    return undefined;
+}

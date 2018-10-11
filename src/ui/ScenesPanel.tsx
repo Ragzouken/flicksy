@@ -1,7 +1,7 @@
 import * as Pixi from 'pixi.js';
 import * as uuid from 'uuid/v4';
 import { Drawing } from '../data/Drawing';
-import { HitPrecision, positionedDrawingContains } from '../data/PositionedDrawing';
+import { HitPrecision, pageFirstObjectUnderUnderPoint } from '../data/PositionedDrawing';
 import { Scene, SceneObject } from '../data/Scene';
 import ModelViewMapping, { View } from '../tools/ModelViewMapping';
 import * as utility from '../tools/utility';
@@ -370,16 +370,17 @@ export default class ScenesPanel implements Panel
 
         this.container.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
         {
-            const view = this.getFirstViewUnderEvent(event);
-
+            const page = utility.floor(event.data.getLocalPosition(this.objectContainer));
+            const object = pageFirstObjectUnderUnderPoint(this.scene.objects, page, HitPrecision.Pixel);
+            
             this.objectViews.forEach(v => v.hover.visible = false);
 
-            if (view)
+            if (object)
             {
-                const interactable = view.object.dialogue.length > 0 
-                                  || view.object.sceneChange;
+                const interactable = object.dialogue.length > 0 
+                                  || object.sceneChange;
 
-                view.hover.visible = !this.playModeTest;
+                this.objectViews.get(object)!.hover.visible = !this.playModeTest;
                 this.container.cursor = this.playModeTest && interactable
                                       ? "pointer"
                                       : "grab";
@@ -392,48 +393,30 @@ export default class ScenesPanel implements Panel
 
         this.container.on("pointerdown", (event: Pixi.interaction.InteractionEvent) => 
         {
-            const view = this.getFirstViewUnderEvent(event);
+            const page = utility.floor(event.data.getLocalPosition(this.objectContainer));
+            const object = pageFirstObjectUnderUnderPoint(this.scene.objects, page, HitPrecision.Pixel);
+            
+            if (!object) { return; }
 
-            if (view)
+            if (this.playModeTest)
             {
-                if (this.playModeTest)
+                if (object.dialogue.length > 0)
                 {
-                    if (view.object.dialogue.length > 0)
-                    {
-                        this.showDialogue(view.object);
-                    }
-                    else if (view.object.sceneChange)
-                    {
-                        this.setScene(this.editor.project.getSceneByUUID(view.object.sceneChange)!);
-                        this.setPlayTestMode(true);
-                    }
+                    this.showDialogue(object);
                 }
-                else
+                else if (object.sceneChange)
                 {
-                    this.startDragging(view, event);
+                    this.setScene(this.editor.project.getSceneByUUID(object.sceneChange)!);
+                    this.setPlayTestMode(true);
                 }
-
-                event.stopPropagation();
             }
+            else
+            {
+                this.startDragging(this.objectViews.get(object)!, event);
+            }
+
+            event.stopPropagation();
         });
-    }
-
-    public getFirstViewUnderEvent(event: Pixi.interaction.InteractionEvent): SceneObjectView | undefined
-    {
-        const page = utility.floor(event.data.getLocalPosition(this.objectContainer));
-
-        for (let i = this.scene.objects.length - 1; i >= 0; i -= 1)
-        {
-            const object = this.scene.objects[i];
-            const view = this.objectViews.get(object)!;
-
-            if (positionedDrawingContains(object, page, HitPrecision.Pixel))
-            {
-                return view;
-            }
-        }
-
-        return undefined;
     }
 
     public show(): void

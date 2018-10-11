@@ -2,114 +2,16 @@ import { Container, Graphics, interaction, Point, Rectangle, Sprite, Texture } f
 import { Drawing } from '../data/Drawing';
 import { DrawingBoard, PinnedDrawing } from '../data/DrawingBoard';
 import { pageBounds } from '../data/PositionedDrawing';
-import ModelViewMapping, { View } from '../tools/ModelViewMapping';
+import ModelViewMapping from '../tools/ModelViewMapping';
 import { MTexture } from '../tools/MTexture';
 import { randomisePalette } from '../tools/saving';
 import * as utility from '../tools/utility';
 import FlicksyEditor from './FlicksyEditor';
 import Panel from './Panel';
+import PositionedDrawingView from './PositionedDrawingView';
 
-/** Manages the pixi state for displaying a PinnedDrawing */
-class PinnedDrawingView implements View<PinnedDrawing>
-{
-    /** The pinned drawing that this view corresponds to */
-    public pin: PinnedDrawing;
-    /** The Pixi.Sprite for displaying the drawing content */
-    public readonly sprite: Sprite;
-    /** The Pixi.Graphics for displaying the drawing border */
-    public readonly border: Graphics;
-    /** The Pixi.Graphics for displaying the selection highlight */
-    public readonly select: Graphics;
-    /** The Pixi.Graphics for displaying the hover highlight */
-    public readonly hover: Graphics;
+export type PinnedDrawingView = PositionedDrawingView<PinnedDrawing>;
 
-    public constructor()
-    {
-        // create the sprite
-        this.sprite = new Sprite();
-        this.sprite.interactive = true;
-        this.sprite.cursor = "none";
-
-        this.border = new Graphics();
-        this.sprite.addChild(this.border);
-
-        this.select = new Graphics();
-        this.sprite.addChild(this.select);
-
-        this.hover = new Graphics();
-        this.sprite.addChild(this.hover);
-        
-        // turn off the selection highlight by default
-        this.setSelected(false);
-
-        this.hover.visible = false;
-        this.sprite.on("pointerover", () => this.hover.visible = true);
-        this.sprite.on("pointerout", () => this.hover.visible = false);
-    }
-
-    public get model(): PinnedDrawing
-    {
-        return this.pin;
-    }
-
-    public set model(model: PinnedDrawing)
-    {
-        this.pin = model;
-
-        this.refreshBorders();
-    }
-
-    public refreshBorders(): void
-    {
-        const width = this.pin.drawing.width;
-        const height = this.pin.drawing.height;
-
-        // border
-        this.border.clear();
-        this.border.lineStyle(.8, 0xFFFFFF);
-        this.border.drawRect(-.5, -.5, width + 1, height + 1);
-        this.border.alpha = 0.25;
-
-        // selection highlight
-        this.select.clear();
-        this.select.lineStyle(.5, 0xFFFFFF);
-        this.select.drawRect(-.5, -.5, width + 1, height + 1);
-        this.select.alpha = 0.5;
-        // hover
-        this.hover.clear();
-        this.hover.lineStyle(.5, 0xFF0000);
-        this.hover.drawRect(-.5, -.5, width + 1, height + 1);
-        this.hover.alpha = 0.5;
-    }
-
-    public refresh(): void
-    {
-        this.sprite.texture = this.pin.drawing.texture.texture;
-        this.sprite.position = this.pin.position;
-    }
-
-    /** Set whether this view should display the selection highlight or not */
-    public setSelected(selected: boolean)
-    {
-        this.select.visible = selected;
-    }
-
-    public setDimmed(dimmed: boolean)
-    {
-        this.sprite.alpha = dimmed ? .1 : 1;
-    }
-
-    /** Destroy the contained pixi state */
-    public destroy(): void
-    {
-        this.sprite.destroy();
-        this.border.destroy();
-        this.select.destroy();
-        this.hover.destroy();
-    }
-}
-
-// tslint:disable-next-line:max-classes-per-file
 export default class DrawingBoardsPanel implements Panel
 {
     public get activeBoard(): DrawingBoard { return this.drawingBoard }
@@ -398,7 +300,7 @@ export default class DrawingBoardsPanel implements Panel
     public select(pin: PinnedDrawing | undefined): void
     {
         this.selected = pin;
-        this.pinViews.forEach(view => view.setSelected(view.pin === pin));
+        this.pinViews.forEach(view => view.setSelected(view.object === pin));
 
         this.drawingSectionDiv.hidden = !pin;
 
@@ -517,12 +419,12 @@ export default class DrawingBoardsPanel implements Panel
         {
             const position = utility.floor(utility.add(this.dragOrigin, event.data.getLocalPosition(this.container)));
 
-            this.draggedPin.pin.position = position;
+            this.draggedPin.object.position = position;
             this.draggedPin.sprite.position = position;
         }
         else if (this.dragType === "draw" && this.draggedPin)
         {
-            const base = this.draggedPin.pin.drawing.texture;
+            const base = this.draggedPin.object.drawing.texture;
             const m = event.data.getLocalPosition(this.draggedPin.sprite);
 
             this.draw(this.dragPrev, m, base);
@@ -551,7 +453,7 @@ export default class DrawingBoardsPanel implements Panel
 
     private createPinView(): PinnedDrawingView
     {
-        const view = new PinnedDrawingView();
+        const view = new PositionedDrawingView<PinnedDrawing>();
 
         view.sprite.on("pointerdown", (event: interaction.InteractionEvent) =>
         {
@@ -559,7 +461,7 @@ export default class DrawingBoardsPanel implements Panel
 
             if (this.pickerCallback)
             {
-                this.pickDrawing(view.pin.drawing);
+                this.pickDrawing(view.model.drawing);
             }
             else if (this.mode === "select" || event.data.button === 2)
             {
@@ -567,7 +469,7 @@ export default class DrawingBoardsPanel implements Panel
                 
                 if (this.mode === "select") 
                 {
-                    this.select(view.pin);
+                    this.select(view.model);
                 }
             }
             else
@@ -617,7 +519,7 @@ export default class DrawingBoardsPanel implements Panel
         this.dragType = "draw";
         this.dragPrev = event.data.getLocalPosition(view.sprite);
 
-        this.draw(this.dragPrev, this.dragPrev, view.pin.drawing.texture);
+        this.draw(this.dragPrev, this.dragPrev, view.object.drawing.texture);
     }
 
     private draw(prev: Point, 
