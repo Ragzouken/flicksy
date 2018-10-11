@@ -1,4 +1,11 @@
-import { Point, PointLike } from 'pixi.js'
+import { DisplayObject, Point, PointLike } from 'pixi.js';
+
+export function transform(point: Point, 
+                          prev: DisplayObject,
+                          next: DisplayObject) : Point
+{
+    return next.toLocal(prev.toGlobal(point));
+}
 
 export function buttonClick(id: string, action: () => void)
 {
@@ -139,6 +146,8 @@ export function maximum<T>(array: T[], select: (element: T) => number): number
 
     return max;
 }
+
+
 
 interface Option
 {

@@ -14,14 +14,14 @@ export type PinnedDrawingView = PositionedDrawingView<PinnedDrawing>;
 
 class DragState
 {
-    public localPrev: Point;
+    public current: Point;
 
     public constructor(public readonly type: "move" | "draw" | "pan",
                        public readonly pointer: number,
-                       public readonly localStart: Point,
-                       public readonly object?: PinnedDrawing)
+                       public readonly start: Point,
+                       public readonly view?: PinnedDrawingView)
     {
-        this.localPrev = localStart;
+        this.current = start;
     }
 }
 
@@ -349,7 +349,10 @@ export default class DrawingBoardsPanel implements Panel
      */
     public updateDragging(event: interaction.InteractionEvent): void
     {
-        this.cursorSprite.position = utility.floor(event.data.getLocalPosition(this.container));
+        const viewPoint = event.data.getLocalPosition(this.container.parent);
+        const pagePoint = event.data.getLocalPosition(this.container);
+
+        this.cursorSprite.position = utility.floor(pagePoint);
 
         const drag = this.drags.get(event.data.identifier);
 
@@ -357,42 +360,24 @@ export default class DrawingBoardsPanel implements Panel
         {
             if (drag.type === "pan")
             {
-                // compute parent-space offset of drag-start to object position
-                const a = this.container.position;
-                const b = this.container.parent.toLocal(this.container.toGlobal(drag.localStart));
-                const offset = utility.sub(a, b);
+                const offset = utility.sub(this.container.position,
+                                           utility.transform(drag.start, this.container, this.container.parent));
 
-                // compute parent-space delta from drag-start to drag-now
-                const parentNow = event.data.getLocalPosition(this.container.parent);
-
-                // offset parent-space drag-now by parent-space offset
-                const position = utility.floor(utility.add(offset, parentNow));
-
-                this.container.position = position;
+                this.container.position = utility.add(offset, viewPoint);
             }
             else if (drag.type === "move")
             {
-                const object = drag.object!;
-                const view = this.pinViews.get(object)!;
-                
-                // compute parent-space delta from drag-start to drag-now
-                const parentNow = event.data.getLocalPosition(view.sprite.parent);
-
-                // offset parent-space drag-now by parent-space offset
-                object.position = utility.floor(utility.sub(parentNow, drag.localStart));
-                view.refresh();
+                drag.view!.model.position = utility.floor(utility.sub(pagePoint, drag.start));
+                drag.view!.refresh();
             }
             else if (drag.type === "draw")
             {
-                const object = drag.object!;
-                const view = this.pinViews.get(object)!;
+                const localPrev = drag.current || drag.start;
+                const localNext = event.data.getLocalPosition(drag.view!.sprite);
 
-                const localPrev = drag.localPrev || drag.localStart;
-                const localNext = event.data.getLocalPosition(view.sprite);
+                this.draw(localPrev, localNext, drag.view!.model.drawing.texture);
 
-                this.draw(localPrev, localNext, object.drawing.texture);
-
-                drag.localPrev = localNext;
+                drag.current = localNext;
             }
         }
     }
@@ -436,7 +421,7 @@ export default class DrawingBoardsPanel implements Panel
             const drag = new DragState("move", 
                                        event.data.identifier, 
                                        event.data.getLocalPosition(view.sprite), 
-                                       object);
+                                       view);
             this.drags.set(event.data.identifier, drag);
 
             if (this.mode === "select") 
@@ -451,7 +436,7 @@ export default class DrawingBoardsPanel implements Panel
             const drag = new DragState("draw", 
                                        event.data.identifier, 
                                        event.data.getLocalPosition(view.sprite), 
-                                       object);
+                                       view);
             this.drags.set(event.data.identifier, drag);
         }
 
