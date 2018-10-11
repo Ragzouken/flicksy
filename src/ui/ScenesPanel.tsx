@@ -1,6 +1,7 @@
 import * as Pixi from 'pixi.js';
 import * as uuid from 'uuid/v4';
 import { Drawing } from '../data/Drawing';
+import { HitPrecision, positionedDrawingContains } from '../data/PositionedDrawing';
 import { Scene, SceneObject } from '../data/Scene';
 import ModelViewMapping, { View } from '../tools/ModelViewMapping';
 import * as utility from '../tools/utility';
@@ -89,23 +90,6 @@ class SceneObjectView implements View<SceneObject>
         this.setSelected(false);
 
         this.hover.visible = false;
-    }
-
-    public isSolidPixelAtEvent(event: Pixi.interaction.InteractionEvent): boolean
-    {
-        event.data.getLocalPosition(this.sprite);
-
-        if (!this.sprite.containsPoint(event.data.global)) { return false; }
-
-        return this.isSolidPixelAt(event.data.getLocalPosition(this.sprite));
-    }
-
-    public isSolidPixelAt(point: Pixi.Point): boolean
-    {
-        point = utility.floor(point);
-        const pixel = this.object.drawing.getPixel(point.x, point.y);
-
-        return pixel > 0;
     }
 
     public refresh()
@@ -436,12 +420,14 @@ export default class ScenesPanel implements Panel
 
     public getFirstViewUnderEvent(event: Pixi.interaction.InteractionEvent): SceneObjectView | undefined
     {
+        const page = utility.floor(event.data.getLocalPosition(this.objectContainer));
+
         for (let i = this.scene.objects.length - 1; i >= 0; i -= 1)
         {
             const object = this.scene.objects[i];
             const view = this.objectViews.get(object)!;
 
-            if (view.isSolidPixelAtEvent(event))
+            if (positionedDrawingContains(object, page, HitPrecision.Pixel))
             {
                 return view;
             }

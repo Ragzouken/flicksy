@@ -1,6 +1,7 @@
-import { Point, Rectangle } from "pixi.js";
+import { Point } from "pixi.js";
 import { Drawing } from "./Drawing";
-import { DrawingArrangement, FlicksyData, FlicksyProject, PositionedDrawing } from './FlicksyProject';
+import { FlicksyData, FlicksyProject } from './FlicksyProject';
+import { PositionedDrawing } from "./PositionedDrawing";
 
 export interface PinnedDrawingData
 {
@@ -19,14 +20,6 @@ export class PinnedDrawing implements PositionedDrawing, FlicksyData<PinnedDrawi
 {
     public position: Point;
     public drawing: Drawing;
-
-    public get rectangle()
-    {
-        return new Rectangle(this.position.x, 
-                             this.position.y, 
-                             this.drawing.width, 
-                             this.drawing.height);
-    }
 
     public fromData(data: PinnedDrawingData, project: FlicksyProject): PinnedDrawing
     {
@@ -53,14 +46,12 @@ export class PinnedDrawing implements PositionedDrawing, FlicksyData<PinnedDrawi
 
 /** A named collection of Drawings arranged spatially */
 // tslint:disable-next-line:max-classes-per-file
-export class DrawingBoard implements DrawingArrangement
+export class DrawingBoard
 {
     public uuid: string;
     public name: string;
     
     public pinnedDrawings: PinnedDrawing[] = [];
-
-    public get drawings() { return this.pinnedDrawings; };
 
     public fromData(data: DrawingBoardData, project: FlicksyProject): DrawingBoard
     {

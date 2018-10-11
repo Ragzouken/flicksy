@@ -1,6 +1,7 @@
 import { Container, Graphics, interaction, Point, Rectangle, Sprite, Texture } from 'pixi.js';
 import { Drawing } from '../data/Drawing';
 import { DrawingBoard, PinnedDrawing } from '../data/DrawingBoard';
+import { pageBounds } from '../data/PositionedDrawing';
 import ModelViewMapping, { View } from '../tools/ModelViewMapping';
 import { MTexture } from '../tools/MTexture';
 import { randomisePalette } from '../tools/saving';
@@ -413,7 +414,7 @@ export default class DrawingBoardsPanel implements Panel
      */
     public reframe(): void
     {
-        if (this.drawingBoard.drawings.length === 0)
+        if (this.drawingBoard.pinnedDrawings.length === 0)
         {
             this.container.scale.set(1);
             this.container.position.set(-80, -50);
@@ -422,8 +423,7 @@ export default class DrawingBoardsPanel implements Panel
         }
 
         // compute bounds
-        const bounds = this.drawingBoard.drawings[0].rectangle.clone();
-        this.drawingBoard.drawings.forEach(pin => bounds.enlarge(pin.rectangle));
+        const bounds = pageBounds(this.drawingBoard.pinnedDrawings);
 
         // fit bounds
         const hscale = this.editor.resolution[0] / bounds.width;
@@ -539,11 +539,11 @@ export default class DrawingBoardsPanel implements Panel
 
     private refreshPinViews(): void
     {
-        this.pinViews.setModels(this.drawingBoard.drawings);
+        this.pinViews.setModels(this.drawingBoard.pinnedDrawings);
         this.pinViews.refresh();
         
         // reorder the sprites so 
-        this.drawingBoard.drawings.forEach((pin, index) => 
+        this.drawingBoard.pinnedDrawings.forEach((pin, index) => 
         {
             this.pinContainer.setChildIndex(this.pinViews.get(pin)!.sprite, index);
         });

@@ -1,4 +1,3 @@
-import { Point } from 'pixi.js';
 import * as uuid4 from 'uuid/v4';
 import { MTexture } from '../tools/MTexture';
 import { Drawing, DrawingData } from './Drawing';
@@ -9,17 +8,6 @@ export interface FlicksyData<T, TData>
 {
     fromData(data: TData, project: FlicksyProject): T;
     toData(): TData;
-}
-
-export interface PositionedDrawing
-{
-    drawing: Drawing;
-    position: Point;
-}
-
-export interface DrawingArrangement
-{
-    drawings: PositionedDrawing[];
 }
 
 export interface FlicksyProjectData
@@ -138,7 +126,7 @@ export class FlicksyProject
         }
 
         this.drawings.forEach(drawing => counts.set(drawing, 0));
-        this.drawingBoards.forEach(board => board.drawings.forEach(countEntity));
+        this.drawingBoards.forEach(board => board.pinnedDrawings.forEach(countEntity));
         this.scenes.forEach(scene => scene.objects.forEach(countEntity));
 
         counts.forEach((count, drawing) => 
