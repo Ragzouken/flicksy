@@ -411,9 +411,12 @@ export default class DrawingBoardsPanel implements Panel
         // find the first object, if any, at this position
         const object = pageFirstObjectUnderUnderPoint(this.drawingBoard.pinnedDrawings, page, HitPrecision.Bounds);
 
+        const middle = event.data.originalEvent instanceof MouseEvent
+                    && event.data.originalEvent.button === 1;
+
         // if there's no object under the pointer, or the pointer is a 
         // middle-click, then begin a panning drag
-        if (!object || event.data.button === 1)
+        if (!object || middle)
         {
             const drag = new DragState("pan", 
                                        event.data.identifier, 
