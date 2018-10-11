@@ -7,6 +7,7 @@ import ModelViewMapping, { View } from '../tools/ModelViewMapping';
 import * as utility from '../tools/utility';
 import FlicksyEditor from './FlicksyEditor';
 import Panel from './Panel';
+import PositionedDrawingView from './PositionedDrawingView';
 
 class DialogueView
 {
@@ -49,82 +50,7 @@ class DialogueView
     }
 }
 
-// tslint:disable-next-line:max-classes-per-file
-class SceneObjectView implements View<SceneObject>
-{
-    /** The SceneObject that this view corresponds to */
-    public object: SceneObject;
-    /** The Pixi.Sprite for displaying the drawing content */
-    public readonly sprite: Pixi.Sprite;
-    /** The Pixi.Graphics for displaying the selection highlight */
-    public readonly select: Pixi.Graphics;
-    /** The Pixi.Graphics for displaying the hover highlight */
-    public readonly hover: Pixi.Graphics;
-
-    public get model(): SceneObject
-    {
-        return this.object;
-    }
-
-    public set model(object: SceneObject)
-    {
-        this.object = object;
-        this.refresh();
-    }
-
-    public constructor()
-    {
-        // create the sprite and move it to the pin position
-        this.sprite = new Pixi.Sprite();
-        this.sprite.interactive = true;
-
-        // create the selection highlight as a child of the sprite
-        this.select = new Pixi.Graphics();
-        this.sprite.addChild(this.select);
-
-        // create the selection highlight as a child of the sprite
-        this.hover = new Pixi.Graphics();
-        this.sprite.addChild(this.hover);
-
-        // turn off the selection highlight by default
-        this.setSelected(false);
-
-        this.hover.visible = false;
-    }
-
-    public refresh()
-    {
-        this.sprite.texture = this.object.drawing.texture.texture;
-        this.sprite.position = this.object.position;
-
-        const width = this.object.drawing.width;
-        const height = this.object.drawing.height;
-
-        this.select.clear();
-        this.select.lineStyle(.5, 0xFFFFFF);
-        this.select.drawRect(-.5, -.5, width + 1, height + 1);
-        this.select.alpha = 0.5;
-
-        this.hover.clear();
-        this.hover.lineStyle(.5, 0xFF0000);
-        this.hover.drawRect(-.5, -.5, width + 1, height + 1);
-        this.hover.alpha = 0.5;
-    }
-
-    /** Set whether this view should display the selection highlight or not */
-    public setSelected(selected: boolean)
-    {
-        this.select.visible = selected;
-    }
-
-    /** Destroy the contained pixi state */
-    public destroy(): void
-    {
-        this.sprite.destroy();
-        this.select.destroy();
-        this.hover.destroy();
-    }
-}
+export type SceneObjectView = PositionedDrawingView<SceneObject>;
 
 // tslint:disable-next-line:max-classes-per-file
 export default class ScenesPanel implements Panel
@@ -564,7 +490,8 @@ export default class ScenesPanel implements Panel
 
     private createSceneObjectView(): SceneObjectView
     {
-        const view = new SceneObjectView();
+        const view = new PositionedDrawingView<SceneObject>();
+        view.sprite.interactive = false;
 
         this.objectContainer.addChild(view.sprite);
 

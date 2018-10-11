@@ -1,7 +1,7 @@
 import { Container, Graphics, interaction, Point, Rectangle, Sprite, Texture } from 'pixi.js';
 import { Drawing } from '../data/Drawing';
 import { DrawingBoard, PinnedDrawing } from '../data/DrawingBoard';
-import { pageBounds } from '../data/PositionedDrawing';
+import { HitPrecision, pageBounds, pageFirstObjectUnderUnderPoint } from '../data/PositionedDrawing';
 import ModelViewMapping from '../tools/ModelViewMapping';
 import { MTexture } from '../tools/MTexture';
 import { randomisePalette } from '../tools/saving';
@@ -56,6 +56,9 @@ export default class DrawingBoardsPanel implements Panel
     private readonly drawingSectionDiv: HTMLDivElement;
     private readonly drawingNameInput: HTMLInputElement;
 
+    // picker ui
+    private readonly searchInput: HTMLInputElement;
+
     public constructor(private readonly editor: FlicksyEditor)
     {
         this.sidebar = utility.getElement("drawing-sidebar");
@@ -66,76 +69,32 @@ export default class DrawingBoardsPanel implements Panel
             (view, active) => view.sprite.visible = active,
         ); 
 
+        // containers
         this.container = new Container();
         editor.pixi.stage.addChild(this.container);
         this.pinContainer = new Container();
         this.container.addChild(this.pinContainer);
 
         this.container.interactive = true;
-        // this.container.cursor = "none";
         this.container.hitArea = new Rectangle(-1000, -1000, 2000, 2000);
-        // this.container.pivot = new Pixi.Point(80, 50);
 
+        // modes
         this.selectModeButton = utility.getElement("drawing-select-button");
         this.drawModeButton = utility.getElement("drawing-draw-button");
 
         this.selectModeButton.addEventListener("click", () => this.setMode("select"));
         this.drawModeButton.addEventListener("click", () => this.setMode("draw"));
 
-        const getCenterScenePosition = () =>
-        {
-            const view = new Point(editor.pixi.view.width / 2, editor.pixi.view.height / 2);
-            const scene = this.container.toLocal(view);
-
-            return scene;
-        }
-
-        document.getElementById("container")!.addEventListener("wheel", event =>
-        {
-            if (!this.container.visible) { return; }
-
-            const wheel = event as WheelEvent;
-            this.zoom += wheel.deltaY * -0.005;
-            this.zoom = utility.clamp(-2, 1, this.zoom);
-            const scale = Math.pow(2, this.zoom);
-
-            const mouseView = this.editor.getMousePositionView();
-            const mouseScenePrev = this.container.toLocal(mouseView);
-            
-            this.container.scale = new Point(scale, scale);
-
-            const mouseSceneNext = this.container.toLocal(mouseView);
-            const delta = utility.mul(utility.sub(mouseSceneNext, mouseScenePrev), scale);
-
-            this.container.position = utility.add(this.container.position, delta);
-        });
-
-        this.container.on("pointerdown", (event: interaction.InteractionEvent) =>
-        {
-            this.stopDragging();
-            this.dragType = "pan";
-            this.dragOrigin = utility.sub(this.container.position, event.data.getLocalPosition(this.container.parent));
-            event.stopPropagation();
-        });
+        // mouse controls
+        this.container.on("pointerdown", (event: interaction.InteractionEvent) => this.onPointerDown(event));
+        this.container.on("pointermove", (event: interaction.InteractionEvent) => this.onPointerMove(event));
+        document.addEventListener("pointerup", () => this.stopDragging());
+        utility.getElement("container").addEventListener("wheel", event => this.onWheel(event));
 
         // search
-        const searchInput = utility.getElement<HTMLInputElement>("pick-drawing-search-input");
-
-        searchInput.addEventListener("input", () =>
-        {
-            const query = searchInput.value;
-
-            this.pinViews.forEach((view, model) =>
-            {
-               view.setDimmed(query.length > 0 ? !model.drawing.name.includes(query) : false); 
-            });
-        });
-
-        utility.buttonClick("pick-drawing-search-reset", () =>
-        {
-            searchInput.value = "";
-            this.pinViews.forEach(view => view.setDimmed(false));
-        });
+        this.searchInput = utility.getElement("pick-drawing-search-input");
+        this.searchInput.addEventListener("input", () => this.setSearchQuery(this.searchInput.value));
+        utility.buttonClick("pick-drawing-search-reset", () => this.setSearchQuery(""));
 
         // scene bounds
         const bounds = new Graphics();
@@ -143,50 +102,21 @@ export default class DrawingBoardsPanel implements Panel
         bounds.drawRect(-.5, -.5, 160 + 1, 100 + 1);
         bounds.alpha = .125;
         this.container.addChild(bounds);
-
-        document.addEventListener("pointerup", () => this.stopDragging());
         
         this.drawingSectionDiv = utility.getElement("selected-drawing-section");
-        this.createWidthInput = utility.getElement("create-drawing-width");
-        this.createHeightInput = utility.getElement("create-drawing-height");
+        const widthInput = utility.getElement<HTMLSelectElement>("create-drawing-width");
+        const heightInput = utility.getElement<HTMLSelectElement>("create-drawing-height");
 
         utility.buttonClick("create-drawing-button", () =>
         {
-            const width = +this.createWidthInput.options[this.createWidthInput.selectedIndex].value;
-            const height = +this.createHeightInput.options[this.createHeightInput.selectedIndex].value;
+            const width = +widthInput.options[widthInput.selectedIndex].value;
+            const height = +heightInput.options[heightInput.selectedIndex].value;
 
-            const position = getCenterScenePosition();
-            position.x = Math.floor(position.x - width / 2);
-            position.y = Math.floor(position.y - height / 2);
-
-            const drawing = this.editor.project.createDrawing(width, height);
-            drawing.name = `drawing ${this.activeBoard.pinnedDrawings.length}`;
-            const pin = this.activeBoard.pinDrawing(drawing, position);
-            
-            this.refreshPinViews();
-            this.select(pin);
+            this.createNewDrawing(width, height);
         });
 
-        utility.buttonClick("pin-higher", () =>
-        {
-            if (this.selected)
-            {
-                const index = this.activeBoard.pinnedDrawings.indexOf(this.selected);
-                
-                utility.swapArrayElements(this.activeBoard.pinnedDrawings, index, index + 1);
-                this.refreshPinViews();
-            }
-        });
-
-        utility.buttonClick("pin-lower", () =>
-        {
-            if (this.selected)
-            {
-                const index = this.activeBoard.pinnedDrawings.indexOf(this.selected);
-                utility.swapArrayElements(this.activeBoard.pinnedDrawings, index, index - 1);
-                this.refresh();
-            }
-        });
+        utility.buttonClick("pin-higher", () => this.shiftSelectedPinUp());
+        utility.buttonClick("pin-lower", () => this.shiftSelectedPinDown());
 
         this.drawingNameInput = utility.getElement("drawing-name");
         this.drawingNameInput.addEventListener("input", () =>
@@ -202,15 +132,14 @@ export default class DrawingBoardsPanel implements Panel
             if (this.selected) { this.removePin(this.selected); }
         });
 
+        // brushes
         this.brushSize = 1;
         this.brushColor = 0xFFFFFFFF;
         const brushes = utility.getElement("brushes");
   
         for (let i = 0; i < brushes.children.length; ++i)
         {
-            const cell = brushes.children[i];
-            const button = cell.children[0];
-            button.addEventListener("click", () => 
+            brushes.children[i].children[0].addEventListener("click", () => 
             {
                 this.brushSize = i + 1;
                 this.setBrushColor(this.paletteIndex);
@@ -218,6 +147,7 @@ export default class DrawingBoardsPanel implements Panel
             });
         }
 
+        // palette
         const palette = utility.getElement("palette");
 
         for (let i = 0; i < palette.children.length; ++i)
@@ -244,6 +174,7 @@ export default class DrawingBoardsPanel implements Panel
             this.refresh();
         });
 
+        // paint cursor
         this.cursorSprite = new Sprite();
         this.cursorSprite.visible = true;
         this.cursorSprite.interactive = false;
@@ -439,6 +370,100 @@ export default class DrawingBoardsPanel implements Panel
         }
     }
 
+    private onPointerDown(event: interaction.InteractionEvent): void
+    {
+        this.stopDragging();
+
+        const page = utility.floor(event.data.getLocalPosition(this.pinContainer));
+        const object = pageFirstObjectUnderUnderPoint(this.drawingBoard.pinnedDrawings, page, HitPrecision.Bounds);
+
+        if (!object || event.data.button === 1)
+        {
+            this.dragType = "pan";
+            this.dragOrigin = utility.sub(this.container.position, event.data.getLocalPosition(this.container.parent));
+        }
+        else if (this.pickerCallback)
+        {
+            this.pickDrawing(object.drawing);
+        }
+        else if (this.mode === "select" || event.data.button === 2)
+        {
+            this.startDragging(this.pinViews.get(object)!, event);
+            
+            if (this.mode === "select") 
+            {
+                this.select(object);
+            }
+        }
+        else
+        {
+            this.startDrawing(this.pinViews.get(object)!, event);
+        }
+
+        event.stopPropagation();
+    }
+
+    private onPointerMove(event: interaction.InteractionEvent): void
+    {
+        const page = utility.floor(event.data.getLocalPosition(this.pinContainer));
+        const object = pageFirstObjectUnderUnderPoint(this.drawingBoard.pinnedDrawings, page, HitPrecision.Bounds);
+        
+        this.pinViews.forEach(v => v.hover.visible = v.object === object);
+        this.container.cursor = object ? "grab" : "initial";
+    }
+
+    private onWheel(event: WheelEvent): void
+    {
+        if (!this.container.visible) { return; }
+
+        const wheel = event as WheelEvent;
+        this.zoom += wheel.deltaY * -0.005;
+        this.zoom = utility.clamp(-2, 1, this.zoom);
+        const scale = Math.pow(2, this.zoom);
+
+        const mouseView = this.editor.getMousePositionView();
+        const mouseScenePrev = this.container.toLocal(mouseView);
+        
+        this.container.scale = new Point(scale, scale);
+
+        const mouseSceneNext = this.container.toLocal(mouseView);
+        const delta = utility.mul(utility.sub(mouseSceneNext, mouseScenePrev), scale);
+
+        this.container.position = utility.add(this.container.position, delta);
+    }
+
+    private shiftSelectedPinUp(): void
+    {
+        if (this.selected)
+        {
+            const index = this.activeBoard.pinnedDrawings.indexOf(this.selected);
+            
+            utility.swapArrayElements(this.activeBoard.pinnedDrawings, index, index + 1);
+            this.refreshPinViews();
+        }
+    }
+
+    private shiftSelectedPinDown(): void
+    {
+        if (this.selected)
+        {
+            const index = this.activeBoard.pinnedDrawings.indexOf(this.selected);
+            
+            utility.swapArrayElements(this.activeBoard.pinnedDrawings, index, index - 1);
+            this.refreshPinViews();
+        }
+    }
+
+    private setSearchQuery(query: string): void
+    {
+        this.searchInput.value = query;
+
+        this.pinViews.forEach((view, model) =>
+        {
+            view.setDimmed(query.length > 0 ? !model.drawing.name.includes(query) : false); 
+        });
+    }
+
     private refreshPinViews(): void
     {
         this.pinViews.setModels(this.drawingBoard.pinnedDrawings);
@@ -451,34 +476,26 @@ export default class DrawingBoardsPanel implements Panel
         });
     }
 
+    private createNewDrawing(width: number, height: number): void
+    {
+        // center
+        const view = new Point(this.editor.pixi.view.width / 2, this.editor.pixi.view.height / 2);
+        const position = this.container.toLocal(view);
+
+        position.x = Math.floor(position.x - width / 2);
+        position.y = Math.floor(position.y - height / 2);
+
+        const drawing = this.editor.project.createDrawing(width, height);
+        drawing.name = `drawing ${this.activeBoard.pinnedDrawings.length}`;
+        const pin = this.activeBoard.pinDrawing(drawing, position);
+        
+        this.refreshPinViews();
+        this.select(pin);
+    }
+
     private createPinView(): PinnedDrawingView
     {
         const view = new PositionedDrawingView<PinnedDrawing>();
-
-        view.sprite.on("pointerdown", (event: interaction.InteractionEvent) =>
-        {
-            if (event.data.button === 1) { return; }
-
-            if (this.pickerCallback)
-            {
-                this.pickDrawing(view.model.drawing);
-            }
-            else if (this.mode === "select" || event.data.button === 2)
-            {
-                this.startDragging(view, event);
-                
-                if (this.mode === "select") 
-                {
-                    this.select(view.model);
-                }
-            }
-            else
-            {
-                this.startDrawing(view, event);
-            }
-
-            event.stopPropagation();
-        });
 
         this.pinContainer.addChild(view.sprite);
         

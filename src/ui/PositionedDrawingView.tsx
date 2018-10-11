@@ -18,7 +18,6 @@ export default class PositionedDrawingView<TObject extends PositionedDrawing> im
     {
         // create the sprite
         this.sprite = new Sprite();
-        this.sprite.interactive = true;
         this.sprite.cursor = "none";
 
         this.border = new Graphics();
@@ -34,8 +33,6 @@ export default class PositionedDrawingView<TObject extends PositionedDrawing> im
         this.setSelected(false);
 
         this.hover.visible = false;
-        this.sprite.on("pointerover", () => this.hover.visible = true);
-        this.sprite.on("pointerout", () => this.hover.visible = false);
     }
 
     public get model(): TObject
@@ -77,6 +74,8 @@ export default class PositionedDrawingView<TObject extends PositionedDrawing> im
     {
         this.sprite.texture = this.object.drawing.texture.texture;
         this.sprite.position = this.object.position;
+
+        this.refreshBorders();
     }
 
     /** Set whether this view should display the selection highlight or not */
