@@ -12,6 +12,20 @@ import PositionedDrawingView from './PositionedDrawingView';
 
 export type PinnedDrawingView = PositionedDrawingView<PinnedDrawing>;
 
+class DragState
+{
+    public localPrev: Point;
+
+    public constructor(public readonly type: "move" | "draw" | "pan",
+                       public readonly pointer: number,
+                       public readonly localStart: Point,
+                       public readonly object?: PinnedDrawing)
+    {
+        this.localPrev = localStart;
+    }
+}
+
+// tslint:disable-next-line:max-classes-per-file
 export default class DrawingBoardsPanel implements Panel
 {
     public get activeBoard(): DrawingBoard { return this.drawingBoard }
@@ -30,11 +44,6 @@ export default class DrawingBoardsPanel implements Panel
     
     private drawingBoard: DrawingBoard;
 
-    private dragType: "draw" | "move" | "pan" | undefined;
-    private dragOrigin: Point;
-    private dragPrev: Point;
-    private draggedPin: PinnedDrawingView | undefined;
-
     private brushColor: number; 
     private brushSize: number;
 
@@ -45,19 +54,15 @@ export default class DrawingBoardsPanel implements Panel
 
     private pickerCallback: ((drawing: Drawing | undefined) => void) | undefined;
 
-    // create drawing ui
-    private readonly createWidthInput: HTMLSelectElement;
-    private readonly createHeightInput: HTMLSelectElement;
-
     private readonly selectModeButton: HTMLButtonElement;
     private readonly drawModeButton: HTMLButtonElement;
 
-    // selected drawing ui
     private readonly drawingSectionDiv: HTMLDivElement;
     private readonly drawingNameInput: HTMLInputElement;
 
-    // picker ui
     private readonly searchInput: HTMLInputElement;
+
+    private readonly drags = new Map<number, DragState>();
 
     public constructor(private readonly editor: FlicksyEditor)
     {
@@ -88,7 +93,7 @@ export default class DrawingBoardsPanel implements Panel
         // mouse controls
         this.container.on("pointerdown", (event: interaction.InteractionEvent) => this.onPointerDown(event));
         this.container.on("pointermove", (event: interaction.InteractionEvent) => this.onPointerMove(event));
-        document.addEventListener("pointerup", () => this.stopDragging());
+        document.addEventListener("pointerup", event => this.drags.delete(event.pointerId));
         utility.getElement("container").addEventListener("wheel", event => this.onWheel(event));
 
         // search
@@ -346,58 +351,105 @@ export default class DrawingBoardsPanel implements Panel
     {
         this.cursorSprite.position = utility.floor(event.data.getLocalPosition(this.container));
 
-        if (this.dragType === "move" && this.draggedPin)
+        const drag = this.drags.get(event.data.identifier);
+
+        if (drag)
         {
-            const position = utility.floor(utility.add(this.dragOrigin, event.data.getLocalPosition(this.container)));
+            if (drag.type === "pan")
+            {
+                // compute parent-space offset of drag-start to object position
+                const a = this.container.position;
+                const b = this.container.parent.toLocal(this.container.toGlobal(drag.localStart));
+                const offset = utility.sub(a, b);
 
-            this.draggedPin.object.position = position;
-            this.draggedPin.sprite.position = position;
-        }
-        else if (this.dragType === "draw" && this.draggedPin)
-        {
-            const base = this.draggedPin.object.drawing.texture;
-            const m = event.data.getLocalPosition(this.draggedPin.sprite);
+                // compute parent-space delta from drag-start to drag-now
+                const parentNow = event.data.getLocalPosition(this.container.parent);
 
-            this.draw(this.dragPrev, m, base);
+                // offset parent-space drag-now by parent-space offset
+                const position = utility.floor(utility.add(offset, parentNow));
 
-            this.dragPrev = m;
-        }
-        else if (this.dragType === "pan")
-        {
-            const position = utility.floor(utility.add(this.dragOrigin, event.data.getLocalPosition(this.container.parent)));
+                this.container.position = position;
+            }
+            else if (drag.type === "move")
+            {
+                const object = drag.object!;
+                const view = this.pinViews.get(object)!;
+                
+                // compute parent-space delta from drag-start to drag-now
+                const parentNow = event.data.getLocalPosition(view.sprite.parent);
 
-            this.container.position = position;
+                // offset parent-space drag-now by parent-space offset
+                object.position = utility.floor(utility.sub(parentNow, drag.localStart));
+                view.refresh();
+            }
+            else if (drag.type === "draw")
+            {
+                const object = drag.object!;
+                const view = this.pinViews.get(object)!;
+
+                const localPrev = drag.localPrev || drag.localStart;
+                const localNext = event.data.getLocalPosition(view.sprite);
+
+                this.draw(localPrev, localNext, object.drawing.texture);
+
+                drag.localPrev = localNext;
+            }
         }
     }
 
+    /**
+     * Respond to a pointer-down in the board -- begin a drag, brush stroke,
+     * selection, etc.
+     */
     private onPointerDown(event: interaction.InteractionEvent): void
     {
-        this.stopDragging();
+        // assume a pointer-down means any existing dragging must be over
+        this.drags.delete(event.data.identifier);
 
+        // convert the pointer position into a pixel coordinate within the page
         const page = utility.floor(event.data.getLocalPosition(this.pinContainer));
+        // find the first object, if any, at this position
         const object = pageFirstObjectUnderUnderPoint(this.drawingBoard.pinnedDrawings, page, HitPrecision.Bounds);
 
+        // if there's no object under the pointer, or the pointer is a 
+        // middle-click, then begin a panning drag
         if (!object || event.data.button === 1)
         {
-            this.dragType = "pan";
-            this.dragOrigin = utility.sub(this.container.position, event.data.getLocalPosition(this.container.parent));
+            const drag = new DragState("pan", 
+                                       event.data.identifier, 
+                                       event.data.getLocalPosition(this.container));
+            this.drags.set(event.data.identifier, drag);
         }
+        // if we're in picker mode, then pick the drawing under the pointer
         else if (this.pickerCallback)
         {
             this.pickDrawing(object.drawing);
         }
+        // if we're selecting or the pointer is a right-click then begin an
+        // object moving drag
         else if (this.mode === "select" || event.data.button === 2)
         {
-            this.startDragging(this.pinViews.get(object)!, event);
-            
+            const view = this.pinViews.get(object)!;
+            const drag = new DragState("move", 
+                                       event.data.identifier, 
+                                       event.data.getLocalPosition(view.sprite), 
+                                       object);
+            this.drags.set(event.data.identifier, drag);
+
             if (this.mode === "select") 
             {
                 this.select(object);
             }
         }
-        else
+        // if we're drawing, then begin a drawing drag
+        else if (this.mode === "draw")
         {
-            this.startDrawing(this.pinViews.get(object)!, event);
+            const view = this.pinViews.get(object)!;
+            const drag = new DragState("draw", 
+                                       event.data.identifier, 
+                                       event.data.getLocalPosition(view.sprite), 
+                                       object);
+            this.drags.set(event.data.identifier, drag);
         }
 
         event.stopPropagation();
@@ -409,7 +461,10 @@ export default class DrawingBoardsPanel implements Panel
         const object = pageFirstObjectUnderUnderPoint(this.drawingBoard.pinnedDrawings, page, HitPrecision.Bounds);
         
         this.pinViews.forEach(v => v.hover.visible = v.object === object);
-        this.container.cursor = object ? "grab" : "initial";
+        
+        const cursor = this.drags.size > 0 ? "grabbing" : "grab";
+        const grab = object && this.mode === "select";
+        this.container.cursor = grab ? cursor : "initial";
     }
 
     private onWheel(event: WheelEvent): void
@@ -511,32 +566,6 @@ export default class DrawingBoardsPanel implements Panel
         this.pickerCallback = undefined;
 
         if (callback) { callback(drawing); }
-    }
-
-    private stopDragging(): void
-    {
-        this.dragType = undefined;
-        this.draggedPin = undefined;
-    }
-
-    private startDragging(view: PinnedDrawingView, event: interaction.InteractionEvent): void
-    {
-        this.stopDragging();
-
-        this.draggedPin = view;
-        this.dragType = "move";
-        this.dragOrigin = utility.sub(view.sprite.position, event.data.getLocalPosition(this.container));
-    }
-
-    private startDrawing(view: PinnedDrawingView, event: interaction.InteractionEvent): void
-    {
-        this.stopDragging();
-
-        this.draggedPin = view;
-        this.dragType = "draw";
-        this.dragPrev = event.data.getLocalPosition(view.sprite);
-
-        this.draw(this.dragPrev, this.dragPrev, view.object.drawing.texture);
     }
 
     private draw(prev: Point, 
