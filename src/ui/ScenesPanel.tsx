@@ -241,7 +241,7 @@ export default class ScenesPanel implements Panel
             if (this.selected) { this.selected.name = this.objectNameInput.value; }
         });
 
-        this.objectDialoguePreview.container.on("pointerdown", () => 
+        this.objectDialoguePreview.container.on("pointerdown", (event: Pixi.interaction.InteractionEvent) => 
         {
             if (this.dialoguingObject
              && this.dialoguingObject.sceneChange)
@@ -253,6 +253,8 @@ export default class ScenesPanel implements Panel
             this.dialoguingObject = undefined;
 
             this.hideDialogue();
+
+            event.stopPropagation();
         });
 
         this.objectSceneChangeSelect.addEventListener("change", () =>
