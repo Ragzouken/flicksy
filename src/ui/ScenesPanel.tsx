@@ -3,56 +3,15 @@ import * as uuid from 'uuid/v4';
 import { Drawing } from '../data/Drawing';
 import { HitPrecision, pageFirstObjectUnderUnderPoint } from '../data/PositionedDrawing';
 import { Scene, SceneObject } from '../data/Scene';
-import ModelViewMapping, { View } from '../tools/ModelViewMapping';
+import ModelViewMapping from '../tools/ModelViewMapping';
 import * as utility from '../tools/utility';
+import DialogueView from './DialogueView';
 import FlicksyEditor from './FlicksyEditor';
 import Panel from './Panel';
 import PositionedDrawingView from './PositionedDrawingView';
 
-class DialogueView
-{
-    public readonly container: Pixi.Container;
-    public readonly panel: Pixi.Graphics;
-    public readonly text: Pixi.Text;
-
-    public constructor()
-    {
-        this.container = new Pixi.Container();
-        this.container.width = 160;
-        this.container.height = 100;
-        this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
-        this.container.interactive = true;
-        this.container.cursor = "pointer";
-
-        this.panel = new Pixi.Graphics();
-        this.panel.clear();
-        this.panel.beginFill(0x000000);
-        this.panel.drawRect(0, 0, 100 * 8, 30 * 8);
-        this.panel.endFill();
-        this.panel.lineStyle(8, 0xFFFFFF, 1);
-        this.panel.drawRect(4, 4, 100 * 8 - 8, 30 * 8 - 8);
-        this.panel.position = new Pixi.Point(30, 60);
-        this.panel.scale = new Pixi.Point(.125, .125);
-
-
-        this.text = new Pixi.Text("test test test test test test test test test test test test test test test ", {
-            fill : 0xffffff,
-            fontFamily: 'Arial', 
-            fontSize: 32, 
-            wordWrap: true,
-            wordWrapWidth: 100 * 8 - 8 * 8,
-        });
-        this.text.position = new Pixi.Point(4 * 8, 4 * 8);
-        // this.text.texture.baseTexture.scaleMode = 1;
-
-        this.panel.addChild(this.text);
-        this.container.addChild(this.panel);
-    }
-}
-
 export type SceneObjectView = PositionedDrawingView<SceneObject>;
 
-// tslint:disable-next-line:max-classes-per-file
 export default class ScenesPanel implements Panel
 {
     public get activeScene(): Scene { return this.scene }
@@ -71,20 +30,20 @@ export default class ScenesPanel implements Panel
     private draggedObject: SceneObjectView | undefined;
 
     // scenes ui
-    private createSceneButton: HTMLButtonElement;
-    private activeSceneSelect: HTMLSelectElement;
-    private sceneNameInput: HTMLInputElement;
-    private sceneDeleteButton: HTMLButtonElement;
+    private readonly createSceneButton: HTMLButtonElement;
+    private readonly activeSceneSelect: HTMLSelectElement;
+    private readonly sceneNameInput: HTMLInputElement;
+    private readonly sceneDeleteButton: HTMLButtonElement;
 
     // selected object ui
-    private objectSection: HTMLDivElement;
-    private objectNameInput: HTMLInputElement;
-    private objectDeleteButton: HTMLButtonElement;
-    private objectDialogueInput: HTMLTextAreaElement;
-    private objectDialogueShowToggle: HTMLInputElement;
-    private objectSceneChangeSelect: HTMLSelectElement;
+    private readonly objectSection: HTMLDivElement;
+    private readonly objectNameInput: HTMLInputElement;
+    private readonly objectDeleteButton: HTMLButtonElement;
+    private readonly objectDialogueInput: HTMLTextAreaElement;
+    private readonly objectDialogueShowToggle: HTMLInputElement;
+    private readonly objectSceneChangeSelect: HTMLSelectElement;
     
-    private objectDialoguePreview: DialogueView;
+    private readonly objectDialoguePreview: DialogueView;
 
     private playModeTest: boolean;
     private dialoguingObject: SceneObject | undefined;
@@ -126,11 +85,11 @@ export default class ScenesPanel implements Panel
 
         document.addEventListener("pointerup", () => this.stopDragging());
 
-        this.objectSection = document.getElementById("selected-object-section")! as HTMLDivElement;
-        this.activeSceneSelect = document.getElementById("active-scene-select")! as HTMLSelectElement;
-        this.createSceneButton = document.getElementById("create-scene-button")! as HTMLButtonElement;
-        this.sceneNameInput = document.getElementById("scene-name-input")! as HTMLInputElement;
-        this.sceneDeleteButton = document.getElementById("delete-scene-button")! as HTMLButtonElement;
+        this.objectSection = utility.getElement("selected-object-section");
+        this.activeSceneSelect = utility.getElement("active-scene-select");
+        this.createSceneButton = utility.getElement("create-scene-button");
+        this.sceneNameInput = utility.getElement("scene-name-input");
+        this.sceneDeleteButton = utility.getElement("delete-scene-button");
 
         this.createSceneButton.addEventListener("click", () =>
         {
@@ -241,22 +200,6 @@ export default class ScenesPanel implements Panel
             if (this.selected) { this.selected.name = this.objectNameInput.value; }
         });
 
-        this.objectDialoguePreview.container.on("pointerdown", (event: Pixi.interaction.InteractionEvent) => 
-        {
-            if (this.dialoguingObject
-             && this.dialoguingObject.sceneChange)
-            {
-                this.setScene(this.editor.project.getSceneByUUID(this.dialoguingObject.sceneChange)!);
-                this.setPlayTestMode(true);
-            }
-
-            this.dialoguingObject = undefined;
-
-            this.hideDialogue();
-
-            event.stopPropagation();
-        });
-
         this.objectSceneChangeSelect.addEventListener("change", () =>
         {
             if (!this.selected) { return; }
@@ -321,6 +264,20 @@ export default class ScenesPanel implements Panel
 
         this.container.on("pointerdown", (event: Pixi.interaction.InteractionEvent) => 
         {
+            if (this.dialoguingObject)
+            {
+                if (this.dialoguingObject.sceneChange)
+                {
+                    this.setScene(this.editor.project.getSceneByUUID(this.dialoguingObject.sceneChange)!);
+                    this.setPlayTestMode(true);
+                };
+
+                this.dialoguingObject = undefined;
+                this.hideDialogue();
+                event.stopPropagation();
+                return;
+            }
+
             const page = utility.floor(event.data.getLocalPosition(this.objectContainer));
             const object = pageFirstObjectUnderUnderPoint(this.scene.objects, page, HitPrecision.Pixel);
             
@@ -503,6 +460,7 @@ export default class ScenesPanel implements Panel
     private refreshObjectViews(): void
     {
         this.objectViews.setModels(this.scene.objects);
+        this.objectViews.forEach(view => view.border.visible = false);
         this.objectViews.refresh();
         
         // reorder the sprites
