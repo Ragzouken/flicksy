@@ -67,7 +67,6 @@ export default class ScenesPanel implements Panel
 
         this.container.pivot = new Pixi.Point(80, 50);
         this.container.interactive = true;
-        this.container.on("pointerdown", () => this.select(undefined));
         this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
         
         const mask = new Pixi.Graphics();
@@ -91,103 +90,23 @@ export default class ScenesPanel implements Panel
         this.sceneNameInput = utility.getElement("scene-name-input");
         this.sceneDeleteButton = utility.getElement("delete-scene-button");
 
-        this.createSceneButton.addEventListener("click", () =>
-        {
-            const scene = this.editor.project.createScene();
-            scene.name = `scene ${this.editor.project.scenes.length}`;
-
-            this.select(undefined);
-            this.setScene(scene);
-            this.refresh();
-        });
+        this.createSceneButton.addEventListener("click", () => this.createNewScene());
+        this.sceneDeleteButton.addEventListener("click", () => this.deleteOpenScene());
 
         this.sceneNameInput.addEventListener("input", () => this.scene.name = this.sceneNameInput.value);
-
-        this.sceneDeleteButton.addEventListener("click", () =>
-        {
-            if (this.editor.project.scenes.length === 1) { return; }
-
-            const index = this.editor.project.scenes.indexOf(this.scene);
-            this.editor.project.scenes.splice(index, 1);
-
-            this.setScene(this.editor.project.scenes[0]);
-            this.refresh();
-        });
-
+        
         this.activeSceneSelect.addEventListener("change", () =>
         {
             const scene = this.editor.project.scenes[this.activeSceneSelect.selectedIndex];
 
-            this.select(undefined);
             this.setScene(scene);
-            this.refresh();
         });
 
-        utility.buttonClick("object-higher", () =>
-        {
-            if (this.selected)
-            {
-                const index = this.scene.objects.indexOf(this.selected);
-                const next = index + 1;
+        utility.buttonClick("object-higher", () => this.shiftSelectedObjectUp());
+        utility.buttonClick("object-lower", () => this.shiftSelectedObjectDown());
 
-                if (next < this.scene.objects.length)
-                {
-                    this.scene.objects[index] = this.scene.objects[next];
-                    this.scene.objects[next] = this.selected;
-                    this.refresh();
-                }
-            }
-        });
-
-        utility.buttonClick("object-lower", () =>
-        {
-            if (this.selected)
-            {
-                const index = this.scene.objects.indexOf(this.selected);
-                const next = index - 1;
-
-                if (next >= 0)
-                {
-                    this.scene.objects[index] = this.scene.objects[next];
-                    this.scene.objects[next] = this.selected;
-                    this.refresh();
-                }
-            }
-        });
-
-        utility.buttonClick("create-object-drawing-picker-button", () =>
-        {
-            this.editor.drawingBoardsPanel.show();
-            this.hide();
-            this.editor.drawingBoardsPanel.pickDrawingForScene(drawing =>
-            {
-                if (drawing)
-                {
-                    this.createObject(drawing);
-                }
-
-                this.editor.drawingBoardsPanel.hide();
-                this.show();
-            }, `pick a drawing for a new object in the scene <em>${this.scene.name}</em>`);
-        });
-
-        utility.buttonClick("object-pick-drawing-button", () =>
-        {
-            if (!this.selected) { return; }
-
-            this.editor.drawingBoardsPanel.show();
-            this.hide();
-            this.editor.drawingBoardsPanel.pickDrawingForScene(drawing =>
-            {
-                if (drawing && this.selected)
-                {
-                    this.selected.drawing = drawing;
-                }
-
-                this.editor.drawingBoardsPanel.hide();
-                this.show();
-            }, `pick the drawing for the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`);
-        });
+        utility.buttonClick("create-object-drawing-picker-button", () => this.createObjectFromPicker());
+        utility.buttonClick("object-pick-drawing-button", () => this.changeSelectedObjectDrawingFromPicker());
 
         this.objectNameInput = utility.getElement("object-name");
         this.objectDeleteButton = utility.getElement("delete-object-button");
@@ -206,14 +125,7 @@ export default class ScenesPanel implements Panel
 
             const scene = this.editor.project.getSceneByUUID(this.objectSceneChangeSelect.value);
 
-            if (scene)
-            {
-                this.selected.sceneChange = scene.uuid;
-            }
-            else
-            {
-                this.selected.sceneChange = undefined;
-            }
+            this.selected.sceneChange = scene ? scene.uuid : undefined;
         });
 
         this.objectDeleteButton.addEventListener("click", () =>
@@ -239,69 +151,8 @@ export default class ScenesPanel implements Panel
 
         this.select(undefined);
 
-        this.container.on("pointermove", (event: Pixi.interaction.InteractionEvent) => 
-        {
-            const page = utility.floor(event.data.getLocalPosition(this.objectContainer));
-            const object = pageFirstObjectUnderUnderPoint(this.scene.objects, page, HitPrecision.Pixel);
-            
-            this.objectViews.forEach(v => v.hover.visible = false);
-
-            if (object)
-            {
-                const interactable = object.dialogue.length > 0 
-                                  || object.sceneChange;
-
-                this.objectViews.get(object)!.hover.visible = !this.playModeTest;
-                this.container.cursor = this.playModeTest && interactable
-                                      ? "pointer"
-                                      : "grab";
-            }
-            else
-            {
-                this.container.cursor = "initial";
-            }
-        });
-
-        this.container.on("pointerdown", (event: Pixi.interaction.InteractionEvent) => 
-        {
-            if (this.dialoguingObject)
-            {
-                if (this.dialoguingObject.sceneChange)
-                {
-                    this.setScene(this.editor.project.getSceneByUUID(this.dialoguingObject.sceneChange)!);
-                    this.setPlayTestMode(true);
-                };
-
-                this.dialoguingObject = undefined;
-                this.hideDialogue();
-                event.stopPropagation();
-                return;
-            }
-
-            const page = utility.floor(event.data.getLocalPosition(this.objectContainer));
-            const object = pageFirstObjectUnderUnderPoint(this.scene.objects, page, HitPrecision.Pixel);
-            
-            if (!object) { return; }
-
-            if (this.playModeTest)
-            {
-                if (object.dialogue.length > 0)
-                {
-                    this.showDialogue(object);
-                }
-                else if (object.sceneChange)
-                {
-                    this.setScene(this.editor.project.getSceneByUUID(object.sceneChange)!);
-                    this.setPlayTestMode(true);
-                }
-            }
-            else
-            {
-                this.startDragging(this.objectViews.get(object)!, event);
-            }
-
-            event.stopPropagation();
-        });
+        this.container.on("pointerdown", (event: Pixi.interaction.InteractionEvent) => this.onPointerDown(event));
+        this.container.on("pointermove", (event: Pixi.interaction.InteractionEvent) => this.onPointerMove(event));
     }
 
     public show(): void
@@ -413,6 +264,7 @@ export default class ScenesPanel implements Panel
     public setScene(scene: Scene): void
     {
         this.scene = scene;
+        this.select(undefined);
         this.refresh();
     }
 
@@ -445,6 +297,148 @@ export default class ScenesPanel implements Panel
             this.draggedObject.object.position = position;
             this.draggedObject.sprite.position = position;
         }
+    }
+
+    private onPointerDown(event: Pixi.interaction.InteractionEvent): void
+    {
+        if (this.dialoguingObject)
+        {
+            if (this.dialoguingObject.sceneChange)
+            {
+                this.setScene(this.editor.project.getSceneByUUID(this.dialoguingObject.sceneChange)!);
+                this.setPlayTestMode(true);
+            };
+
+            this.dialoguingObject = undefined;
+            this.hideDialogue();
+            event.stopPropagation();
+            return;
+        }
+
+        const page = utility.floor(event.data.getLocalPosition(this.objectContainer));
+        const object = pageFirstObjectUnderUnderPoint(this.scene.objects, page, HitPrecision.Pixel);
+        
+        if (!object) 
+        {
+            this.select(undefined); 
+            return; 
+        }
+
+        if (this.playModeTest)
+        {
+            if (object.dialogue.length > 0)
+            {
+                this.showDialogue(object);
+            }
+            else if (object.sceneChange)
+            {
+                this.setScene(this.editor.project.getSceneByUUID(object.sceneChange)!);
+                this.setPlayTestMode(true);
+            }
+        }
+        else
+        {
+            this.startDragging(this.objectViews.get(object)!, event);
+        }
+
+        event.stopPropagation();
+    }
+
+    private onPointerMove(event: Pixi.interaction.InteractionEvent): void
+    {
+        const page = utility.floor(event.data.getLocalPosition(this.objectContainer));
+        const object = pageFirstObjectUnderUnderPoint(this.scene.objects, page, HitPrecision.Pixel);
+        
+        this.objectViews.forEach(v => v.hover.visible = false);
+
+        if (object)
+        {
+            const interactable = object.dialogue.length > 0 
+                                || object.sceneChange;
+
+            this.objectViews.get(object)!.hover.visible = !this.playModeTest;
+            this.container.cursor = this.playModeTest && interactable
+                                    ? "pointer"
+                                    : "grab";
+        }
+        else
+        {
+            this.container.cursor = "initial";
+        }
+    }
+
+    private shiftSelectedObjectUp(): void
+    {
+        if (this.selected)
+        {
+            const index = this.scene.objects.indexOf(this.selected);
+            
+            utility.swapArrayElements(this.scene.objects, index, index + 1);
+            this.refresh();
+        }
+    }
+
+    private shiftSelectedObjectDown(): void
+    {
+        if (this.selected)
+        {
+            const index = this.scene.objects.indexOf(this.selected);
+            
+            utility.swapArrayElements(this.scene.objects, index, index - 1);
+            this.refresh();
+        }
+    }
+
+    private createNewScene(): void
+    {
+        const scene = this.editor.project.createScene();
+        scene.name = `scene ${this.editor.project.scenes.length}`;
+
+        this.setScene(scene);
+    }
+
+    private deleteOpenScene(): void
+    {
+        if (this.editor.project.scenes.length === 1) { return; }
+
+        const index = this.editor.project.scenes.indexOf(this.scene);
+        this.editor.project.scenes.splice(index, 1);
+
+        this.setScene(this.editor.project.scenes[0]);
+    }
+
+    private createObjectFromPicker(): void 
+    {
+        this.editor.drawingBoardsPanel.show();
+        this.hide();
+        this.editor.drawingBoardsPanel.pickDrawingForScene(drawing => 
+        {
+            if (drawing) 
+            {
+                this.createObject(drawing);
+            }
+            
+            this.editor.drawingBoardsPanel.hide();
+            this.show();
+        }, `pick a drawing for a new object in the scene <em>${this.scene.name}</em>`);
+    }
+
+    private changeSelectedObjectDrawingFromPicker(): void 
+    {
+        if (!this.selected) { return; }
+
+        this.editor.drawingBoardsPanel.show();
+        this.hide();
+        this.editor.drawingBoardsPanel.pickDrawingForScene(drawing =>
+        {
+            if (drawing && this.selected)
+            {
+                this.selected.drawing = drawing;
+            }
+
+            this.editor.drawingBoardsPanel.hide();
+            this.show();
+        }, `pick the drawing for the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`);
     }
 
     private createSceneObjectView(): SceneObjectView
