@@ -2,13 +2,9 @@ import * as uuid4 from 'uuid/v4';
 import { MTexture } from '../tools/MTexture';
 import { Drawing, DrawingData } from './Drawing';
 import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
+import { ElementBoardData } from './FlicksyData';
 import { Scene, SceneData } from './Scene';
-
-export interface FlicksyData<T, TData>
-{
-    fromData(data: TData, project: FlicksyProject): T;
-    toData(): TData;
-}
+import SceneBoard from './SceneBoard';
 
 export interface FlicksyProjectData
 {
@@ -22,6 +18,7 @@ export interface FlicksyProjectData
     palette: number[];
 
     drawingBoards: DrawingBoardData[];
+    sceneBoards: ElementBoardData[];
 }
 
 export class FlicksyProject
@@ -34,6 +31,7 @@ export class FlicksyProject
     public drawings: Drawing[] = [];
     public drawingBoards: DrawingBoard[] = [];
     public scenes: Scene[] = [];
+    public sceneBoards: SceneBoard[] = [];
     public palette: number[] = [];
 
     public fromData(data: FlicksyProjectData): FlicksyProject
@@ -49,7 +47,13 @@ export class FlicksyProject
         
         this.drawingBoards = data.drawingBoards.map(board => (new DrawingBoard).fromData(board, this));
 
+        if (data.sceneBoards)
+        {
+            this.sceneBoards = data.sceneBoards.map(board => (new SceneBoard).fromData(board, this));    
+        }
+
         if (this.scenes.length === 0) { this.createScene(); }
+        if (this.sceneBoards.length === 0) { this.createSceneBoard(); }
 
         this.removeOrphans();
 
@@ -67,6 +71,7 @@ export class FlicksyProject
             drawings: this.drawings.map(drawing => drawing.toData()),
             drawingBoards: this.drawingBoards.map(board => board.toData()),
             scenes: this.scenes.map(scene => scene.toData()),
+            sceneBoards: this.sceneBoards.map(board => board.toData()),
             palette: this.palette,
         };
     }
@@ -102,6 +107,17 @@ export class FlicksyProject
         this.scenes.push(scene);
 
         return scene;
+    }
+
+    public createSceneBoard(): SceneBoard
+    {
+        const board = new SceneBoard();
+        board.uuid = uuid4();
+        board.name = "unnamed scene board";
+
+        this.sceneBoards.push(board);
+
+        return board;
     }
 
     public createDrawingBoard(): DrawingBoard

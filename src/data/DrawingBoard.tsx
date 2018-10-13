@@ -1,6 +1,7 @@
 import { Point } from "pixi.js";
 import { Drawing } from "./Drawing";
-import { FlicksyData, FlicksyProject } from './FlicksyProject';
+import { FlicksyData } from "./FlicksyData";
+import { FlicksyProject } from './FlicksyProject';
 import { PositionedDrawing } from "./PositionedDrawing";
 
 export interface PinnedDrawingData

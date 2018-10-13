@@ -1,7 +1,8 @@
 import { Point } from "pixi.js";
 import * as uuid from 'uuid/v4';
 import { Drawing } from "./Drawing";
-import { FlicksyData, FlicksyProject } from './FlicksyProject';
+import { FlicksyData } from "./FlicksyData";
+import { FlicksyProject } from './FlicksyProject';
 
 export interface SceneObjectData
 {

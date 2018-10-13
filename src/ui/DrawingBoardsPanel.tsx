@@ -438,6 +438,8 @@ export default class DrawingBoardsPanel implements Panel
                                        event.data.getLocalPosition(view.sprite), 
                                        view);
             this.drags.set(event.data.identifier, drag);
+
+            this.draw(drag.current, drag.current, object.drawing.texture);
         }
 
         event.stopPropagation();
