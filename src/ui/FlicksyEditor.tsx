@@ -1,4 +1,5 @@
 import * as Pixi from 'pixi.js';
+import { Scene } from 'src/data/Scene';
 import { FlicksyProject } from '../data/FlicksyProject';
 import { saveProject } from '../tools/saving';
 import * as utility from '../tools/utility';
@@ -137,6 +138,19 @@ export default class FlicksyEditor
         this.returnToEditorButton.hidden = true;
         this.sidebarContainer.hidden = false;
         this.scenesPanel.setPlayTestMode(false);
+    }
+
+    public openScene(scene: Scene): void
+    {
+        this.scenesPanel.setScene(scene);
+        this.setActivePanel(this.scenesPanel);
+    }
+
+    public openSceneMap(selected: Scene | undefined): void
+    {
+        const pin = this.project.sceneBoards[0].pins.find(p => p.element === selected);
+        this.sceneMapsPanel.select(pin);
+        this.setActivePanel(this.sceneMapsPanel);
     }
 
     /**

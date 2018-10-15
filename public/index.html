@@ -21,7 +21,7 @@
             <button id="info-tab-button">project</button>
             <button id="drawing-tab-button">drawings</button> 
             <button id="scene-tab-button">scene</button>
-            <button id="scene-maps-tab-button">scene maps</button>
+            <button id="scene-maps-tab-button">map</button>
             <button id="playtest-button" title="Playtest this game">play</button> 
             <button id="save" title="Save the project in the browser">save</button>
             <button id="publish-tab-button">publish</button> 
@@ -167,27 +167,17 @@
                 <h1>scenes tab</h1>
                 <h2>getting started</h2>    
                 <ol>
-                    <li>create an object using the <em>active scene</em> section below</li>
+                    <li>create an object using the <em>pick drawing</em> button in the <em>scene</em> section below</li>
                     <li>click and drag the object to position it within the scene</li>
                     <li>type some dialogue into the <em>selected object</em> section below</li>
                     <li>click the <em>play</em> button above and click on your object!</li>
                 </ol>
             </div>
             <div class="section">
-                <button id="create-scene-button" title="Add a new empty scene to the project">new scene</button>
-                <h1>scenes</h1>
+                <h1 id="scene-tab-scene-name" title="Name of the currently open scene">active scene</h1>
                 
-                <h2>switch scene</h2>
-                <select id="active-scene-select" class="full-input" title="Open a different scene"></select>
-            </div>
-            <div class="section">
-                <h1>active scene</h1>
-                
-                <h2>name</h2>
-                <div class="rename-delete">
-                    <input id="scene-name-input" title="Rename this scene">
-                    <button id="delete-scene-button" title="Delete this scene">delete</button>
-                </div>    
+                <h2>change scene</h2>
+                <button id="scene-view-in-map-button" title="View this scene in the scene map tab">view in scene map</button>
 
                 <h2>add object</h2>
                 <button id="create-object-drawing-picker-button" title="Add a new object to this scene by choosing visually from the drawings in this project">pick drawing</button>
@@ -217,7 +207,7 @@
                 <textarea id="object-dialogue-input" rows="8" title="The dialogue to show after clicking this object"></textarea>
                 
                 <h2>scene change</h2>
-                <select id="object-scene-select" title="The scene to go to after clicking this object and closing any dialogue"></select>
+                <button id="object-scene-change-button" title="The scene to go to after clicking this object and closing any dialogue">nothing</button>
             </div>
         </div>
         <div id="pick-drawing" hidden>
@@ -237,20 +227,25 @@
                 <h1>scene map tab</h1>
                 <h2>getting started</h2>    
                 <ol>
-                    <li>to be written</li>
+                    <li>create a scene using the <em>scenes</em> section below</li>
+                    <li>click and drag to reposition scenes for easier reference</li>
+                    <li>double click a scene to open it in the scene editor tab</li>
                 </ol>
             </div>
             <div class="section">
+                <button id="create-scene-button" title="Add a new empty scene to the project">new scene</button>
                 <h1>scenes</h1>
-                <button id="create-scene-button2" title="Add a new empty scene to the project">new scene</button>
             </div>
             <div class="section" id="selected-scene-section">
                 <h1>selected scene</h1>
 
                 <h2>name</h2>
-                <div class="rename-delete">
-                    <input id="scene-name2" title="Rename the selected scene">
-                    <button id="delete-scene-button2" title="Delete the selected scene">delete</button>
+                <input id="scene-name2" class="full-input" title="Rename the selected scene">
+
+                <h2>edit</h2>
+                <div class="button-row">
+                    <button id="scene-map-open-button" title="Open the selected scene in the scene tab">open</button>
+                    <button id="delete-scene-button" title="Delete the selected scene">delete</button>
                 </div>
             </div>
         </div>
@@ -259,11 +254,11 @@
                 <h1>pick scene</h1>
                 <h2>context</h2>
                 <div id="pick-scene-context">pick a scene for object #69</div>
-                <h2>search</h2>
+                <!--<h2>search</h2>
                 <div class="rename-delete">
                     <input id="pick-scene-search-input" title="Highlight scenes that match the search query">
                     <button id="pick-scene-search-reset" title="Reset the search query so no scenes are highlighted">reset</button>
-                </div>
+                </div>-->
             </section>
         </div>
         <div id="react"></div>

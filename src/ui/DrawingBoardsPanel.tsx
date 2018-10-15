@@ -367,7 +367,7 @@ export default class DrawingBoardsPanel implements Panel
             }
             else if (drag.type === "move")
             {
-                drag.view!.model.position = utility.floor(utility.sub(pagePoint, drag.start));
+                drag.view!.model.position = utility.round(utility.sub(pagePoint, drag.start));
                 drag.view!.refresh();
             }
             else if (drag.type === "draw")

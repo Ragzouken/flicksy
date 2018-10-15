@@ -52,9 +52,18 @@ export class FlicksyProject
         {
             this.sceneBoards = data.sceneBoards.map(board => (new SceneBoard).fromData(board, this));    
         }
+        else
+        {
+            const board = this.createSceneBoard();
+            this.scenes.forEach((scene, index) => 
+            {
+                const pin = new PinnedScene();
+                pin.position = new Point((index % 4) * 50, Math.floor(index / 4) * 30);
+                pin.element = scene;
 
-        if (this.scenes.length === 0) { this.createScene(); }
-        if (this.sceneBoards.length === 0) { this.createSceneBoard(); }
+                board.pins.push(pin);
+            });
+        }
 
         this.removeOrphans();
 
@@ -107,7 +116,34 @@ export class FlicksyProject
 
         this.scenes.push(scene);
 
+        const pin = new PinnedScene();
+        pin.position = new Point(0, 0);
+        pin.element = scene;
+        this.sceneBoards[0].pins.push(pin);
+        
         return scene;
+    }
+
+    public deleteScene(scene: Scene)
+    {
+        const index = this.scenes.indexOf(scene);
+        this.scenes.splice(index, 1);
+
+        for (const board of this.sceneBoards)
+        {
+            board.pins = board.pins.filter(pin => pin.element !== scene);
+        }
+
+        for (const scene_ of this.scenes)
+        {
+            for (const object of scene_.objects)
+            {
+                if (object.sceneChange === scene.uuid)
+                {
+                    object.sceneChange = undefined;
+                }
+            }
+        }
     }
 
     public createSceneBoard(): SceneBoard

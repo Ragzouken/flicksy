@@ -28,12 +28,8 @@ export default class ScenesPanel implements Panel
 
     private dragOrigin: Pixi.Point;
     private draggedObject: SceneObjectView | undefined;
-
-    // scenes ui
-    private readonly createSceneButton: HTMLButtonElement;
-    private readonly activeSceneSelect: HTMLSelectElement;
-    private readonly sceneNameInput: HTMLInputElement;
-    private readonly sceneDeleteButton: HTMLButtonElement;
+    
+    private readonly sceneNameHeading: HTMLElement;
 
     // selected object ui
     private readonly objectSection: HTMLDivElement;
@@ -41,7 +37,7 @@ export default class ScenesPanel implements Panel
     private readonly objectDeleteButton: HTMLButtonElement;
     private readonly objectDialogueInput: HTMLTextAreaElement;
     private readonly objectDialogueShowToggle: HTMLInputElement;
-    private readonly objectSceneChangeSelect: HTMLSelectElement;
+    private readonly objectSceneChangeButton: HTMLButtonElement;
     
     private readonly objectDialoguePreview: DialogueView;
 
@@ -84,23 +80,13 @@ export default class ScenesPanel implements Panel
 
         document.addEventListener("pointerup", () => this.stopDragging());
 
-        this.objectSection = utility.getElement("selected-object-section");
-        this.activeSceneSelect = utility.getElement("active-scene-select");
-        this.createSceneButton = utility.getElement("create-scene-button");
-        this.sceneNameInput = utility.getElement("scene-name-input");
-        this.sceneDeleteButton = utility.getElement("delete-scene-button");
-
-        this.createSceneButton.addEventListener("click", () => this.createNewScene());
-        this.sceneDeleteButton.addEventListener("click", () => this.deleteOpenScene());
-
-        this.sceneNameInput.addEventListener("input", () => this.scene.name = this.sceneNameInput.value);
-        
-        this.activeSceneSelect.addEventListener("change", () =>
+        utility.buttonClick("scene-view-in-map-button", () => 
         {
-            const scene = this.editor.project.scenes[this.activeSceneSelect.selectedIndex];
-
-            this.setScene(scene);
+            this.editor.openSceneMap(this.scene);
         });
+
+        this.objectSection = utility.getElement("selected-object-section");
+        this.sceneNameHeading = utility.getElement("scene-tab-scene-name");
 
         utility.buttonClick("object-higher", () => this.shiftSelectedObjectUp());
         utility.buttonClick("object-lower", () => this.shiftSelectedObjectDown());
@@ -112,21 +98,14 @@ export default class ScenesPanel implements Panel
         this.objectDeleteButton = utility.getElement("delete-object-button");
         this.objectDialogueInput = utility.getElement("object-dialogue-input");
         this.objectDialogueShowToggle = utility.getElement("show-dialogue-toggle");
-        this.objectSceneChangeSelect = utility.getElement("object-scene-select");
+        this.objectSceneChangeButton = utility.getElement("object-scene-change-button");
 
         this.objectNameInput.addEventListener("input", () => 
         {
             if (this.selected) { this.selected.name = this.objectNameInput.value; }
         });
 
-        this.objectSceneChangeSelect.addEventListener("change", () =>
-        {
-            if (!this.selected) { return; }
-
-            const scene = this.editor.project.getSceneByUUID(this.objectSceneChangeSelect.value);
-
-            this.selected.sceneChange = scene ? scene.uuid : undefined;
-        });
+        this.objectSceneChangeButton.addEventListener("click", () => this.changeSelectedObjectSceneChangeFromPicker());
 
         this.objectDeleteButton.addEventListener("click", () =>
         {
@@ -194,22 +173,24 @@ export default class ScenesPanel implements Panel
     /** Resynchronise this display to the data in the underlying Scene */
     public refresh(): void
     {
-        this.sceneNameInput.value = this.scene.name;
         this.refreshObjectViews();
 
-        utility.repopulateSelect(this.activeSceneSelect,
-                                 this.editor.project.scenes.map(scene => ({ label: scene.name, value: scene.uuid })));
-        this.activeSceneSelect.selectedIndex = this.editor.project.scenes.indexOf(this.scene);
+        this.sceneNameHeading.innerText = `scene: ${this.scene.name}`;
 
         const scenes = this.editor.project.scenes.map(scene => ({ label: `go to: ${scene.name}`, value: scene.uuid }));
         scenes.splice(0, 0, { label: "nothing", value: "" });
 
-        utility.repopulateSelect(this.objectSceneChangeSelect, scenes);
-
-        if (this.selected && this.selected.sceneChange)
+        if (this.selected)
         {
-            const scene = this.editor.project.getSceneByUUID(this.selected.sceneChange)!;
-            this.objectSceneChangeSelect.selectedIndex = this.editor.project.scenes.indexOf(scene);
+            if (this.selected.sceneChange)
+            {
+                const scene = this.editor.project.getSceneByUUID(this.selected.sceneChange)!;
+                this.objectSceneChangeButton.innerText = `go to: ${scene.name}`;
+            }
+            else
+            {
+                this.objectSceneChangeButton.innerText = "nothing";
+            }
         }
 
         this.select(this.selected);
@@ -222,20 +203,17 @@ export default class ScenesPanel implements Panel
         this.objectViews.forEach(view => view.setSelected(view.object === object));
 
         this.objectSection.hidden = !object;
-        this.objectNameInput.disabled = !object;
-        this.objectDeleteButton.disabled = !object;
-        this.objectDialogueInput.disabled = !object;
-        this.objectSceneChangeSelect.disabled = !object;
 
         if (object)
         {
             if (object.sceneChange)
             {
-                this.objectSceneChangeSelect.value = object.sceneChange;
+                const scene = this.editor.project.getSceneByUUID(object.sceneChange)!;
+                this.objectSceneChangeButton.innerText = `go to: ${scene.name}`;
             }
             else
             {
-                this.objectSceneChangeSelect.selectedIndex = 0;
+                this.objectSceneChangeButton.innerText = "nothing";
             }
 
             this.objectNameInput.value = object.name;
@@ -292,7 +270,7 @@ export default class ScenesPanel implements Panel
     {
         if (this.draggedObject)
         {
-            const position = utility.floor(utility.add(this.dragOrigin, event.data.getLocalPosition(this.overlayContainer)));
+            const position = utility.round(utility.add(this.dragOrigin, event.data.getLocalPosition(this.overlayContainer)));
 
             this.draggedObject.object.position = position;
             this.draggedObject.sprite.position = position;
@@ -389,14 +367,6 @@ export default class ScenesPanel implements Panel
         }
     }
 
-    private createNewScene(): void
-    {
-        const scene = this.editor.project.createScene();
-        scene.name = `scene ${this.editor.project.scenes.length}`;
-
-        this.setScene(scene);
-    }
-
     private deleteOpenScene(): void
     {
         if (this.editor.project.scenes.length === 1) { return; }
@@ -439,6 +409,24 @@ export default class ScenesPanel implements Panel
             this.editor.drawingBoardsPanel.hide();
             this.show();
         }, `pick the drawing for the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`);
+    }
+
+    private changeSelectedObjectSceneChangeFromPicker(): void 
+    {
+        if (!this.selected) { return; }
+
+        this.editor.sceneMapsPanel.show();
+        this.hide();
+        this.editor.sceneMapsPanel.pickSceneForObject(scene =>
+        {
+            if (scene && this.selected)
+            {
+                this.selected.sceneChange = scene.uuid;
+            }
+
+            this.editor.drawingBoardsPanel.hide();
+            this.show();
+        }, `pick the scene to got to after clicking the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`);
     }
 
     private createSceneObjectView(): SceneObjectView

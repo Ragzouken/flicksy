@@ -10,10 +10,7 @@ export class PinnedScene implements FlicksyData<PinnedScene, ElementPinData>
 
     public get bounds(): Rectangle
     {
-        return new Rectangle(this.position.x,
-                             this.position.y,
-                             32,
-                             20);
+        return new Rectangle(this.position.x, this.position.y, 40, 25);
     }
 
     public fromData(data: ElementPinData, project: FlicksyProject): PinnedScene 

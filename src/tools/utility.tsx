@@ -52,6 +52,11 @@ export function sub(a: PointLike, b: PointLike)
   return new Point(a.x - b.x, a.y - b.y);
 }
 
+export function round(point: Point)
+{
+    return new Point(Math.round(point.x), Math.round(point.y));
+}
+
 export function floor(point: Point)
 {
   return new Point(Math.floor(point.x), Math.floor(point.y));
