@@ -7,23 +7,20 @@ export enum HitPrecision
     Pixel,
 }
 
-export interface PositionedDrawing
+export interface BoundedObject
+{
+    bounds: Rectangle;
+}
+
+export interface PositionedDrawing extends BoundedObject
 {
     drawing: Drawing;
     position: Point;
 }
 
-export function positionedDrawingRect(drawing: PositionedDrawing): Rectangle
-{
-    return new Rectangle(drawing.position.x, 
-                         drawing.position.y, 
-                         drawing.drawing.width, 
-                         drawing.drawing.height);
-}
-
-export function positionedDrawingContains(drawing: PositionedDrawing,
-                                          point: Point,
-                                          precision: HitPrecision)
+export function positionDrawingContains(drawing: PositionedDrawing,
+                                        point: Point,
+                                        precision: HitPrecision)
 {
     const lx = point.x - drawing.position.x;
     const ly = point.y - drawing.position.y;
@@ -41,25 +38,41 @@ export function positionedDrawingContains(drawing: PositionedDrawing,
 
 export function pageBounds(drawings: PositionedDrawing[]): Rectangle
 {
-    const bounds = positionedDrawingRect(drawings[0]);
+    const bounds = drawings[0].bounds;
     
     for (const drawing of drawings)
     {
-        bounds.enlarge(positionedDrawingRect(drawing));
+        bounds.enlarge(drawing.bounds);
     }
 
     return bounds;
 }
 
-export function pageFirstObjectUnderUnderPoint<TDrawing extends PositionedDrawing>(objects: TDrawing[],
-                                                                                   point: Point,
-                                                                                   precision: HitPrecision): TDrawing | undefined
+export function pageFirstBoundsUnderPoint<TObject extends BoundedObject>(objects: TObject[],
+                                                                         point: Point): TObject | undefined
 {
     for (let i = objects.length - 1; i >= 0; i -= 1)
     {
         const object = objects[i];
 
-        if (positionedDrawingContains(object, point, precision))
+        if (object.bounds.contains(point.x, point.y))
+        {
+            return object;
+        }
+    }
+
+    return undefined;
+}
+
+export function pageFirstObjectUnderPoint<TDrawing extends PositionedDrawing>(objects: TDrawing[],
+                                                                              point: Point,
+                                                                              precision: HitPrecision): TDrawing | undefined
+{
+    for (let i = objects.length - 1; i >= 0; i -= 1)
+    {
+        const object = objects[i];
+
+        if (positionDrawingContains(object, point, precision))
         {
             return object;
         }

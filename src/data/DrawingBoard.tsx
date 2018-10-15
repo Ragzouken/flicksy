@@ -1,4 +1,4 @@
-import { Point } from "pixi.js";
+import { Point, Rectangle } from "pixi.js";
 import { Drawing } from "./Drawing";
 import { FlicksyData } from "./FlicksyData";
 import { FlicksyProject } from './FlicksyProject';
@@ -21,6 +21,14 @@ export class PinnedDrawing implements PositionedDrawing, FlicksyData<PinnedDrawi
 {
     public position: Point;
     public drawing: Drawing;
+
+    public get bounds() 
+    { 
+        return new Rectangle(this.position.x, 
+                             this.position.y, 
+                             this.drawing.width, 
+                             this.drawing.height); 
+    }
 
     public fromData(data: PinnedDrawingData, project: FlicksyProject): PinnedDrawing
     {

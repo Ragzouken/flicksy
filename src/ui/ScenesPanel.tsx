@@ -1,7 +1,7 @@
 import * as Pixi from 'pixi.js';
 import * as uuid from 'uuid/v4';
 import { Drawing } from '../data/Drawing';
-import { HitPrecision, pageFirstObjectUnderUnderPoint } from '../data/PositionedDrawing';
+import { HitPrecision, pageFirstObjectUnderPoint } from '../data/PositionedDrawing';
 import { Scene, SceneObject } from '../data/Scene';
 import ModelViewMapping from '../tools/ModelViewMapping';
 import * as utility from '../tools/utility';
@@ -316,7 +316,7 @@ export default class ScenesPanel implements Panel
         }
 
         const page = utility.floor(event.data.getLocalPosition(this.objectContainer));
-        const object = pageFirstObjectUnderUnderPoint(this.scene.objects, page, HitPrecision.Pixel);
+        const object = pageFirstObjectUnderPoint(this.scene.objects, page, HitPrecision.Pixel);
         
         if (!object) 
         {
@@ -347,7 +347,7 @@ export default class ScenesPanel implements Panel
     private onPointerMove(event: Pixi.interaction.InteractionEvent): void
     {
         const page = utility.floor(event.data.getLocalPosition(this.objectContainer));
-        const object = pageFirstObjectUnderUnderPoint(this.scene.objects, page, HitPrecision.Pixel);
+        const object = pageFirstObjectUnderPoint(this.scene.objects, page, HitPrecision.Pixel);
         
         this.objectViews.forEach(v => v.hover.visible = false);
 

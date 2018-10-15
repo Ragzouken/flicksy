@@ -1,10 +1,11 @@
+import { Point } from 'pixi.js';
 import * as uuid4 from 'uuid/v4';
 import { MTexture } from '../tools/MTexture';
 import { Drawing, DrawingData } from './Drawing';
 import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
 import { ElementBoardData } from './FlicksyData';
 import { Scene, SceneData } from './Scene';
-import SceneBoard from './SceneBoard';
+import SceneBoard, { PinnedScene } from './SceneBoard';
 
 export interface FlicksyProjectData
 {

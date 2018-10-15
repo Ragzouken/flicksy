@@ -1,5 +1,10 @@
 import { DisplayObject, Point, PointLike } from 'pixi.js';
 
+export const infiniteHitArea =
+{
+    contains(x: number, y: number) { return true; }
+}
+
 export function transform(point: Point, 
                           prev: DisplayObject,
                           next: DisplayObject) : Point

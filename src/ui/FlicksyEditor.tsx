@@ -6,6 +6,7 @@ import DrawingBoardsPanel from './DrawingBoardsPanel';
 import Panel from './Panel';
 import ProjectsPanel from './ProjectsPanel';
 import PublishPanel from './PublishPanel';
+import SceneMapsPanel from './SceneMapsPanel';
 import ScenesPanel from './ScenesPanel';
 
 export default class FlicksyEditor
@@ -16,6 +17,7 @@ export default class FlicksyEditor
     public readonly publishPanel: PublishPanel;
     public readonly drawingBoardsPanel: DrawingBoardsPanel;
     public readonly scenesPanel: ScenesPanel;
+    public readonly sceneMapsPanel: SceneMapsPanel;
 
     public project: FlicksyProject;
 
@@ -42,16 +44,18 @@ export default class FlicksyEditor
         this.publishPanel = new PublishPanel(this);
         this.drawingBoardsPanel = new DrawingBoardsPanel(this);
         this.scenesPanel = new ScenesPanel(this);
+        this.sceneMapsPanel = new SceneMapsPanel(this);
 
         this.setActivePanel(this.projectsPanel);
 
         // tabs
-        utility.buttonClick("editor-button",      () => this.enterEditor());
-        utility.buttonClick("playtest-button",    () => this.enterPlayback(true));
-        utility.buttonClick("info-tab-button",    () => this.setActivePanel(this.projectsPanel));
-        utility.buttonClick("publish-tab-button", () => this.setActivePanel(this.publishPanel));
-        utility.buttonClick("drawing-tab-button", () => this.setActivePanel(this.drawingBoardsPanel));
-        utility.buttonClick("scene-tab-button",   () => this.setActivePanel(this.scenesPanel));
+        utility.buttonClick("editor-button",         () => this.enterEditor());
+        utility.buttonClick("playtest-button",       () => this.enterPlayback(true));
+        utility.buttonClick("info-tab-button",       () => this.setActivePanel(this.projectsPanel));
+        utility.buttonClick("publish-tab-button",    () => this.setActivePanel(this.publishPanel));
+        utility.buttonClick("drawing-tab-button",    () => this.setActivePanel(this.drawingBoardsPanel));
+        utility.buttonClick("scene-tab-button",      () => this.setActivePanel(this.scenesPanel));
+        utility.buttonClick("scene-maps-tab-button", () => this.setActivePanel(this.sceneMapsPanel));
 
         // editor vs playback
         this.returnToEditorButton = utility.getElement("editor-button");
@@ -62,7 +66,8 @@ export default class FlicksyEditor
 
         // constantly ensure canvas size is correct
         this.pixi.ticker.add(() => this.resizePixiCanvas());
-        // block the right click menu on the canvas
+        // block normal html clicks
+        this.pixi.view.onmousedown = (e) => e.preventDefault();
         this.pixi.view.oncontextmenu = (e) => e.preventDefault();
 
         // pass pointer move events to the various panels
@@ -89,6 +94,9 @@ export default class FlicksyEditor
         // default to the first scene
         this.scenesPanel.setScene(project.scenes[0]);
 
+        // first scene map
+        this.sceneMapsPanel.setMap(project.sceneBoards[0]);
+
         this.refresh();
     }
 
@@ -101,6 +109,7 @@ export default class FlicksyEditor
         this.publishPanel.refresh();
         this.drawingBoardsPanel.refresh();
         this.scenesPanel.refresh();
+        this.sceneMapsPanel.refresh();
     }
 
     /**
@@ -148,6 +157,7 @@ export default class FlicksyEditor
         this.projectsPanel.hide();
         this.drawingBoardsPanel.hide();
         this.scenesPanel.hide();
+        this.sceneMapsPanel.hide();
         this.publishPanel.hide();
 
         panel.show();

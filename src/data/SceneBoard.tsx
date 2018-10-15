@@ -1,4 +1,4 @@
-import { Point } from "pixi.js";
+import { Point, Rectangle } from "pixi.js";
 import { ElementBoardData, ElementPinData, FlicksyData } from "./FlicksyData";
 import { FlicksyProject } from './FlicksyProject';
 import { Scene } from "./Scene";
@@ -7,6 +7,14 @@ export class PinnedScene implements FlicksyData<PinnedScene, ElementPinData>
 {
     public element: Scene;
     public position: Point;
+
+    public get bounds(): Rectangle
+    {
+        return new Rectangle(this.position.x,
+                             this.position.y,
+                             32,
+                             20);
+    }
 
     public fromData(data: ElementPinData, project: FlicksyProject): PinnedScene 
     {
@@ -31,7 +39,7 @@ export default class SceneBoard implements FlicksyData<SceneBoard, ElementBoardD
     public uuid: string;
     public name: string;
 
-    public pins: PinnedScene[];
+    public pins: PinnedScene[] = [];
 
     public fromData(data: ElementBoardData, project: FlicksyProject): SceneBoard 
     {

@@ -84,6 +84,7 @@ export function newProject(): FlicksyProject
     
     project.createDrawingBoard();
     project.createScene();
+    project.createSceneBoard();
 
     randomisePalette(project);
     
@@ -207,8 +208,7 @@ export function randomisePalette(project: FlicksyProject): void
 export async function exportPlayable(project: FlicksyProject)
 {
     // clones the page and inlines the css, javascript, and project data
-
-    const html = document.documentElement.cloneNode(true) as HTMLElement;
+    const html = document.documentElement!.cloneNode(true) as HTMLElement;
     const head = html.getElementsByTagName("head")[0];
     const body = html.getElementsByTagName("body")[0];
 

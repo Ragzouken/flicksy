@@ -1,7 +1,7 @@
 import { Container, Graphics, interaction, Point, Rectangle, Sprite, Texture } from 'pixi.js';
 import { Drawing } from '../data/Drawing';
 import { DrawingBoard, PinnedDrawing } from '../data/DrawingBoard';
-import { HitPrecision, pageBounds, pageFirstObjectUnderUnderPoint } from '../data/PositionedDrawing';
+import { HitPrecision, pageBounds, pageFirstObjectUnderPoint } from '../data/PositionedDrawing';
 import ModelViewMapping from '../tools/ModelViewMapping';
 import { MTexture } from '../tools/MTexture';
 import { randomisePalette } from '../tools/saving';
@@ -394,7 +394,7 @@ export default class DrawingBoardsPanel implements Panel
         // convert the pointer position into a pixel coordinate within the page
         const page = utility.floor(event.data.getLocalPosition(this.pinContainer));
         // find the first object, if any, at this position
-        const object = pageFirstObjectUnderUnderPoint(this.drawingBoard.pinnedDrawings, page, HitPrecision.Bounds);
+        const object = pageFirstObjectUnderPoint(this.drawingBoard.pinnedDrawings, page, HitPrecision.Bounds);
 
         const middle = event.data.originalEvent instanceof MouseEvent
                     && event.data.originalEvent.button === 1;
@@ -448,7 +448,7 @@ export default class DrawingBoardsPanel implements Panel
     private onPointerMove(event: interaction.InteractionEvent): void
     {
         const page = utility.floor(event.data.getLocalPosition(this.pinContainer));
-        const object = pageFirstObjectUnderUnderPoint(this.drawingBoard.pinnedDrawings, page, HitPrecision.Bounds);
+        const object = pageFirstObjectUnderPoint(this.drawingBoard.pinnedDrawings, page, HitPrecision.Bounds);
         
         this.pinViews.forEach(v => v.hover.visible = v.object === object);
         

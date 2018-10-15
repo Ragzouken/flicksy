@@ -1,4 +1,4 @@
-import { Point } from "pixi.js";
+import { Point, Rectangle } from "pixi.js";
 import * as uuid from 'uuid/v4';
 import { Drawing } from "./Drawing";
 import { FlicksyData } from "./FlicksyData";
@@ -32,6 +32,14 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
     public drawing: Drawing;
     public dialogue: string;
     public sceneChange: string | undefined;
+
+    public get bounds(): Rectangle
+    {
+        return new Rectangle(this.position.x,
+                             this.position.y,
+                             this.drawing.width,
+                             this.drawing.height);
+    }
 
     public fromData(data: SceneObjectData, project: FlicksyProject): SceneObject
     {
