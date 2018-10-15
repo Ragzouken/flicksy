@@ -1,6 +1,7 @@
-import { Container, Graphics, interaction, Point, Text } from "pixi.js";
+import { Container, Graphics, interaction, Point, Sprite, Text } from "pixi.js";
 import { pageFirstBoundsUnderPoint } from "src/data/PositionedDrawing";
 import { Scene } from "src/data/Scene";
+import { MTexture } from "src/tools/MTexture";
 import SceneBoard, { PinnedScene } from "../data/SceneBoard";
 import ModelViewMapping, { View } from "../tools/ModelViewMapping";
 import * as utility from '../tools/utility';
@@ -26,6 +27,7 @@ class PinnedSceneView implements View<PinnedScene>
     public model: PinnedScene;    
 
     public readonly container: Container;
+    public readonly preview: MTexture;
 
     private readonly labelText: Text;
     private readonly border: Graphics;
@@ -39,6 +41,11 @@ class PinnedSceneView implements View<PinnedScene>
     {
         this.container = new Container();
 
+        this.preview = new MTexture(160, 100);
+        const sprite = new Sprite(this.preview.texture);
+        sprite.scale.set(1 / 4);
+        this.container.addChild(sprite);
+        
         this.border = new Graphics();
         this.border.lineStyle(1, 0xFFFFFFFF, 1);
         this.border.drawRect(-.5, -.5, 40 + 1, 25 + 1);
@@ -121,6 +128,8 @@ export default class SceneMapsPanel implements Panel
             }
         });
 
+        utility.buttonClick("scene-map-regenerate", () => this.regeneratePreviews());
+
         this.sceneNameInput = utility.getElement("scene-name2");
         this.sceneNameInput.addEventListener("input", () => 
         {
@@ -143,6 +152,7 @@ export default class SceneMapsPanel implements Panel
         this.sidebar.hidden = false;
         this.refresh();
         this.reframe();
+        this.regeneratePreviews();
     }
 
     public hide(): void
@@ -384,5 +394,24 @@ export default class SceneMapsPanel implements Panel
         const delta = utility.mul(utility.sub(mouseSceneNext, mouseScenePrev), scale);
 
         this.container.position = utility.add(this.container.position, delta);
+    }
+
+    private regeneratePreviews(): void
+    {
+        const scale = 1;
+
+        this.sceneViews.forEach((view, pin) =>
+        {
+            view.preview.fill(0);
+            pin.element.objects.forEach(object =>
+            {
+                view.preview.context.drawImage(object.drawing.texture.canvas, 
+                                               object.position.x / scale,
+                                               object.position.y / scale,
+                                               object.drawing.width / scale,
+                                               object.drawing.height / scale);
+            });
+            view.preview.update();
+        });
     }
 }
