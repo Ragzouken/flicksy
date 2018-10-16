@@ -23,6 +23,11 @@ export default class PickerPanel
         this.queryCancel.addEventListener("click", () => this.setQuery(""));
     }
 
+    /**
+     * Open this panel with the given heading text and context text. The
+     * provided callback will be called whenever the query is changed by
+     * user input.
+     */
     public pick(heading: string,
                 context: string, 
                 onQueryChange: (query: string) => void): void 
@@ -31,16 +36,23 @@ export default class PickerPanel
 
         this.headingText.innerHTML = heading;
         this.contextText.innerHTML = context;
-        this.queryInput.value = "";
-        this.queryCancel.disabled = true;
         this.onQueryChange = onQueryChange;
+        this.setQuery("");
     }
     
+    /**
+     * Hide this panel.
+     */
     public hide(): void 
     {
         this.siderbar.hidden = true;
     }
 
+    /**
+     * Set the query string for the panel, disabling the reset button if there
+     * is no query to reset, and calling back to notify the embedding panel
+     * that the query changed.
+     */
     private setQuery(query: string): void
     {
         this.queryInput.value = query;
