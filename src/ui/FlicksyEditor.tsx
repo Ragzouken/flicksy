@@ -5,6 +5,7 @@ import { saveProject } from '../tools/saving';
 import * as utility from '../tools/utility';
 import DrawingBoardsPanel from './DrawingBoardsPanel';
 import Panel from './Panel';
+import PickerPanel from './PickerPanel';
 import ProjectsPanel from './ProjectsPanel';
 import PublishPanel from './PublishPanel';
 import SceneMapsPanel from './SceneMapsPanel';
@@ -19,6 +20,7 @@ export default class FlicksyEditor
     public readonly drawingBoardsPanel: DrawingBoardsPanel;
     public readonly scenesPanel: ScenesPanel;
     public readonly sceneMapsPanel: SceneMapsPanel;
+    public readonly pickerPanel: PickerPanel;
 
     public project: FlicksyProject;
 
@@ -46,6 +48,7 @@ export default class FlicksyEditor
         this.drawingBoardsPanel = new DrawingBoardsPanel(this);
         this.scenesPanel = new ScenesPanel(this);
         this.sceneMapsPanel = new SceneMapsPanel(this);
+        this.pickerPanel = new PickerPanel(this);
 
         this.setActivePanel(this.projectsPanel);
 
@@ -153,6 +156,16 @@ export default class FlicksyEditor
         this.setActivePanel(this.sceneMapsPanel);
     }
 
+    public hideAll(): void
+    {
+        this.projectsPanel.hide();
+        this.drawingBoardsPanel.hide();
+        this.scenesPanel.hide();
+        this.sceneMapsPanel.hide();
+        this.publishPanel.hide();
+        this.pickerPanel.hide();
+    }
+
     /**
      * Return the position of the mouse in the coordinate space of the the
      * canvas.
@@ -168,12 +181,7 @@ export default class FlicksyEditor
      */
     private setActivePanel(panel: Panel): void
     {
-        this.projectsPanel.hide();
-        this.drawingBoardsPanel.hide();
-        this.scenesPanel.hide();
-        this.sceneMapsPanel.hide();
-        this.publishPanel.hide();
-
+        this.hideAll();
         panel.show();
     }
 

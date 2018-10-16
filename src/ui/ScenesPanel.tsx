@@ -429,7 +429,8 @@ export default class ScenesPanel implements Panel
 
             this.editor.drawingBoardsPanel.hide();
             this.show();
-        }, `pick the scene to got to after clicking the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`);
+        }, `pick the scene to got to after clicking the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`,
+        this.selected);
     }
 
     private createSceneObjectView(): SceneObjectView

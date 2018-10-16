@@ -1,6 +1,6 @@
 import { Container, Graphics, interaction, Point, Sprite, Text } from "pixi.js";
 import { pageFirstBoundsUnderPoint } from "src/data/PositionedDrawing";
-import { Scene } from "src/data/Scene";
+import { Scene, SceneObject } from "src/data/Scene";
 import { MTexture } from "src/tools/MTexture";
 import SceneBoard, { PinnedScene } from "../data/SceneBoard";
 import ModelViewMapping, { View } from "../tools/ModelViewMapping";
@@ -34,8 +34,6 @@ class PinnedSceneView implements View<PinnedScene>
 
     private hovered: boolean;
     private selected: boolean;
-
-    private pickerCallback: ((scene: Scene | undefined) => void) | undefined;
 
     public constructor()
     {
@@ -93,6 +91,7 @@ export default class SceneMapsPanel implements Panel
     private readonly container: Container;
     private readonly sceneViews: ModelViewMapping<PinnedScene, PinnedSceneView>;
     private readonly drags = new Map<number, DragState>();
+    private readonly linkGraphic = new Graphics();
 
     private sceneMap: SceneBoard;
     private selected: PinnedScene | undefined;
@@ -101,6 +100,7 @@ export default class SceneMapsPanel implements Panel
     private doubleTimeout: number;
 
     private pickerCallback: ((drawing: Scene | undefined) => void) | undefined;
+    private pickerObject: SceneObject | undefined;
 
     private readonly sceneNameInput: HTMLInputElement;
 
@@ -234,12 +234,18 @@ export default class SceneMapsPanel implements Panel
     }
 
     public pickSceneForObject(callback: (scene: Scene | undefined) => void,
-                              context: string): void
+                              context: string,
+                              object?: SceneObject): void
     {
         this.pickerCallback = callback;
+        this.pickerObject = object;
         this.sidebar.hidden = true;
-        utility.getElement("pick-scene").hidden = false;
-        utility.getElement("pick-scene-context").innerHTML = context;
+        this.editor.pickerPanel.pick("pick scene", context, query => query);
+
+        if (object)
+        {
+            this.container.addChild(this.linkGraphic);
+        }
     }
 
     private pickScene(scene: Scene | undefined): void
@@ -247,8 +253,10 @@ export default class SceneMapsPanel implements Panel
         const callback = this.pickerCallback;
 
         this.hide();
-        utility.getElement("pick-scene").hidden = true;
+        this.editor.pickerPanel.hide();
         this.pickerCallback = undefined;
+        this.pickerObject = undefined;
+        this.container.removeChild(this.linkGraphic);
 
         if (callback) { callback(scene); }
     }
@@ -376,6 +384,25 @@ export default class SceneMapsPanel implements Panel
                 drag.view!.model.position = utility.round(utility.sub(pagePoint, drag.start));
                 drag.view!.refresh();
             }
+        }
+
+        if (this.pickerObject)
+        {
+            const bounds = this.pickerObject.bounds;
+            const center = new Point(bounds.x + bounds.width / 2, 
+                                     bounds.y + bounds.height / 2);
+
+            const pin = this.sceneMap.pins.find(p => !!p.element.objects.find(o => o === this.pickerObject))!;
+            const pinWorld = this.sceneViews.get(pin)!.container.toGlobal(utility.mul(center, 1/4));
+            const pinPage = this.container.toLocal(pinWorld);
+
+            this.linkGraphic.clear();
+            this.linkGraphic.lineStyle(.5, 0xFF0000);
+            this.linkGraphic.moveTo(page.x, page.y);
+            this.linkGraphic.lineTo(pinPage.x, pinPage.y);
+            this.linkGraphic.beginFill(0xFF0000);
+            this.linkGraphic.drawCircle(page.x, page.y, 1)
+            this.linkGraphic.drawCircle(pinPage.x, pinPage.y, 1)
         }
     }
 

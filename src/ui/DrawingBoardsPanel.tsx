@@ -36,7 +36,6 @@ export default class DrawingBoardsPanel implements Panel
     public paletteIndex: number;
 
     private readonly sidebar: HTMLElement;
-    private readonly pickSiderbar: HTMLElement;
 
     private readonly container: Container;
     private readonly pinContainer: Container;
@@ -60,14 +59,11 @@ export default class DrawingBoardsPanel implements Panel
     private readonly drawingSectionDiv: HTMLDivElement;
     private readonly drawingNameInput: HTMLInputElement;
 
-    private readonly searchInput: HTMLInputElement;
-
     private readonly drags = new Map<number, DragState>();
 
     public constructor(private readonly editor: FlicksyEditor)
     {
         this.sidebar = utility.getElement("drawing-sidebar");
-        this.pickSiderbar = utility.getElement("pick-drawing");
 
         this.pinViews = new ModelViewMapping<PinnedDrawing, PinnedDrawingView>(
             () => this.createPinView(),
@@ -95,11 +91,6 @@ export default class DrawingBoardsPanel implements Panel
         this.container.on("pointermove", (event: interaction.InteractionEvent) => this.onPointerMove(event));
         document.addEventListener("pointerup", event => this.drags.delete(event.pointerId));
         utility.getElement("container").addEventListener("wheel", event => this.onWheel(event));
-
-        // search
-        this.searchInput = utility.getElement("pick-drawing-search-input");
-        this.searchInput.addEventListener("input", () => this.setSearchQuery(this.searchInput.value));
-        utility.buttonClick("pick-drawing-search-reset", () => this.setSearchQuery(""));
 
         // scene bounds
         const bounds = new Graphics();
@@ -309,8 +300,7 @@ export default class DrawingBoardsPanel implements Panel
         this.setMode("select");
         this.pickerCallback = callback;
         this.sidebar.hidden = true;
-        this.pickSiderbar.hidden = false;
-        utility.getElement("pick-drawing-context").innerHTML = context;
+        this.editor.pickerPanel.pick("pick drawing", context, query => this.setSearchQuery(query));
     }
 
     public setBrushColor(index: number)
@@ -503,8 +493,6 @@ export default class DrawingBoardsPanel implements Panel
 
     private setSearchQuery(query: string): void
     {
-        this.searchInput.value = query;
-
         this.pinViews.forEach((view, model) =>
         {
             view.setDimmed(query.length > 0 ? !model.drawing.name.includes(query) : false); 
@@ -553,8 +541,8 @@ export default class DrawingBoardsPanel implements Panel
     {
         const callback = this.pickerCallback;
 
+        this.editor.pickerPanel.hide();
         this.sidebar.hidden = false;
-        this.pickSiderbar.hidden = true;
         this.pickerCallback = undefined;
 
         if (callback) { callback(drawing); }
