@@ -415,6 +415,9 @@ export default class ScenesPanel implements Panel
     {
         if (!this.selected) { return; }
 
+        const pin = this.editor.project.sceneBoards[0].pins.find(p => p.element.uuid === this.selected!.sceneChange);
+
+        this.editor.sceneMapsPanel.select(pin);
         this.editor.sceneMapsPanel.show();
         this.hide();
         this.editor.sceneMapsPanel.pickSceneForObject(scene =>

@@ -42,6 +42,7 @@ class PinnedSceneView implements View<PinnedScene>
         this.container = new Container();
 
         this.preview = new MTexture(160, 100);
+        this.preview.fill(0xFF000000);
         const sprite = new Sprite(this.preview.texture);
         sprite.scale.set(1 / 4);
         this.container.addChild(sprite);
@@ -159,6 +160,8 @@ export default class SceneMapsPanel implements Panel
     {
         this.container.visible = false;
         this.sidebar.hidden = true;
+
+        this.pickerCallback = undefined;
     }
 
     public setMap(map: SceneBoard): void
@@ -402,7 +405,7 @@ export default class SceneMapsPanel implements Panel
 
         this.sceneViews.forEach((view, pin) =>
         {
-            view.preview.fill(0);
+            view.preview.fill(0xFF000000);
             pin.element.objects.forEach(object =>
             {
                 view.preview.context.drawImage(object.drawing.texture.canvas, 

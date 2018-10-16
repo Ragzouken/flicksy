@@ -200,6 +200,8 @@ export default class DrawingBoardsPanel implements Panel
     {
         this.container.visible = false;
         this.sidebar.hidden = true;
+
+        this.pickerCallback = undefined;
     }
 
     public setMode(mode: "select" | "draw"): void
