@@ -148,6 +148,9 @@ export default class SceneMapsPanel implements Panel
             }
         });
 
+        utility.buttonClick("scene-higher", () => this.shiftSelectedSceneUp());
+        utility.buttonClick("scene-lower", () => this.shiftSelectedSceneDown());
+
         // mouse controls
         this.container.on("pointerdown", (event: interaction.InteractionEvent) => this.onPointerDown(event));
         this.container.on("pointermove", (event: interaction.InteractionEvent) => this.onPointerMove(event));
@@ -194,6 +197,12 @@ export default class SceneMapsPanel implements Panel
     public refresh(): void
     {
         this.sceneViews.setModels(this.sceneMap.pins);
+
+        // reorder pins
+        this.sceneMap.pins.forEach((pin, index) => 
+        {
+            this.pinContainer.setChildIndex(this.sceneViews.get(pin)!.container, index);
+        });
     }
 
     public select(pin: PinnedScene | undefined): void
@@ -493,5 +502,27 @@ export default class SceneMapsPanel implements Panel
             });
             view.preview.update();
         });
+    }
+
+    private shiftSelectedSceneUp(): void
+    {
+        if (this.selected)
+        {
+            const index = this.sceneMap.pins.indexOf(this.selected);
+            
+            utility.swapArrayElements(this.sceneMap.pins, index, index + 1);
+            this.refresh();
+        }
+    }
+
+    private shiftSelectedSceneDown(): void
+    {
+        if (this.selected)
+        {
+            const index = this.sceneMap.pins.indexOf(this.selected);
+            
+            utility.swapArrayElements(this.sceneMap.pins, index, index - 1);
+            this.refresh();
+        }
     }
 }
