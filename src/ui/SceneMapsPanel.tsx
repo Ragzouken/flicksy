@@ -105,6 +105,7 @@ export default class SceneMapsPanel implements Panel
     private pickerCallback: ((drawing: Scene | undefined) => void) | undefined;
     private pickerObject: SceneObject | undefined;
 
+    private readonly startSceneButton: HTMLButtonElement;
     private readonly sceneNameInput: HTMLInputElement;
 
     public constructor(private readonly editor: FlicksyEditor)
@@ -126,6 +127,9 @@ export default class SceneMapsPanel implements Panel
 
         this.container.position.set(-80, -50);
         this.container.hitArea = utility.infiniteHitArea;
+
+        this.startSceneButton = utility.getElement("project-start-scene");
+        this.startSceneButton.addEventListener("click", () => this.pickSceneForStart());
 
         utility.buttonClick("create-scene-button", () => this.createNewScene());
         utility.buttonClick("delete-scene-button", () => this.deleteSelectedScene());
@@ -203,6 +207,9 @@ export default class SceneMapsPanel implements Panel
         {
             this.pinContainer.setChildIndex(this.sceneViews.get(pin)!.container, index);
         });
+
+        const scene = this.editor.project.getSceneByUUID(this.editor.project.startScene)!;
+        this.startSceneButton.innerText = scene.name;
     }
 
     public select(pin: PinnedScene | undefined): void
@@ -258,6 +265,21 @@ export default class SceneMapsPanel implements Panel
         this.pickerObject = object;
         this.sidebar.hidden = true;
         this.editor.pickerPanel.pick("pick scene", context, query => query);
+    }
+
+    public pickSceneForStart(): void
+    {
+        this.pickerCallback = (scene: Scene | undefined) =>
+        {
+            if (scene)
+            {
+                this.editor.project.startScene = scene.uuid;
+                this.show();
+            }
+        };
+
+        this.sidebar.hidden = true;
+        this.editor.pickerPanel.pick("pick scene", "pick starting scene for this project", query => query);
     }
 
     private pickScene(scene: Scene | undefined): void

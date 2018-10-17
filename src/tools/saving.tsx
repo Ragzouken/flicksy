@@ -7,6 +7,11 @@ import * as utility from './utility';
 
 export function repairProject(project: FlicksyProject): void
 {
+    if (!project.startScene)
+    {
+        project.startScene = project.scenes[0].uuid;
+    }
+
     // palette
     if (project.palette.length < 15)
     {
@@ -102,6 +107,8 @@ export function newProject(): FlicksyProject
     project.createDrawingBoard();
     project.createScene();
     project.createSceneBoard();
+
+    project.startScene = project.scenes[0].uuid;
 
     randomisePalette(project);
     

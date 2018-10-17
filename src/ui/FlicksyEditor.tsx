@@ -129,7 +129,7 @@ export default class FlicksyEditor
 
         this.setActivePanel(this.scenesPanel);
 
-        this.scenesPanel.setScene(this.project.scenes[0]);
+        this.scenesPanel.setScene(this.project.getSceneByUUID(this.project.startScene)!);
         this.scenesPanel.setPlayTestMode(true);
     }
 

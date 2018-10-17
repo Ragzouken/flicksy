@@ -36,6 +36,8 @@ export class FlicksyProject
     public sceneBoards: SceneBoard[] = [];
     public palette: number[] = [];
 
+    public startScene: string;
+
     public fromData(data: FlicksyProjectData): FlicksyProject
     {
         this.uuid = data.uuid;
