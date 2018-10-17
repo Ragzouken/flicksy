@@ -89,9 +89,12 @@ export default class SceneMapsPanel implements Panel
 {
     private readonly sidebar: HTMLElement;
     private readonly container: Container;
+    private readonly pinContainer: Container;
     private readonly sceneViews: ModelViewMapping<PinnedScene, PinnedSceneView>;
     private readonly drags = new Map<number, DragState>();
+    
     private readonly linkGraphic = new Graphics();
+    private readonly linksGraphic = new Graphics();
 
     private sceneMap: SceneBoard;
     private selected: PinnedScene | undefined;
@@ -115,6 +118,11 @@ export default class SceneMapsPanel implements Panel
         this.container = new Container();
         this.container.interactive = true;
         this.editor.pixi.stage.addChild(this.container);
+        
+        this.pinContainer = new Container();
+        this.container.addChild(this.pinContainer);
+        this.container.addChild(this.linksGraphic);
+        this.container.addChild(this.linkGraphic);
 
         this.container.position.set(-80, -50);
         this.container.hitArea = utility.infiniteHitArea;
@@ -161,7 +169,7 @@ export default class SceneMapsPanel implements Panel
         this.container.visible = false;
         this.sidebar.hidden = true;
 
-        this.pickerCallback = undefined;
+        this.clearPicking();
     }
 
     public setMap(map: SceneBoard): void
@@ -241,11 +249,6 @@ export default class SceneMapsPanel implements Panel
         this.pickerObject = object;
         this.sidebar.hidden = true;
         this.editor.pickerPanel.pick("pick scene", context, query => query);
-
-        if (object)
-        {
-            this.container.addChild(this.linkGraphic);
-        }
     }
 
     private pickScene(scene: Scene | undefined): void
@@ -254,9 +257,7 @@ export default class SceneMapsPanel implements Panel
 
         this.hide();
         this.editor.pickerPanel.hide();
-        this.pickerCallback = undefined;
-        this.pickerObject = undefined;
-        this.container.removeChild(this.linkGraphic);
+        this.clearPicking();
 
         if (callback) { callback(scene); }
     }
@@ -292,7 +293,7 @@ export default class SceneMapsPanel implements Panel
     {
         const view = new PinnedSceneView();
 
-        this.container.addChild(view.container);
+        this.pinContainer.addChild(view.container);
 
         return view;
     }
@@ -361,9 +362,8 @@ export default class SceneMapsPanel implements Panel
 
         this.sceneViews.forEach(s => s.setHovered(s.model === object));
         
-        const cursor = "grab";// this.drags.size > 0 ? "grabbing" : "grab";
-        const grab = object; // && this.mode === "select";
-        this.container.cursor = grab ? cursor : "initial";
+        const cursor = this.drags.size > 0 ? "grabbing" : "grab";
+        this.container.cursor = object ? cursor : "initial";
 
         // update dragging
         const viewPoint = event.data.getLocalPosition(this.container.parent);
@@ -388,21 +388,7 @@ export default class SceneMapsPanel implements Panel
 
         if (this.pickerObject)
         {
-            const bounds = this.pickerObject.bounds;
-            const center = new Point(bounds.x + bounds.width / 2, 
-                                     bounds.y + bounds.height / 2);
-
-            const pin = this.sceneMap.pins.find(p => !!p.element.objects.find(o => o === this.pickerObject))!;
-            const pinWorld = this.sceneViews.get(pin)!.container.toGlobal(utility.mul(center, 1/4));
-            const pinPage = this.container.toLocal(pinWorld);
-
-            this.linkGraphic.clear();
-            this.linkGraphic.lineStyle(.5, 0xFF0000);
-            this.linkGraphic.moveTo(page.x, page.y);
-            this.linkGraphic.lineTo(pinPage.x, pinPage.y);
-            this.linkGraphic.beginFill(0xFF0000);
-            this.linkGraphic.drawCircle(page.x, page.y, 1)
-            this.linkGraphic.drawCircle(pinPage.x, pinPage.y, 1)
+            this.showLinkLine(page, this.getSceneObjectPosition(this.pickerObject));
         }
     }
 
@@ -426,9 +412,60 @@ export default class SceneMapsPanel implements Panel
         this.container.position = utility.add(this.container.position, delta);
     }
 
+    private getPinForScene(scene: Scene): PinnedScene
+    {
+        return this.sceneMap.pins.find(pin => pin.element === scene)!;
+    }
+
+    /**
+     * Compute the page location of a scene object within its corresponding
+     * pinned scene.
+     */
+    private getSceneObjectPosition(object: SceneObject): Point
+    {
+        const center = utility.rectCenter(object.bounds);
+        
+        const pin = this.sceneMap.pins.find(p => !!p.element.objects.find(o => o === object))!;
+        const pinView = this.sceneViews.get(pin)!;
+        const pinWorld = pinView.container.toGlobal(utility.mul(center, 1/4));
+        const pinPage = this.container.toLocal(pinWorld);
+
+        return pinPage;
+    }
+
+    /**
+     * Clear all picking data and interface without calling back with a choice.
+     */
+    private clearPicking(): void
+    {
+        this.linkGraphic.visible = false;
+        this.pickerCallback = undefined;
+        this.pickerObject = undefined;   
+    }
+
+    /**
+     * Show the link line and position it so that it is between the given
+     * points.
+     */
+    private showLinkLine(start: Point, end: Point)
+    {
+        // redraw the link line
+        this.linkGraphic.clear();
+        this.linkGraphic.lineStyle(.5, 0xFF0000);
+        this.linkGraphic.moveTo(start.x, start.y);
+        this.linkGraphic.lineTo(end.x, end.y);
+        this.linkGraphic.beginFill(0xFF0000);
+        this.linkGraphic.drawCircle(start.x, start.y, 1)
+        this.linkGraphic.drawCircle(end.x, end.y, 1)
+        this.linkGraphic.visible = true;
+    }
+
     private regeneratePreviews(): void
     {
         const scale = 1;
+
+        this.linksGraphic.clear();
+        this.linksGraphic.lineStyle(.25, 0x00FF00);
 
         this.sceneViews.forEach((view, pin) =>
         {
@@ -440,6 +477,19 @@ export default class SceneMapsPanel implements Panel
                                                object.position.y / scale,
                                                object.drawing.width / scale,
                                                object.drawing.height / scale);
+                
+                /*
+                if (object.sceneChange)
+                {
+                    const tscene = this.editor.project.getSceneByUUID(object.sceneChange)!;
+                    const tpin = this.getPinForScene(tscene);
+                    const center = utility.rectCenter(tpin.bounds);
+                    const scenter = this.getSceneObjectPosition(object);
+
+                    this.linksGraphic.moveTo(center.x, center.y);
+                    this.linksGraphic.lineTo(scenter.x, scenter.y);
+                }
+                */
             });
             view.preview.update();
         });

@@ -9,6 +9,7 @@ export default class PickerPanel
     private readonly queryInput: HTMLInputElement;
     private readonly queryCancel: HTMLButtonElement;
 
+    /** Called when the search query changes from user input */
     private onQueryChange: (query: string) => void;
 
     public constructor(private readonly editor: FlicksyEditor)
@@ -32,12 +33,12 @@ export default class PickerPanel
                 context: string, 
                 onQueryChange: (query: string) => void): void 
     {
-        this.siderbar.hidden = false;
-
         this.headingText.innerHTML = heading;
         this.contextText.innerHTML = context;
         this.onQueryChange = onQueryChange;
         this.setQuery("");
+
+        this.siderbar.hidden = false;
     }
     
     /**

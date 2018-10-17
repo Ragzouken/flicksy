@@ -297,9 +297,11 @@ export default class DrawingBoardsPanel implements Panel
     public pickDrawingForScene(callback: (drawing: Drawing | undefined) => void,
                                context: string): void
     {
+        this.show();
+        this.sidebar.hidden = true;
+
         this.setMode("select");
         this.pickerCallback = callback;
-        this.sidebar.hidden = true;
         this.editor.pickerPanel.pick("pick drawing", context, query => this.setSearchQuery(query));
     }
 
@@ -542,7 +544,7 @@ export default class DrawingBoardsPanel implements Panel
         const callback = this.pickerCallback;
 
         this.editor.pickerPanel.hide();
-        this.sidebar.hidden = false;
+        this.hide();
         this.pickerCallback = undefined;
 
         if (callback) { callback(drawing); }

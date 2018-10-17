@@ -1,8 +1,14 @@
-import { DisplayObject, Point, PointLike } from 'pixi.js';
+import { DisplayObject, Point, PointLike, Rectangle } from 'pixi.js';
 
 export const infiniteHitArea =
 {
     contains(x: number, y: number) { return true; }
+}
+
+export function rectCenter(rect: Rectangle)
+{
+    return new Point(rect.x + rect.width / 2,
+                     rect.y + rect.height / 2);
 }
 
 export function transform(point: Point, 

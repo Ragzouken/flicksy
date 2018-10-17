@@ -5,6 +5,23 @@ import { FlicksyProject, FlicksyProjectData } from "../data/FlicksyProject";
 import { base64ToUint8, uint8ToBase64 } from "./base64";
 import * as utility from './utility';
 
+export function repairProject(project: FlicksyProject): void
+{
+    // palette
+    if (project.palette.length < 15)
+    {
+        randomisePalette(project);
+    }
+
+    // scene map
+    project.sceneBoards = project.sceneBoards || [];
+
+    if (project.sceneBoards.length === 0)
+    {
+        project.createSceneBoard();
+    }
+}
+
 export async function loadProjectFromUUID(uuid: string): Promise<FlicksyProject>
 {
     const data = await localForage.getItem<FlicksyProjectData>(`projects-${uuid}`);
@@ -96,11 +113,7 @@ export function loadProject(data: FlicksyProjectData): FlicksyProject
     const project = new FlicksyProject();
     project.fromData(data);
 
-    // repairs
-    if (project.palette.length < 15)
-    {
-        randomisePalette(project);
-    }
+    repairProject(project);
     
     project.flicksyVersion = "alpha-1";
 

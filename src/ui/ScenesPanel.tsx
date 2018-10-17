@@ -92,7 +92,7 @@ export default class ScenesPanel implements Panel
         utility.buttonClick("object-lower", () => this.shiftSelectedObjectDown());
 
         utility.buttonClick("create-object-drawing-picker-button", () => this.createObjectFromPicker());
-        utility.buttonClick("object-pick-drawing-button", () => this.changeSelectedObjectDrawingFromPicker());
+        utility.buttonClick("object-pick-drawing-button", () => this.startPickingSelectedObjectDrawing());
 
         this.objectNameInput = utility.getElement("object-name");
         this.objectDeleteButton = utility.getElement("delete-object-button");
@@ -393,22 +393,31 @@ export default class ScenesPanel implements Panel
         }, `pick a drawing for a new object in the scene <em>${this.scene.name}</em>`);
     }
 
-    private changeSelectedObjectDrawingFromPicker(): void 
+    /**
+     * 
+     */
+    private endPickingSelectedObjectDrawing(drawing: Drawing | undefined): void
+    {
+        if (drawing && this.selected)
+        {
+            this.selected.drawing = drawing;
+        }
+
+        this.show();
+    }
+
+    /**
+     * Open the drawing picker to select a drawing to use for the currently
+     * selected SceneObject
+     */
+    private startPickingSelectedObjectDrawing(): void 
     {
         if (!this.selected) { return; }
 
-        this.editor.drawingBoardsPanel.show();
-        this.hide();
-        this.editor.drawingBoardsPanel.pickDrawingForScene(drawing =>
-        {
-            if (drawing && this.selected)
-            {
-                this.selected.drawing = drawing;
-            }
+        const context = `pick the drawing for the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`;
 
-            this.editor.drawingBoardsPanel.hide();
-            this.show();
-        }, `pick the drawing for the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`);
+        this.hide();
+        this.editor.drawingBoardsPanel.pickDrawingForScene(drawing => this.endPickingSelectedObjectDrawing(drawing), context);
     }
 
     private changeSelectedObjectSceneChangeFromPicker(): void 

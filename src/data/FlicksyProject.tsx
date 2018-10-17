@@ -1,4 +1,5 @@
 import { Point } from 'pixi.js';
+import { repairProject } from 'src/tools/saving';
 import * as uuid4 from 'uuid/v4';
 import { MTexture } from '../tools/MTexture';
 import { Drawing, DrawingData } from './Drawing';
@@ -47,6 +48,8 @@ export class FlicksyProject
         this.palette = data.palette || [];
         
         this.drawingBoards = data.drawingBoards.map(board => (new DrawingBoard).fromData(board, this));
+
+        repairProject(this);
 
         if (data.sceneBoards)
         {

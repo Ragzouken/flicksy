@@ -26,7 +26,7 @@ export default class DialogueView
         this.panel.scale = new Point(.125, .125);
 
 
-        this.text = new Text("test test test test test test test test test test test test test test test ", {
+        this.text = new Text("test test tes test test test test test test ", {
             fill : 0xffffff,
             fontFamily: 'Arial', 
             fontSize: 32, 
