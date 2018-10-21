@@ -248,15 +248,13 @@ export default class ScenesPanel implements Panel
 
     public createObject(drawing: Drawing): SceneObject
     {
-        const position = new Pixi.Point(utility.randomInt(48, 128), utility.randomInt(2, 96));
-
         const object = new SceneObject();
         object.uuid = uuid();
         object.name = `object ${this.activeScene.objects.length}`;
-        object.position = position;
-        object.drawing = this.editor.project.drawings[0];
         object.dialogue = "";
         object.drawing = drawing;
+        object.position = new Pixi.Point(80 - drawing.width / 2, 
+                                         50 - drawing.height / 2);
 
         this.scene.addObject(object);
 
@@ -332,12 +330,18 @@ export default class ScenesPanel implements Panel
         if (object)
         {
             const interactable = object.dialogue.length > 0 
-                                || object.sceneChange;
+                              || object.sceneChange;
 
             this.objectViews.get(object)!.hover.visible = !this.playModeTest;
-            this.container.cursor = this.playModeTest && interactable
-                                    ? "pointer"
-                                    : "grab";
+            
+            if (this.playModeTest)
+            {
+                this.container.cursor = interactable ? "pointer" : "initial";
+            }
+            else
+            {
+                this.container.cursor = "grab";
+            }
         }
         else
         {
@@ -365,16 +369,6 @@ export default class ScenesPanel implements Panel
             utility.swapArrayElements(this.scene.objects, index, index - 1);
             this.refresh();
         }
-    }
-
-    private deleteOpenScene(): void
-    {
-        if (this.editor.project.scenes.length === 1) { return; }
-
-        const index = this.editor.project.scenes.indexOf(this.scene);
-        this.editor.project.scenes.splice(index, 1);
-
-        this.setScene(this.editor.project.scenes[0]);
     }
 
     private createObjectFromPicker(): void 
