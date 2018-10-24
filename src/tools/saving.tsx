@@ -105,8 +105,8 @@ export function newProject(): FlicksyProject
     project.uuid = uuid4();
     
     project.createDrawingBoard();
-    project.createScene();
     project.createSceneBoard();
+    project.createScene();
 
     project.startScene = project.scenes[0].uuid;
 
