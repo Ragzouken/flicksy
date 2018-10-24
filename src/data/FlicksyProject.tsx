@@ -1,7 +1,7 @@
 import { Point } from 'pixi.js';
-import { repairProject } from 'src/tools/saving';
 import * as uuid4 from 'uuid/v4';
 import { MTexture } from '../tools/MTexture';
+import { repairProject } from '../tools/saving';
 import { Drawing, DrawingData } from './Drawing';
 import { DrawingBoard, DrawingBoardData } from './DrawingBoard';
 import { ElementBoardData } from './FlicksyData';
