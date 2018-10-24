@@ -5,6 +5,8 @@ import { FlicksyProject, FlicksyProjectData } from "../data/FlicksyProject";
 import { base64ToUint8, uint8ToBase64 } from "./base64";
 import * as utility from './utility';
 
+const flicksyVersion = "alpha-1";
+
 export function repairProject(project: FlicksyProject): void
 {
     if (!project.startScene)
@@ -104,6 +106,8 @@ export function newProject(): FlicksyProject
     project.name = "unnamed project";
     project.uuid = uuid4();
     
+    project.flicksyVersion = flicksyVersion;
+    
     project.createDrawingBoard();
     project.createSceneBoard();
     project.createScene();
@@ -121,8 +125,6 @@ export function loadProject(data: FlicksyProjectData): FlicksyProject
     project.fromData(data);
 
     repairProject(project);
-    
-    project.flicksyVersion = "alpha-1";
 
     return project;
 }
