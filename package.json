@@ -28,6 +28,7 @@
     "@types/react": "^16.4.14",
     "@types/react-dom": "^16.0.8",
     "@types/uuid": "^3.4.4",
+    "canvas-prebuilt": "^2.0.0-alpha.14",
     "typescript": "^2.9.2"
   },
   "homepage": "."
