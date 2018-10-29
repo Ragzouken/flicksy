@@ -149,6 +149,7 @@ export default class SceneMapsPanel implements Panel
             if (this.selected)
             {
                 this.selected.element.name = this.sceneNameInput.value;
+                this.sceneViews.get(this.selected)!.refresh();
             }
         });
 
