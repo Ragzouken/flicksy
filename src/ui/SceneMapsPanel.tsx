@@ -140,6 +140,20 @@ export default class SceneMapsPanel implements Panel
                 this.editor.openScene(this.selected.element);
             }
         });
+        utility.buttonClick("scene-map-duplicate-button", () =>
+        {
+            if (this.selected)
+            {
+                const pin = this.createNewScene();
+                const uuid = pin.element.uuid;
+                pin.element.fromData(this.selected.element.toData(), this.editor.project);
+                pin.element.uuid = uuid;
+
+                this.select(pin);
+                this.refresh();
+                this.regeneratePreviews();
+            }
+        });
 
         utility.buttonClick("scene-map-regenerate", () => this.regeneratePreviews());
 
@@ -294,7 +308,7 @@ export default class SceneMapsPanel implements Panel
         if (callback) { callback(scene); }
     }
 
-    private createNewScene(): void
+    private createNewScene(): PinnedScene
     {
         // center
         const view = new Point(this.editor.pixi.view.width / 2, this.editor.pixi.view.height / 2);
@@ -306,9 +320,12 @@ export default class SceneMapsPanel implements Panel
         const scene = this.editor.project.createScene();
         scene.name = `scene ${this.editor.project.scenes.length}`;
 
-        this.sceneMap.pins.find(pin => pin.element === scene)!.position = position;
+        const pin = this.sceneMap.pins.find(p => p.element === scene)!;
+        pin.position = position;
 
         this.refresh();
+
+        return pin;
     }
 
     private deleteSelectedScene(): void
