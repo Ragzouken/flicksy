@@ -19,6 +19,23 @@ canvas
     height: 100%;
 }
 
+#error
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-256px, -256px);
+
+    width: 512px;
+    color: white;
+    background-color: darkred;
+}
+
+#error > *
+{
+    margin: 10px;
+}
+
 button, select
 {
     background-color: #FFD800;
@@ -87,6 +104,11 @@ input.full-input
 select.full-input
 {
     width: 100%;
+}
+
+button.delete
+{
+    background-color: rgb(255, 115, 0);
 }
 
 #object-dialogue-input, #import-data

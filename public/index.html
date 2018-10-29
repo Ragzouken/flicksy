@@ -122,7 +122,7 @@
                 <h2>name</h2>
                 <div class="rename-delete">
                     <input id="drawing-name" title="Name of the selected drawing">
-                    <button id="delete-drawing-button" title="Delete the selected drawing">delete</button>
+                    <button id="delete-drawing-button" class="delete" title="Delete the selected drawing">delete</button>
                 </div>
                 <h2>layering</h2>
                 <div class="button-row">
@@ -188,7 +188,7 @@
                 <h2>name</h2>
                 <div class="rename-delete">
                     <input id="object-name" title="Rename the selected object">
-                    <button id="delete-object-button" title="Delete the selected object">delete</button>
+                    <button id="delete-object-button" class="delete" title="Delete the selected object">delete</button>
                 </div>
 
                 <h2>drawing</h2>
@@ -237,7 +237,7 @@
                 <h2>edit</h2>
                 <div class="button-row">
                     <button id="scene-map-open-button" title="Open the selected scene in the scene tab">open</button>
-                    <button id="delete-scene-button" title="Delete the selected scene">delete</button>
+                    <button id="delete-scene-button" class="delete" title="Delete the selected scene">delete</button>
                 </div>
 
                 <h2>layering</h2>
@@ -265,5 +265,19 @@
         <div id="root"></div>
     </div>
     <button id="editor-button" title="Exit playtesting and resume editing" hidden>editor</button>
+    <div id="error" hidden>
+        <h1>flicksy has broken</h1>
+        <p id="error-description">
+            a bug within flicksy has caused it to malfunction. please report
+            this issue to me 
+            <ul>
+                <li>either <a href="https://ragzouken.com/twitter">on twitter</a></li>
+                <li>or by email at <a href="mailto:ragzouken@gmail.com">ragzouken@gmail.com</a></li>
+                <li>or on the <a href="https://github.com/Ragzouken/flicksy/issues">flicksy github</a></li>
+            </ul>
+        </p>
+        <h2>detail</h2>
+        <pre id=error-traceback></pre>
+    </div>
   </body>
 </html>
