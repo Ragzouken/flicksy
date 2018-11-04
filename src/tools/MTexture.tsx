@@ -77,6 +77,32 @@ export class MTexture
         return pixels[y * width + x];
     }
 
+    public anyPixel(x: number, y: number, radius: number): boolean
+    {
+        const w = this.data.width;
+        const h = this.data.height;
+
+        const pixels = this.buf32;
+
+        const xmin = Math.max(x - radius, 0);
+        const ymin = Math.max(y - radius, 0);
+        const xmax = Math.min(x + radius, w - 1);
+        const ymax = Math.min(y + radius, h - 1);
+
+        for (y = ymin; y <= ymax; ++y)
+        {
+            for (x = xmin; x <= xmax; ++x)
+            {
+                if (pixels[y * w + x] > 0)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public line(x0: number, y0: number, x1: number, y1: number, color: number)
     {
         const steep = Math.abs(y1 - y0) > Math.abs(x1 - x0);

@@ -46,6 +46,13 @@ export class Drawing implements FlicksyData<Drawing, DrawingData>
         };
     }
 
+    public anyPixel(x: number, y: number, radius: number): boolean
+    {
+        if (this.texture.needsFetch) { this.texture.fetch(); }
+
+        return this.texture.anyPixel(x, y, radius); 
+    }
+
     public getPixel(x: number, y: number): number
     {
         if (this.texture.needsFetch) { this.texture.fetch(); }

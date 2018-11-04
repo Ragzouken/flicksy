@@ -33,7 +33,7 @@ export function positionDrawingContains(drawing: PositionedDrawing,
     if (!bounded) { return false; }
 
     return precision === HitPrecision.Bounds 
-        || drawing.drawing.getPixel(lx, ly) > 0;
+        || drawing.drawing.anyPixel(lx, ly, 2);
 }
 
 export function pageBounds(drawings: PositionedDrawing[]): Rectangle
