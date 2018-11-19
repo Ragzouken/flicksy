@@ -87,9 +87,10 @@ export default class DrawingBoardsPanel implements Panel
         this.drawModeButton.addEventListener("click", () => this.setMode("draw"));
 
         // mouse controls
-        this.container.on("pointerdown", (event: interaction.InteractionEvent) => this.onPointerDown(event));
-        this.container.on("pointermove", (event: interaction.InteractionEvent) => this.onPointerMove(event));
-        document.addEventListener("pointerup", event => this.drags.delete(event.pointerId));
+        this.container.on("pointerdown",      (event: interaction.InteractionEvent) => this.onPointerDown(event));
+        this.container.on("pointermove",      (event: interaction.InteractionEvent) => this.onPointerMove(event));
+        this.container.on("pointerup",        (event: interaction.InteractionEvent) => this.drags.delete(event.data.identifier));
+        this.container.on("pointerupoutside", (event: interaction.InteractionEvent) => this.drags.delete(event.data.identifier));
         utility.getElement("container").addEventListener("wheel", event => this.onWheel(event));
 
         // scene bounds

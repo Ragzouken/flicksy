@@ -78,8 +78,6 @@ export default class ScenesPanel implements Panel
         bounds.alpha = 1;
         this.overlayContainer.addChild(bounds);
 
-        document.addEventListener("pointerup", () => this.stopDragging());
-
         utility.buttonClick("scene-view-in-map-button", () => 
         {
             this.editor.openSceneMap(this.scene);
@@ -132,6 +130,8 @@ export default class ScenesPanel implements Panel
 
         this.container.on("pointerdown", (event: Pixi.interaction.InteractionEvent) => this.onPointerDown(event));
         this.container.on("pointermove", (event: Pixi.interaction.InteractionEvent) => this.onPointerMove(event));
+        this.container.on("pointerup",        (event: Pixi.interaction.InteractionEvent) => this.stopDragging());
+        this.container.on("pointerupoutside", (event: Pixi.interaction.InteractionEvent) => this.stopDragging());
     }
 
     public show(): void

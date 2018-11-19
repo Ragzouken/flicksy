@@ -11,6 +11,7 @@
     "interface-name": false,
     "no-bitwise": false,
     "prefer-for-of": false,
-    "variable-name": false
+    "variable-name": false,
+    "jsx-no-lambda": false
   }
 }
