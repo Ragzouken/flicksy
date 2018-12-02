@@ -14,6 +14,7 @@ export interface FlicksyProjectData
     name: string;
 
     flicksyVersion: string;
+    startScene: string;
 
     drawings: DrawingData[];
     scenes: SceneData[];
@@ -44,6 +45,7 @@ export class FlicksyProject
         this.name = data.name;
         
         this.flicksyVersion = data.flicksyVersion;
+        this.startScene = data.startScene;
 
         this.drawings = data.drawings.map(drawing => (new Drawing).fromData(drawing));
         this.scenes = data.scenes.map(scene => (new Scene).fromData(scene, this));
@@ -82,7 +84,8 @@ export class FlicksyProject
             name: this.name,
 
             flicksyVersion: this.flicksyVersion,
-            
+            startScene: this.startScene,
+
             drawings: this.drawings.map(drawing => drawing.toData()),
             drawingBoards: this.drawingBoards.map(board => board.toData()),
             scenes: this.scenes.map(scene => scene.toData()),
