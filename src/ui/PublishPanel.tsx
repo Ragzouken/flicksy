@@ -1,9 +1,28 @@
 import * as FileSaver from 'file-saver';
 import * as JSZip from 'jszip';
-import { exportPlayable, projectToJson } from '../tools/saving';
-import { buttonClick } from "../tools/utility";
+import { exportPlayable, filesafeName, playableHTMLBlob, projectToJson } from '../tools/saving';
+import { buttonClick, getElement } from "../tools/utility";
 import FlicksyEditor from "./FlicksyEditor";
 import Panel from './Panel';
+
+async function fileToBlob(file: File): Promise<Blob>
+{
+    const reader = new FileReader();
+    const promise = new Promise<Blob>(resolve =>
+    {
+        reader.onloadend = progress =>
+        {
+            const data = reader.result as ArrayBuffer;
+            const blob = new Blob([data], {type: file.type});
+
+            resolve(blob);
+        };
+    });
+
+    reader.readAsArrayBuffer(file);
+
+    return promise;
+}
 
 export default class PublishPanel implements Panel
 {
@@ -12,6 +31,8 @@ export default class PublishPanel implements Panel
     public constructor(private readonly editor: FlicksyEditor)
     {
         this.sidebar = document.getElementById("publish")! as HTMLDivElement;
+
+        const audioInput: HTMLInputElement = getElement("export-audio");
 
         buttonClick("export-playable", () => exportPlayable(editor.project));
         buttonClick("download-data", () => 
@@ -36,6 +57,23 @@ export default class PublishPanel implements Panel
 
             zip.generateAsync({type: "blob"})
             .then(content => FileSaver.saveAs(content, "drawings.zip"));
+        });
+        buttonClick("export-zip", () =>
+        {
+            const name = filesafeName(editor.project);
+
+            const zip = new JSZip();
+            const folder = zip.folder(name);
+            
+            const audio = audioInput.files![0];
+            const htmlblob = playableHTMLBlob(editor.project, audio.name);
+
+            folder.file("index.html", htmlblob);
+
+            fileToBlob(audio)
+            .then(audioblob => folder.file(audio.name, audioblob))
+            .then(_ => zip.generateAsync({type: "blob"}))
+            .then(content => FileSaver.saveAs(content, `${name}.zip`));
         });
     }
 

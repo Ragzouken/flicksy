@@ -227,7 +227,8 @@ export function randomisePalette(project: FlicksyProject): void
     }
 }
 
-export async function exportPlayable(project: FlicksyProject)
+export async function playableHTMLBlob(project: FlicksyProject,
+                                       audio?: string): Promise<Blob> 
 {
     // clones the page and inlines the css, javascript, and project data
     const html = document.documentElement!.cloneNode(true) as HTMLElement;
@@ -244,6 +245,17 @@ export async function exportPlayable(project: FlicksyProject)
     // remove existing canvas
     const canvas = body.getElementsByTagName("canvas")[0];
     canvas.parentElement!.removeChild(canvas);
+
+    // add audio
+    if (audio)
+    {
+        const audioelement = document.createElement("audio");
+        audioelement.src = audio;
+        audioelement.autoplay = true;
+        audioelement.loop = true;
+
+        body.appendChild(audioelement);
+    }
 
     // inline css
     if (cssLink)
@@ -272,11 +284,21 @@ export async function exportPlayable(project: FlicksyProject)
         jsScript.innerHTML = jsText;
         body.appendChild(jsScript);
     }
-    
+
+    return new Blob([html.innerHTML], {type: "text/html"});
+}
+
+export async function exportPlayable(project: FlicksyProject)
+{
     // save html
-    const name = project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const blob = new Blob([html.innerHTML], {type: "text/html"});
+    const name = filesafeName(project);
+    const blob = await playableHTMLBlob(project);
     FileSaver.saveAs(blob, `flicksy-${name}.html`);
 
     return;
+}
+
+export function filesafeName(project: FlicksyProject): string
+{
+    return project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
 }

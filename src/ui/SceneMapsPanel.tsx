@@ -216,6 +216,8 @@ export default class SceneMapsPanel implements Panel
 
     public refresh(): void
     {
+        if (!this.sceneMap) { return; }
+
         this.sceneViews.setModels(this.sceneMap.pins);
 
         // reorder pins
