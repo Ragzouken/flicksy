@@ -115,6 +115,18 @@ export default class DrawingBoardsPanel implements Panel
         utility.buttonClick("pin-higher", () => this.shiftSelectedPinUp());
         utility.buttonClick("pin-lower", () => this.shiftSelectedPinDown());
 
+        utility.buttonClick("duplicate-drawing-button", () =>
+        {
+            if (this.selected)
+            {
+                const drawing = this.selected.drawing;
+                drawing.texture.fetch();
+                const copy = this.createNewDrawing(drawing.width, drawing.height);
+                copy.drawing.texture.context.drawImage(drawing.texture.canvas, 0, 0);
+                copy.drawing.texture.update();
+            }
+        });
+
         this.drawingNameInput = utility.getElement("drawing-name");
         this.drawingNameInput.addEventListener("input", () =>
         {
@@ -514,7 +526,7 @@ export default class DrawingBoardsPanel implements Panel
         });
     }
 
-    private createNewDrawing(width: number, height: number): void
+    private createNewDrawing(width: number, height: number): PinnedDrawing
     {
         // center
         const view = new Point(this.editor.pixi.view.width / 2, this.editor.pixi.view.height / 2);
@@ -529,6 +541,8 @@ export default class DrawingBoardsPanel implements Panel
         
         this.refreshPinViews();
         this.select(pin);
+
+        return pin;
     }
 
     private createPinView(): PinnedDrawingView

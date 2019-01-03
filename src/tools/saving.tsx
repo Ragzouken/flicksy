@@ -15,7 +15,7 @@ export function repairProject(project: FlicksyProject): void
     }
 
     // palette
-    if (project.palette.length < 15)
+    if (project.palette.length < 16)
     {
         randomisePalette(project);
     }
@@ -217,7 +217,7 @@ export function randomisePalette(project: FlicksyProject): void
 {
     project.palette.length = 0;
 
-    for (let i = 0; i < 15; ++i)
+    for (let i = 0; i < 16; ++i)
     {
         const color = utility.rgb2num(utility.randomInt(0, 255), 
                                       utility.randomInt(0, 255),
