@@ -10,6 +10,7 @@ export default class ProjectsPanel implements Panel
 {
     private readonly sidebar: HTMLElement;
     private projectNameInput: HTMLInputElement;
+    private resolutionSelect: HTMLSelectElement;
     private projectSelect: HTMLSelectElement;
 
     public constructor(private readonly editor: FlicksyEditor)
@@ -28,6 +29,14 @@ export default class ProjectsPanel implements Panel
             {
                 this.editor.setProject(project);
             });
+        };
+
+        const changeResolution = (resolution: string) =>
+        {
+            const [width, height] = resolution.split("x").map(part => +part);
+
+            this.editor.project.resolution = [width, height];
+            this.editor.refresh();
         };
 
         const sidebar = <>
@@ -50,6 +59,13 @@ export default class ProjectsPanel implements Panel
                        title="Rename this project" 
                        ref={element => this.projectNameInput = element!}
                        onChange={event => editor.project.name = event.target.value}/>
+                <h2>resolution</h2>
+                <select title="Pixel size of all scenes"
+                        ref={element => this.resolutionSelect = element!}
+                        onChange={event => changeResolution(event.target.value)}>
+                    <option value="160x100">160px x 100px (default)</option>
+                    <option value="320x200">320px x 200px</option>
+                </select>
             </div>
             <div className="section">
                 <h1>switch project</h1>
@@ -79,6 +95,8 @@ export default class ProjectsPanel implements Panel
     {
         // copy project name to name input
         this.projectNameInput.value = this.editor.project.name;
+
+        this.resolutionSelect.value = this.editor.project.resolution.join("x");
 
         // refresh saved project menu
         getProjectList().then(listing =>

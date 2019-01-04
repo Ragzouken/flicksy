@@ -114,6 +114,9 @@ export default class FlicksyEditor
         this.drawingBoardsPanel.refresh();
         this.scenesPanel.refresh();
         this.sceneMapsPanel.refresh();
+
+        this.resolution = this.project.resolution;
+        this.resizePixiCanvas();
     }
 
     /**

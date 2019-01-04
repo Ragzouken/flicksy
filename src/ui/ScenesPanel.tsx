@@ -21,6 +21,9 @@ export default class ScenesPanel implements Panel
     private readonly container: Pixi.Container;
     private readonly overlayContainer: Pixi.Container;
     private readonly objectContainer: Pixi.Container;
+    
+    private readonly mask: Pixi.Graphics;
+    private readonly bounds: Pixi.Graphics;
 
     private readonly objectViews: ModelViewMapping<SceneObject, SceneObjectView>;
 
@@ -64,19 +67,19 @@ export default class ScenesPanel implements Panel
         this.container.pivot = new Pixi.Point(80, 50);
         this.container.interactive = true;
         this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
-        
-        const mask = new Pixi.Graphics();
-        mask.beginFill(0x000000);
-        mask.drawRect(0, 0, 160, 100);
-        this.container.addChild(mask);
-        this.objectContainer.mask = mask;
+
+        this.mask = new Pixi.Graphics();
+        this.mask.beginFill(0x000000);
+        this.mask.drawRect(0, 0, 160, 100);
+        this.container.addChild(this.mask);
+        this.objectContainer.mask = this.mask;
 
         // scene bounds
-        const bounds = new Pixi.Graphics();
-        bounds.lineStyle(1, 0xFFFFFF);
-        bounds.drawRect(-.5, -.5, 160 + 1, 100 + 1);
-        bounds.alpha = 1;
-        this.overlayContainer.addChild(bounds);
+        this.bounds = new Pixi.Graphics();
+        this.bounds.lineStyle(1, 0xFFFFFF);
+        this.bounds.drawRect(-.5, -.5, 160 + 1, 100 + 1);
+        this.bounds.alpha = 1;
+        this.overlayContainer.addChild(this.bounds);
 
         utility.buttonClick("scene-view-in-map-button", () => 
         {
@@ -174,6 +177,7 @@ export default class ScenesPanel implements Panel
     public refresh(): void
     {
         this.refreshObjectViews();
+        this.refreshBounds();
 
         this.sceneNameHeading.innerText = `scene: ${this.scene.name}`;
 
@@ -472,5 +476,22 @@ export default class ScenesPanel implements Panel
         this.dragOrigin = utility.sub(view.sprite.position, event.data.getLocalPosition(this.overlayContainer));
 
         this.select(view.object);
+    }
+
+    private refreshBounds(): void
+    {
+        const [width, height] = this.editor.project.resolution;
+
+        this.container.pivot = new Pixi.Point(width / 2, height / 2);
+        this.container.hitArea = new Pixi.Rectangle(0, 0, width, height);
+
+        this.mask.clear();
+        this.mask.beginFill(0x000000);
+        this.mask.drawRect(0, 0, width, height);
+
+        this.bounds.clear();
+        this.bounds.lineStyle(1, 0xFFFFFF);
+        this.bounds.drawRect(-.5, -.5, width + 1, height + 1);
+        this.bounds.alpha = 1;
     }
 }

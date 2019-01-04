@@ -14,6 +14,7 @@ export interface FlicksyProjectData
     name: string;
 
     flicksyVersion: string;
+    resolution: [number, number];
     startScene: string;
 
     drawings: DrawingData[];
@@ -30,6 +31,7 @@ export class FlicksyProject
     public name: string;
     
     public flicksyVersion: string;
+    public resolution: [number, number] = [160, 100];
 
     public drawings: Drawing[] = [];
     public drawingBoards: DrawingBoard[] = [];
@@ -45,6 +47,7 @@ export class FlicksyProject
         this.name = data.name;
         
         this.flicksyVersion = data.flicksyVersion;
+        this.resolution = data.resolution || [160, 100];
         this.startScene = data.startScene;
 
         this.drawings = data.drawings.map(drawing => (new Drawing).fromData(drawing));
@@ -84,6 +87,7 @@ export class FlicksyProject
             name: this.name,
 
             flicksyVersion: this.flicksyVersion,
+            resolution: this.resolution,
             startScene: this.startScene,
 
             drawings: this.drawings.map(drawing => drawing.toData()),
