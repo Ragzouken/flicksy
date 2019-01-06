@@ -1,5 +1,5 @@
 import * as FileSaver from 'file-saver';
-import * as JSZip from 'jszip';
+import JSZip from 'jszip';
 import { exportPlayable, filesafeName, playableHTMLBlob, projectToJson } from '../tools/saving';
 import { buttonClick, getElement } from "../tools/utility";
 import FlicksyEditor from "./FlicksyEditor";

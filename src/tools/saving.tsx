@@ -1,6 +1,6 @@
 import * as FileSaver from 'file-saver';
 import * as localForage from 'localforage';
-import * as uuid4 from 'uuid/v4';
+import { v4 as uuid4 } from 'uuid';
 import { FlicksyProject, FlicksyProjectData } from "../data/FlicksyProject";
 import { base64ToUint8, uint8ToBase64 } from "./base64";
 import * as utility from './utility';

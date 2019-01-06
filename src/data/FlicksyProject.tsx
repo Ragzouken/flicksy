@@ -1,5 +1,5 @@
 import { Point } from 'pixi.js';
-import * as uuid4 from 'uuid/v4';
+import { v4 as uuid4 } from 'uuid';
 import { MTexture } from '../tools/MTexture';
 import { repairProject } from '../tools/saving';
 import { Drawing, DrawingData } from './Drawing';

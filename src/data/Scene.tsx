@@ -1,5 +1,5 @@
 import { Point, Rectangle } from "pixi.js";
-import * as uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { Drawing } from "./Drawing";
 import { FlicksyData } from "./FlicksyData";
 import { FlicksyProject } from './FlicksyProject';

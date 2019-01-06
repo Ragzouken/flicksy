@@ -1,7 +1,7 @@
 import { Container, Graphics, interaction, Point, Sprite, Text } from "pixi.js";
-import { pageFirstBoundsUnderPoint } from "src/data/PositionedDrawing";
-import { Scene, SceneObject } from "src/data/Scene";
-import { MTexture } from "src/tools/MTexture";
+import { pageFirstBoundsUnderPoint } from "../data/PositionedDrawing";
+import { Scene, SceneObject } from "../data/Scene";
+import { MTexture } from "../tools/MTexture";
 import SceneBoard, { PinnedScene } from "../data/SceneBoard";
 import ModelViewMapping, { View } from "../tools/ModelViewMapping";
 import * as utility from '../tools/utility';
@@ -475,11 +475,14 @@ export default class SceneMapsPanel implements Panel
      */
     private getSceneObjectPosition(object: SceneObject): Point
     {
+        const [width, height] = this.editor.project.resolution;
+        const scale = Math.min(160 / width, 100 / height) / 4;
+
         const center = utility.rectCenter(object.bounds);
         
         const pin = this.sceneMap.pins.find(p => !!p.element.objects.find(o => o === object))!;
         const pinView = this.sceneViews.get(pin)!;
-        const pinWorld = pinView.container.toGlobal(utility.mul(center, 1/4));
+        const pinWorld = pinView.container.toGlobal(utility.mul(center, scale));
         const pinPage = this.container.toLocal(pinWorld);
 
         return pinPage;
@@ -514,7 +517,8 @@ export default class SceneMapsPanel implements Panel
 
     private regeneratePreviews(): void
     {
-        const scale = 1;
+        const [width, height] = this.editor.project.resolution;
+        const scale = Math.min(160 / width, 100 / height);
 
         this.linksGraphic.clear();
         this.linksGraphic.lineStyle(.25, 0x00FF00);
@@ -525,10 +529,10 @@ export default class SceneMapsPanel implements Panel
             pin.element.objects.forEach(object =>
             {
                 view.preview.context.drawImage(object.drawing.texture.canvas, 
-                                               object.position.x / scale,
-                                               object.position.y / scale,
-                                               object.drawing.width / scale,
-                                               object.drawing.height / scale);
+                                               object.position.x * scale,
+                                               object.position.y * scale,
+                                               object.drawing.width * scale,
+                                               object.drawing.height * scale);
                 
                 /*
                 if (object.sceneChange)

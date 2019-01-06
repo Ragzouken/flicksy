@@ -1,5 +1,5 @@
 import * as Pixi from 'pixi.js';
-import { Scene } from 'src/data/Scene';
+import { Scene } from '../data/Scene';
 import { FlicksyProject } from '../data/FlicksyProject';
 import { saveProject } from '../tools/saving';
 import * as utility from '../tools/utility';

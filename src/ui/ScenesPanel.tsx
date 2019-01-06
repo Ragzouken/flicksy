@@ -1,5 +1,5 @@
 import * as Pixi from 'pixi.js';
-import * as uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { Drawing } from '../data/Drawing';
 import { HitPrecision, pageFirstObjectUnderPoint } from '../data/PositionedDrawing';
 import { Scene, SceneObject } from '../data/Scene';
@@ -61,23 +61,26 @@ export default class ScenesPanel implements Panel
         this.overlayContainer = new Pixi.Container();
         this.container.addChild(this.overlayContainer);
 
-        this.objectDialoguePreview = new DialogueView();
+        this.objectDialoguePreview = new DialogueView(editor);
         this.overlayContainer.addChild(this.objectDialoguePreview.container);
 
-        this.container.pivot = new Pixi.Point(80, 50);
         this.container.interactive = true;
-        this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
+        // set with project
+        // this.container.hitArea = new Pixi.Rectangle(0, 0, 160, 100);
+        // this.container.pivot = new Pixi.Point(80, 50);
 
         this.mask = new Pixi.Graphics();
-        this.mask.beginFill(0x000000);
-        this.mask.drawRect(0, 0, 160, 100);
+        // set with project
+        // this.mask.beginFill(0x000000);
+        // this.mask.drawRect(0, 0, 160, 100);
         this.container.addChild(this.mask);
         this.objectContainer.mask = this.mask;
 
         // scene bounds
         this.bounds = new Pixi.Graphics();
-        this.bounds.lineStyle(1, 0xFFFFFF);
-        this.bounds.drawRect(-.5, -.5, 160 + 1, 100 + 1);
+        // set with project
+        // this.bounds.lineStyle(1, 0xFFFFFF);
+        // this.bounds.drawRect(-.5, -.5, 160 + 1, 100 + 1);
         this.bounds.alpha = 1;
         this.overlayContainer.addChild(this.bounds);
 
@@ -493,5 +496,7 @@ export default class ScenesPanel implements Panel
         this.bounds.lineStyle(1, 0xFFFFFF);
         this.bounds.drawRect(-.5, -.5, width + 1, height + 1);
         this.bounds.alpha = 1;
+
+        this.objectDialoguePreview.refreshBounds();
     }
 }
