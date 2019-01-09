@@ -31,7 +31,8 @@ export function repairProject(project: FlicksyProject): void
 
 export async function loadProjectFromUUID(uuid: string): Promise<FlicksyProject>
 {
-    const data = await localForage.getItem<FlicksyProjectData>(`projects-${uuid}`);
+    const data = await localForage.getItem<FlicksyProjectData>(`flicksy/projects/${uuid}`)
+              || await localForage.getItem<FlicksyProjectData>(`projects-${uuid}`);;
     const project = loadProject(data);
     
     return project;
@@ -140,7 +141,8 @@ class ProjectInfo
  */
 export async function getProjectList(): Promise<ProjectInfo[]>
 {
-    const listing = await localForage.getItem<ProjectInfo[]>("projects");
+    const listing = await localForage.getItem<ProjectInfo[]>("flicksy/projects")
+                 || await localForage.getItem<ProjectInfo[]>("projects");
 
     return listing || [];
 }
@@ -173,9 +175,9 @@ export async function saveProject(project: FlicksyProject): Promise<void>
     info.name = project.name;
 
     // save the new listing, the project data, and last open project
-    await localForage.setItem(`projects-${info.uuid}`, data);
-    await localForage.setItem("projects", listing);
-    await localForage.setItem("last-open", project.uuid);
+    await localForage.setItem(`flicksy/projects/${info.uuid}`, data);
+    await localForage.setItem("flicksy/projects", listing);
+    await localForage.setItem("flicksy/last-open", project.uuid);
 }
 
 export async function findProject(): Promise<FlicksyProject>
@@ -187,9 +189,11 @@ export async function findProject(): Promise<FlicksyProject>
     {
         // check for a last-open record, if there is none then default to the
         // first entry. return the loaded project if it exists
-        const last = await localForage.getItem<string>("last-open");
+        const last = await localForage.getItem<string>("flicksy/last-open");
         const uuid = last || listing[0].uuid;
-        const data = await localForage.getItem<FlicksyProjectData>(`projects-${uuid}`);
+        
+        const data = await localForage.getItem<FlicksyProjectData>(`flicksy/projects/${uuid}`)
+                  || await localForage.getItem<FlicksyProjectData>(`projects-${uuid}`);
 
         if (data)
         {
