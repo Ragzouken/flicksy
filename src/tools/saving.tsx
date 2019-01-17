@@ -5,6 +5,8 @@ import { FlicksyProject, FlicksyProjectData } from "../data/FlicksyProject";
 import { base64ToUint8, uint8ToBase64 } from "./base64";
 import * as utility from './utility';
 
+//localForage.config({name: "flicksy"});
+
 const flicksyVersion = "alpha-1";
 
 export function repairProject(project: FlicksyProject): void
@@ -240,7 +242,7 @@ export async function playableHTMLBlob(project: FlicksyProject,
     const body = html.getElementsByTagName("body")[0];
 
     const cssLink = Array.from(html.querySelectorAll("link")).find(e => e.rel === "stylesheet");
-    const jsScript = html.querySelector("script");
+    const jsScripts = html.querySelectorAll("script");
 
     // hide sidebar and editor button
     (body.querySelector("#sidebar")! as HTMLDivElement).hidden = true;
@@ -280,14 +282,23 @@ export async function playableHTMLBlob(project: FlicksyProject,
     body.appendChild(data);
 
     // inline js
-    if (jsScript)
+    for (let i = 0; i < jsScripts.length; ++i)
     {
-        const jsText = await fetch(jsScript.src).then(response => response.text());
+        const jsScript = jsScripts[i];
 
-        jsScript.removeAttribute("src");
-        jsScript.innerHTML = jsText;
-        body.appendChild(jsScript);
-    }
+        if (jsScript.src)
+        {
+            const jsText = await fetch(jsScript.src).then(response => response.text());
+            
+            console.log(`JAVASCRIPT (${jsScript})\n${jsScript.outerHTML}`);
+
+            jsScript.removeAttribute("src");
+            jsScript.innerHTML = jsText;
+
+            // TODO: isn't the script already in the page?
+            body.appendChild(jsScript);
+        }
+    };
 
     return new Blob([html.innerHTML], {type: "text/html"});
 }
