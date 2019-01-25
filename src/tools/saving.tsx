@@ -11,7 +11,14 @@ const flicksyVersion = "alpha-1";
 
 export function repairProject(project: FlicksyProject): void
 {
-    if (!project.startScene)
+    // scene count
+    if (project.scenes.length === 0)
+    {
+        project.createScene();
+    }
+
+    if (!project.startScene 
+     || !project.getSceneByUUID(project.startScene))
     {
         project.startScene = project.scenes[0].uuid;
     }
@@ -294,10 +301,10 @@ export async function playableHTMLBlob(project: FlicksyProject,
 
             jsScript.removeAttribute("src");
             jsScript.innerHTML = jsText;
-
-            // TODO: isn't the script already in the page?
-            body.appendChild(jsScript);
         }
+
+        // scripts appear in order at the end of the body
+        body.appendChild(jsScript);
     };
 
     return new Blob([html.innerHTML], {type: "text/html"});

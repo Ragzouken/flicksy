@@ -141,6 +141,17 @@ export class FlicksyProject
         const index = this.scenes.indexOf(scene);
         this.scenes.splice(index, 1);
 
+        // make sure there's always at least one scene
+        if (this.scenes.length === 0)
+        {
+            this.createScene();
+        }
+
+        if (this.startScene === scene.uuid)
+        {
+            this.startScene = this.scenes[0].uuid;
+        }
+
         for (const board of this.sceneBoards)
         {
             board.pins = board.pins.filter(pin => pin.element !== scene);

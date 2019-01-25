@@ -226,8 +226,12 @@ export default class SceneMapsPanel implements Panel
             this.pinContainer.setChildIndex(this.sceneViews.get(pin)!.container, index);
         });
 
-        const scene = this.editor.project.getSceneByUUID(this.editor.project.startScene)!;
-        this.startSceneButton.innerText = scene.name;
+        const scene = this.editor.project.getSceneByUUID(this.editor.project.startScene);
+        
+        if (scene)
+        {
+            this.startSceneButton.innerText = scene.name;
+        }
     }
 
     public select(pin: PinnedScene | undefined): void
