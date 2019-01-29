@@ -277,7 +277,7 @@ button
     float: right;
 }
 
-#object-drawing-select, #object-scene-select
+#object-drawing-select, #object-scene-select, #select-edit-variable
 {
     width: 100%;
 }

@@ -4,6 +4,35 @@ import { Drawing } from "./Drawing";
 import { FlicksyData } from "./FlicksyData";
 import { FlicksyProject } from './FlicksyProject';
 
+export interface SceneSwitchCommand 
+{
+    type: "switch_scene";
+    scene: string;
+}
+
+export interface ChangeVariableCommand
+{
+    type: "change_variable";
+    target: string;
+    source: string;
+    action: "add" | "sub" | "set";
+}
+
+export type ScriptCommand = SceneSwitchCommand | ChangeVariableCommand;
+
+export interface ScriptCondition
+{
+    target: string;
+    source: string;
+    check: ">" | "<" | "<=" | ">=" | "=="; 
+}
+
+export interface ScriptPage
+{
+    condition?: ScriptCondition;
+    actions: ScriptCommand[];
+}
+
 export interface SceneObjectData
 {
     uuid: string;
@@ -13,6 +42,8 @@ export interface SceneObjectData
     drawing: string;
     dialogue: string;
     sceneChange: string | undefined;
+
+    scriptPages: ScriptPage[];
 }
 
 export interface SceneData
@@ -32,6 +63,8 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
     public drawing: Drawing;
     public dialogue: string;
     public sceneChange: string | undefined;
+
+    public scriptPages: ScriptPage[] = [];
 
     public get bounds(): Rectangle
     {
@@ -57,6 +90,7 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
 
         this.dialogue = data.dialogue || "";
         this.sceneChange = data.sceneChange;
+        this.scriptPages = data.scriptPages || [];
 
         return this;
     }
@@ -71,6 +105,7 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
             dialogue: this.dialogue,
             drawing: this.drawing.uuid,
             sceneChange: this.sceneChange,
+            scriptPages: this.scriptPages,
         };
     }
 }

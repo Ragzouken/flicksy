@@ -8,6 +8,13 @@ import { ElementBoardData } from './FlicksyData';
 import { Scene, SceneData } from './Scene';
 import SceneBoard, { PinnedScene } from './SceneBoard';
 
+export interface FlicksyVariable
+{
+    uuid: string;
+    name: string;
+    value: number;
+}
+
 export interface FlicksyProjectData
 {
     uuid: string;
@@ -16,6 +23,7 @@ export interface FlicksyProjectData
     flicksyVersion: string;
     resolution: [number, number];
     startScene: string;
+    variables: FlicksyVariable[];
 
     drawings: DrawingData[];
     scenes: SceneData[];
@@ -40,6 +48,7 @@ export class FlicksyProject
     public palette: number[] = [];
 
     public startScene: string;
+    public variables: FlicksyVariable[] = [];
 
     public fromData(data: FlicksyProjectData): FlicksyProject
     {
@@ -49,6 +58,7 @@ export class FlicksyProject
         this.flicksyVersion = data.flicksyVersion;
         this.resolution = data.resolution || [160, 100];
         this.startScene = data.startScene;
+        this.variables = data.variables || [];
 
         this.drawings = data.drawings.map(drawing => (new Drawing).fromData(drawing));
         this.scenes = data.scenes.map(scene => (new Scene).fromData(scene, this));
@@ -89,6 +99,7 @@ export class FlicksyProject
             flicksyVersion: this.flicksyVersion,
             resolution: this.resolution,
             startScene: this.startScene,
+            variables: this.variables,
 
             drawings: this.drawings.map(drawing => drawing.toData()),
             drawingBoards: this.drawingBoards.map(board => board.toData()),

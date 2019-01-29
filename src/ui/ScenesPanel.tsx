@@ -9,6 +9,7 @@ import DialogueView from './DialogueView';
 import FlicksyEditor from './FlicksyEditor';
 import Panel from './Panel';
 import PositionedDrawingView from './PositionedDrawingView';
+import { FlicksyVariable } from '../data/FlicksyProject';
 
 export type SceneObjectView = PositionedDrawingView<SceneObject>;
 
@@ -45,6 +46,8 @@ export default class ScenesPanel implements Panel
     private readonly objectDialoguePreview: DialogueView;
 
     private playModeTest: boolean;
+    public playModeVariables: FlicksyVariable[] = [];
+
     private dialoguingObject: SceneObject | undefined;
 
     public constructor(private readonly editor: FlicksyEditor)
@@ -282,15 +285,57 @@ export default class ScenesPanel implements Panel
         }
     }
 
+    private testRunObjectScripts(object: SceneObject): void
+    {
+        if (object.sceneChange)
+        {
+            this.setScene(this.editor.project.getSceneByUUID(object.sceneChange)!);
+            this.setPlayTestMode(true);
+        }
+
+        for (let page of object.scriptPages)
+        {
+            if (page.condition) continue;
+
+            for (let action of page.actions)
+            {
+                if (action.type == "switch_scene")
+                {
+                    this.setScene(this.editor.project.getSceneByUUID(action.scene)!);
+                    this.setPlayTestMode(true);
+                }
+                else if (action.type == "change_variable")
+                {
+                    const source = action.source;
+                    const target = action.target;
+
+                    const value = this.playModeVariables.find(variable => variable.uuid == source)!.value;
+                    let result = this.playModeVariables.find(variable => variable.uuid == target)!.value;
+
+                    if (action.action == "add")
+                    {
+                        result += value;
+                    }
+                    else if (action.action == "sub")
+                    {
+                        result -= value;
+                    }
+                    else if (action.action == "set")
+                    {
+                        result = value;
+                    }
+
+                    this.playModeVariables.find(variable => variable.uuid == source)!.value = result;
+                }
+            }
+        }
+    }
+
     private onPointerDown(event: Pixi.interaction.InteractionEvent): void
     {
         if (this.dialoguingObject)
         {
-            if (this.dialoguingObject.sceneChange)
-            {
-                this.setScene(this.editor.project.getSceneByUUID(this.dialoguingObject.sceneChange)!);
-                this.setPlayTestMode(true);
-            };
+            this.testRunObjectScripts(this.dialoguingObject);
 
             this.dialoguingObject = undefined;
             this.hideDialogue();
@@ -313,10 +358,9 @@ export default class ScenesPanel implements Panel
             {
                 this.showDialogue(object);
             }
-            else if (object.sceneChange)
+            else
             {
-                this.setScene(this.editor.project.getSceneByUUID(object.sceneChange)!);
-                this.setPlayTestMode(true);
+                this.testRunObjectScripts(object);
             }
         }
         else

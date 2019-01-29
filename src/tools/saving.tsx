@@ -36,6 +36,23 @@ export function repairProject(project: FlicksyProject): void
     {
         project.createSceneBoard();
     }
+
+    // scripts
+    project.scenes.forEach(scene =>
+    {
+        scene.objects.forEach(object =>
+        {
+            if (object.sceneChange)
+            {
+                object.scriptPages.push({
+                    actions: [{type: "switch_scene", scene: object.sceneChange}],
+                });
+
+                // TODO: remove this field later
+                //object.sceneChange = undefined;
+            }
+        });
+    });
 }
 
 export async function loadProjectFromUUID(uuid: string): Promise<FlicksyProject>

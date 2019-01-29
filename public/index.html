@@ -22,6 +22,7 @@
             <button id="drawing-tab-button">drawings</button> 
             <button id="scene-tab-button">scene</button>
             <button id="scene-maps-tab-button">map</button>
+            <button id="variables-tab-button">variables</button>
             <button id="playtest-button" title="Playtest this game">play</button> 
             <button id="save" title="Save the project in the browser">save</button>
             <button id="publish-tab-button">publish</button> 
@@ -233,6 +234,27 @@
                     <button id="scene-higher" title="Raise this scene further in front">raise</button>
                     <button id="scene-lower" title="Lower this scene further behind">lower</button>
                 </div>
+            </div>
+        </div>
+        <div id="variables-sidebar" hidden>
+            <div class="section">
+                <h1>variables tab</h1>
+                <h2>manage available variables for scene scripts</h2>    
+                <ol>
+                    <li></li>
+                </ol>
+            </div>
+            <div class="section">
+                <h1>create & inspect variables</h1>
+                <select id="select-edit-variable"></select><br/><br/>
+                <button id="create-variable-button" title="Create a new variable to use">create new variable</button>
+            </div>
+            <div class="section" id="selected-variable" hidden>
+                <h1>selected variable</h1>
+                <h2>name</h2>
+                <input id="rename-variable" class="full-input" title="Rename the selected variable">
+                <h2>value</h2>
+                <input id="revalue-variable" class="full-input" title="Change the initial value selected variable">
             </div>
         </div>
         <div id="picker-sidebar" hidden>

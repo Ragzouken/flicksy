@@ -10,6 +10,7 @@ import ProjectsPanel from './ProjectsPanel';
 import PublishPanel from './PublishPanel';
 import SceneMapsPanel from './SceneMapsPanel';
 import ScenesPanel from './ScenesPanel';
+import VariablesPanel from './VariablesPanel';
 
 export default class FlicksyEditor
 {
@@ -21,6 +22,7 @@ export default class FlicksyEditor
     public readonly scenesPanel: ScenesPanel;
     public readonly sceneMapsPanel: SceneMapsPanel;
     public readonly pickerPanel: PickerPanel;
+    public readonly variablesPanel: VariablesPanel;
 
     public project: FlicksyProject;
 
@@ -49,6 +51,7 @@ export default class FlicksyEditor
         this.scenesPanel = new ScenesPanel(this);
         this.sceneMapsPanel = new SceneMapsPanel(this);
         this.pickerPanel = new PickerPanel(this);
+        this.variablesPanel = new VariablesPanel(this);
 
         this.setActivePanel(this.projectsPanel);
 
@@ -60,6 +63,7 @@ export default class FlicksyEditor
         utility.buttonClick("drawing-tab-button",    () => this.setActivePanel(this.drawingBoardsPanel));
         utility.buttonClick("scene-tab-button",      () => this.setActivePanel(this.scenesPanel));
         utility.buttonClick("scene-maps-tab-button", () => this.setActivePanel(this.sceneMapsPanel));
+        utility.buttonClick("variables-tab-button",  () => this.setActivePanel(this.variablesPanel));
 
         // editor vs playback
         this.returnToEditorButton = utility.getElement("editor-button");
@@ -132,6 +136,16 @@ export default class FlicksyEditor
 
         this.setActivePanel(this.scenesPanel);
 
+        this.scenesPanel.playModeVariables.length = 0;
+        this.project.variables.forEach(variable =>
+        {
+            this.scenesPanel.playModeVariables.push({
+                uuid: variable.uuid,
+                name: variable.name,
+                value: variable.value,
+            });
+        });
+
         this.scenesPanel.setScene(this.project.getSceneByUUID(this.project.startScene)!);
         this.scenesPanel.setPlayTestMode(true);
     }
@@ -167,6 +181,7 @@ export default class FlicksyEditor
         this.sceneMapsPanel.hide();
         this.publishPanel.hide();
         this.pickerPanel.hide();
+        this.variablesPanel.hide();
     }
 
     /**
