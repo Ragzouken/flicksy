@@ -38,8 +38,6 @@ async function start()
         editor.setProject(project);
         editor.enterEditor();
     }
-
-    console.log(localStorage.getItem("game_data"));
 }
 
 start();

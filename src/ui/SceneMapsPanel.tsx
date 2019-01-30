@@ -146,6 +146,7 @@ export default class SceneMapsPanel implements Panel
             {
                 const pin = this.createNewScene();
                 const uuid = pin.element.uuid;
+
                 pin.element.fromData(this.selected.element.toData(), this.editor.project);
                 pin.element.uuid = uuid;
 
@@ -175,7 +176,7 @@ export default class SceneMapsPanel implements Panel
         this.container.on("pointermove",      (event: interaction.InteractionEvent) => this.onPointerMove(event));
         this.container.on("pointerup",        (event: interaction.InteractionEvent) => this.drags.delete(event.data.identifier));
         this.container.on("pointerupoutside", (event: interaction.InteractionEvent) => this.drags.delete(event.data.identifier));
-        document.addEventListener("wheel", event => this.onWheel(event));
+        utility.getElement("container").addEventListener("wheel", event => this.onWheel(event));
     }
 
     public show(): void
@@ -185,6 +186,8 @@ export default class SceneMapsPanel implements Panel
         this.refresh();
         this.reframe();
         this.regeneratePreviews();
+
+        this.drags.clear();
     }
 
     public hide(): void

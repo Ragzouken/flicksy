@@ -148,6 +148,7 @@ export default class ScenesPanel implements Panel
         this.container.on("pointerupoutside", (event: Pixi.interaction.InteractionEvent) => this.stopDragging());
     
         const createPage = () => ({
+            name: "", 
             condition: {source: "", check: "==" as Comparison, target: ""},
             variableChanges: [],
             dialogue: "",
@@ -291,33 +292,46 @@ export default class ScenesPanel implements Panel
             this.objectDialoguePreview.container.visible = this.objectDialogueShowToggle.checked 
                                                         && object.dialogue.length > 0;
 
-            // script pages
-            const makeLabel = (page: ScriptPage, index: number) =>
+            const makeLabel = (page: ScriptPage) =>
             {
-                let label = "unconditional";
+                if (page.name.length > 0) return page.name;
 
-                if (page.condition)
+                const source = this.editor.project.variables.find(v => v.uuid == page.condition.source);
+                const target = this.editor.project.variables.find(v => v.uuid == page.condition.target);
+
+                if (source && target && page.condition.check !== "pass")
                 {
-                    const source = this.editor.project.variables.find(v => v.uuid == page.condition!.source)!;
-                    const target = this.editor.project.variables.find(v => v.uuid == page.condition!.target)!;
-
-                    if (source && target && page.condition.check !== "pass")
-                    {
-                        label = `${source.name} ${page.condition.check} ${target.name}`;
-                    }
+                    return `${source.name} ${page.condition.check} ${target.name}`;
                 }
 
-                return `${index+1}. ${label}`;
-            };
+                return "unconditional";
+            }
 
+            // script pages
             const options = object.scriptPages.map((page, i) => ({
-                 label: makeLabel(page, i), value: i.toString() }));
+                 label: `${i+1}. ${makeLabel(page)}`, value: i.toString() }));
 
             utility.repopulateSelect(this.scriptPageSelect, options);
+            this.scriptPageSelect.value = "0";
         }
         else
         {
             this.objectDialoguePreview.container.visible = false;
+        }
+    }
+
+    public deleteScriptPage(page: ScriptPage): void
+    {
+        if (this.selected)
+        {
+            const index = this.selected.scriptPages.indexOf(page);
+
+            if (index < this.selected.scriptPages.length - 1)
+            {
+                this.selected.scriptPages.splice(index, 1);
+                this.refresh();
+                this.selectScriptPage(this.selected.scriptPages[0]);
+            }
         }
     }
 
@@ -345,6 +359,7 @@ export default class ScenesPanel implements Panel
         if (object === this.selected)
         {
             this.select(undefined);
+            this.selectScriptPage(undefined);
         }
 
         this.scene.removeObject(object);
@@ -367,6 +382,12 @@ export default class ScenesPanel implements Panel
         object.drawing = drawing;
         object.position = new Pixi.Point(80 - drawing.width / 2, 
                                          50 - drawing.height / 2);
+        object.scriptPages.push({
+            name: "unconditional", 
+            condition: {check:"pass", source:"", target:""},
+            variableChanges: [],
+            dialogue:"",
+        });
 
         this.scene.addObject(object);
 

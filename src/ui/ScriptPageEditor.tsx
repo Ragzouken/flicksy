@@ -99,6 +99,9 @@ export default class ScriptPageEditor
     public project: FlicksyProject;
     public page: ScriptPage;
 
+    private readonly nameInput: HTMLInputElement;
+    private readonly deleteButton: HTMLButtonElement;
+
     private readonly conditionSourceSelect: HTMLSelectElement;
     private readonly conditionTargetSelect: HTMLSelectElement;
     private readonly conditionCheckSelect: HTMLSelectElement;
@@ -114,6 +117,20 @@ export default class ScriptPageEditor
         const conditionRoot = getElement("script-condition-parent");
         this.changeContainer = getElement("script-variable-parent");
         
+        this.nameInput = getElement("branch-name");
+        this.deleteButton = getElement("delete-branch-button");
+
+        this.nameInput.addEventListener("input", () =>
+        {
+            this.page.name = this.nameInput.value;
+            this.panel.refresh();
+        });
+
+        this.deleteButton.addEventListener("click", () =>
+        {
+            this.panel.deleteScriptPage(this.page);
+        });
+
         this.conditionSourceSelect = createElement("select", conditionRoot);
         this.conditionCheckSelect = createElement("select", conditionRoot);
         this.conditionTargetSelect = createElement("select", conditionRoot);
@@ -170,7 +187,10 @@ export default class ScriptPageEditor
     public refresh(): void
     {
         const unconditional = this.page.condition.check === "pass";
-        
+
+        this.nameInput.value = this.page.name;
+        this.deleteButton.hidden = unconditional;
+
         getElement("script-page-condition-heading").hidden = unconditional;
         getElement("script-condition-parent").hidden = unconditional;
 
@@ -203,7 +223,7 @@ export default class ScriptPageEditor
         });
 
         const create = createElement("button", this.changeContainer);
-        create.innerText = "add new change";
+        create.innerText = "new";
         create.addEventListener("click", () => 
         {
             this.page.variableChanges.push({source:"", action:"=", target:""});   

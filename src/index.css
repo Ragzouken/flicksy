@@ -137,10 +137,11 @@ button.delete
     display: flex;
 }
 
-.rename-delete > input
+.rename-delete > :first-child
 {
     flex: 1;
     min-width: 0;
+    margin-right: 4px;
 }
 
 button

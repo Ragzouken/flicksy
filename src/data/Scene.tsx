@@ -23,6 +23,7 @@ export interface ScriptCondition
 
 export interface ScriptPage
 {
+    name: string;
     condition: ScriptCondition;
     variableChanges: VariableChange[];
     dialogue: string;
@@ -101,7 +102,7 @@ export class SceneObject implements FlicksyData<SceneObject, SceneObjectData>
             dialogue: this.dialogue,
             drawing: this.drawing.uuid,
             sceneChange: this.sceneChange,
-            scriptPages: this.scriptPages,
+            scriptPages: JSON.parse(JSON.stringify(this.scriptPages)),
         };
     }
 }

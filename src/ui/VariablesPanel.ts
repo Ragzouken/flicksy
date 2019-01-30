@@ -51,7 +51,7 @@ export default class VariablesPanel implements Panel
         {
             const variable = {
                 uuid: uuid4(),
-                name: "unnamed variable",
+                name: "variable",
                 value: 0,
             }
 

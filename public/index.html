@@ -198,11 +198,18 @@
                 <button hidden id="object-scene-change-button" title="The scene to go to after clicking this object and closing any dialogue">nothing</button>
             
                 <h2>interaction branches</h2>
-                <select id="object-script-page-select"></select><br/><br/>
-                <button id="object-script-page-create">new branch</button>
+                <div class="rename-delete">
+                    <select id="object-script-page-select"></select>
+                    <button id="object-script-page-create">new</button>
+                </div>
             </div>
             <div class="section" id="selected-script-page">
                 <h1>interaction branch</h1>
+                <h2>name</h2>
+                <div class="rename-delete">
+                    <input id="branch-name" title="Rename the selected branch">
+                    <button id="delete-branch-button" class="delete" title="Delete the selected branch">delete</button>
+                </div>
                 <h2 id="script-page-condition-heading">condition</h2>
                 <div class="equation-row" id="script-condition-parent">
                 </div>

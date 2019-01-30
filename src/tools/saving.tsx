@@ -45,6 +45,7 @@ export function repairProject(project: FlicksyProject): void
             if (object.sceneChange || object.dialogue.length > 0)
             {
                 object.scriptPages.push({
+                    name: "unnamed branch", 
                     condition: {source:"", target: "", check: "pass"},
                     variableChanges: [],
                     dialogue: object.dialogue,
@@ -58,6 +59,7 @@ export function repairProject(project: FlicksyProject): void
             if (!object.scriptPages.find(page => page.condition.check === "pass"))
             {
                 object.scriptPages.push({
+                    name: "unconditional", 
                     condition: {source:"", target: "", check: "pass"},
                     variableChanges: [],
                     dialogue: object.dialogue,
@@ -67,6 +69,12 @@ export function repairProject(project: FlicksyProject): void
 
             object.scriptPages.forEach(page =>
             {
+                if (page.condition.check === "pass")
+                {
+                    page.name = "unconditional";
+                }
+
+                page.name = page.name || "unnamed branch";
                 page.condition = page.condition || {source:"", target: "", check: "=="};
                 page.dialogue = page.dialogue || "";
             });
