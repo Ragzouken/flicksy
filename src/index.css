@@ -56,18 +56,18 @@ a
     color: #FFD800;
 }
 
-ol
+ol, ul
 {
     padding-left: 20px;
     margin: 8px 0px;
 }
 
-ol > li
+ol > li, ul > li
 {
     margin: 8px 0px;
 }
 
-ol > li:last-child
+ol > li:last-child, ul > li:last-child
 {
     margin: 0px;
 }
@@ -111,7 +111,11 @@ button.delete
     background-color: rgb(255, 115, 0);
 }
 
-#object-dialogue-input, #import-data
+[hidden] {
+    display: none !important;
+}
+
+#object-dialogue-input, #import-data, #script-dialogue-input
 {
     width: calc(100% - 12px);
 }
@@ -142,6 +146,25 @@ button.delete
 button
 {
     padding: 4px 8px;
+}
+
+.equation-row
+{
+    margin: 2px -2px;
+    display: flex;
+}
+
+.equation-row > *
+{
+    margin: 2px;
+    padding: 2px;
+    flex: 1;
+}
+
+.equation-row > select:nth-child(2),
+.equation-row > select:nth-child(4)
+{
+    flex: 0;
 }
 
 .button-row
@@ -272,12 +295,12 @@ button
     flex: 0 0;
 }
 
-#dialogue-preview
+#dialogue-preview, #script-dialogue-preview
 {
     float: right;
 }
 
-#object-drawing-select, #object-scene-select, #select-edit-variable
+#object-drawing-select, #object-scene-select
 {
     width: 100%;
 }

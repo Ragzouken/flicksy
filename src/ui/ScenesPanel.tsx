@@ -2,7 +2,7 @@ import * as Pixi from 'pixi.js';
 import { v4 as uuid } from 'uuid';
 import { Drawing } from '../data/Drawing';
 import { HitPrecision, pageFirstObjectUnderPoint } from '../data/PositionedDrawing';
-import { Scene, SceneObject } from '../data/Scene';
+import { Scene, SceneObject, ScriptPage, Comparison, ScriptCondition } from '../data/Scene';
 import ModelViewMapping from '../tools/ModelViewMapping';
 import * as utility from '../tools/utility';
 import DialogueView from './DialogueView';
@@ -10,6 +10,7 @@ import FlicksyEditor from './FlicksyEditor';
 import Panel from './Panel';
 import PositionedDrawingView from './PositionedDrawingView';
 import { FlicksyVariable } from '../data/FlicksyProject';
+import ScriptPageEditor from './ScriptPageEditor';
 
 export type SceneObjectView = PositionedDrawingView<SceneObject>;
 
@@ -18,6 +19,7 @@ export default class ScenesPanel implements Panel
     public get activeScene(): Scene { return this.scene }
 
     public selected: SceneObject | undefined;
+    public selectedScriptPage: ScriptPage | undefined;
 
     private readonly container: Pixi.Container;
     private readonly overlayContainer: Pixi.Container;
@@ -44,13 +46,16 @@ export default class ScenesPanel implements Panel
     private readonly objectSceneChangeButton: HTMLButtonElement;
     
     private readonly objectDialoguePreview: DialogueView;
+    public previewingDialogue: boolean;
+
+    // script page ui
+    private readonly scriptPageSelect: HTMLSelectElement;
+    private readonly scriptPageEditor: ScriptPageEditor;
 
     private playModeTest: boolean;
     public playModeVariables: FlicksyVariable[] = [];
 
-    private dialoguingObject: SceneObject | undefined;
-
-    public constructor(private readonly editor: FlicksyEditor)
+    public constructor(public readonly editor: FlicksyEditor)
     {
         this.objectViews = new ModelViewMapping<SceneObject, SceneObjectView>(
             () => this.createSceneObjectView(),
@@ -113,6 +118,7 @@ export default class ScenesPanel implements Panel
         });
 
         this.objectSceneChangeButton.addEventListener("click", () => this.changeSelectedObjectSceneChangeFromPicker());
+        utility.getElement("script-scene-change-button").addEventListener("click", () => this.changeScriptPageSceneChangeFromPicker());
 
         this.objectDeleteButton.addEventListener("click", () =>
         {
@@ -130,9 +136,8 @@ export default class ScenesPanel implements Panel
 
         this.objectDialogueShowToggle.addEventListener("change", () =>
         {
-            this.objectDialoguePreview.container.visible = this.objectDialogueShowToggle.checked
-                                                        && this.selected !== undefined
-                                                        && this.selected.dialogue.length > 0;
+            this.previewingDialogue = this.objectDialogueShowToggle.checked;
+            this.refresh();
         });
 
         this.select(undefined);
@@ -141,6 +146,39 @@ export default class ScenesPanel implements Panel
         this.container.on("pointermove", (event: Pixi.interaction.InteractionEvent) => this.onPointerMove(event));
         this.container.on("pointerup",        (event: Pixi.interaction.InteractionEvent) => this.stopDragging());
         this.container.on("pointerupoutside", (event: Pixi.interaction.InteractionEvent) => this.stopDragging());
+    
+        const createPage = () => ({
+            condition: {source: "", check: "==" as Comparison, target: ""},
+            variableChanges: [],
+            dialogue: "",
+        });
+
+        // script pages
+        utility.buttonClick("object-script-page-create", () =>
+        {
+            if (this.selected)
+            {
+                const page = createPage();
+                this.selected.scriptPages.splice(this.selected.scriptPages.length - 1, 0, page);
+                this.selectedScriptPage = page;
+                this.refresh();
+            }
+        });
+
+        this.scriptPageSelect = utility.getElement("object-script-page-select");
+        this.scriptPageSelect.addEventListener("change", () =>
+        {
+            if (this.selected)
+            {
+                const index = this.scriptPageSelect.selectedIndex;
+                const page = this.selected.scriptPages[index];
+
+                this.selectScriptPage(page);
+                this.refresh();
+            }
+        });
+
+        this.scriptPageEditor = new ScriptPageEditor(this);
     }
 
     public show(): void
@@ -160,23 +198,21 @@ export default class ScenesPanel implements Panel
     {
         this.playModeTest = on;
         this.select(undefined);
+        this.selectScriptPage(undefined);
         this.refresh();
     }
 
     public hideDialogue(): void
     {
-        this.objectDialoguePreview.container.visible = false;
+        this.previewingDialogue = false;
+        this.refresh();
     }
 
-    public showDialogue(object: SceneObject): void
+    public showDialogue(page: ScriptPage): void
     {
-        if (this.playModeTest)
-        {
-            this.dialoguingObject = object;
-        }
-
-        this.objectDialoguePreview.container.visible = object.dialogue.length > 0;
-        this.objectDialoguePreview.text.text = object.dialogue;
+        this.selectedScriptPage = page;
+        this.previewingDialogue = true;
+        this.refresh();
     }
 
     /** Resynchronise this display to the data in the underlying Scene */
@@ -204,12 +240,35 @@ export default class ScenesPanel implements Panel
         }
 
         this.select(this.selected);
+        this.selectScriptPage(this.selectedScriptPage);
+
+        // dialogue preview
+        const page = this.selectedScriptPage;
+        this.objectDialoguePreview.container.visible = this.previewingDialogue
+                                                    && page !== undefined
+                                                    && page.dialogue.length > 0;
+        this.objectDialoguePreview.text.text = page ? page.dialogue : "";
     }
 
     /** Switch the currently selected object, or select nothing if undefined */
     public select(object: SceneObject | undefined): void
     {
+        const change = this.selected != object;
+        
         this.selected = object;
+
+        if (change)
+        {
+            if (object && object.scriptPages.length > 0)
+            {
+                this.selectScriptPage(object.scriptPages[0]);
+            }
+            else
+            {
+                this.selectScriptPage(undefined);
+            }
+        }
+
         this.objectViews.forEach(view => view.setSelected(view.object === object));
 
         this.objectSection.hidden = !object;
@@ -231,10 +290,53 @@ export default class ScenesPanel implements Panel
             this.objectDialoguePreview.text.text = object.dialogue;
             this.objectDialoguePreview.container.visible = this.objectDialogueShowToggle.checked 
                                                         && object.dialogue.length > 0;
+
+            // script pages
+            const makeLabel = (page: ScriptPage, index: number) =>
+            {
+                let label = "unconditional";
+
+                if (page.condition)
+                {
+                    const source = this.editor.project.variables.find(v => v.uuid == page.condition!.source)!;
+                    const target = this.editor.project.variables.find(v => v.uuid == page.condition!.target)!;
+
+                    if (source && target && page.condition.check !== "pass")
+                    {
+                        label = `${source.name} ${page.condition.check} ${target.name}`;
+                    }
+                }
+
+                return `${index+1}. ${label}`;
+            };
+
+            const options = object.scriptPages.map((page, i) => ({
+                 label: makeLabel(page, i), value: i.toString() }));
+
+            utility.repopulateSelect(this.scriptPageSelect, options);
         }
         else
         {
             this.objectDialoguePreview.container.visible = false;
+        }
+    }
+
+    public selectScriptPage(page: ScriptPage | undefined): void
+    {
+        const root = utility.getElement("selected-script-page");
+        root.hidden = page === undefined;
+
+        this.selectedScriptPage = page;
+
+        if (page)
+        {
+            this.scriptPageEditor.setState(this.editor.project, page);
+        }
+
+        if (this.selected)
+        {
+            const value = page ? this.selected.scriptPages.indexOf(page).toString() : "-1";
+            this.scriptPageSelect.value = value;
         }
     }
 
@@ -285,59 +387,96 @@ export default class ScenesPanel implements Panel
         }
     }
 
+    private getFirstValidPage(object: SceneObject): ScriptPage | undefined
+    {
+        type cmp = (a: number, b: number) => boolean;
+
+        const checks: {[name: string]: cmp} = {
+            "==": (a, b) => a == b,
+            ">=": (a, b) => a >= b,
+            "<=": (a, b) => a <= b,
+            ">":  (a, b) => a >  b,
+            "<":  (a, b) => a <  b,
+        };
+
+        const checkCondition = (condition: ScriptCondition) =>
+        {
+            const source = this.playModeVariables.find(v => v.uuid == condition.source);
+            const target = this.playModeVariables.find(v => v.uuid == condition.target);
+
+            return !source || !target || checks[condition.check](source.value, target.value); 
+        };
+
+        const page = object.scriptPages.find(page => checkCondition(page.condition));
+
+        return page;
+    }
+
     private testRunObjectScripts(object: SceneObject): void
     {
-        if (object.sceneChange)
+        if (object.sceneChange && object.scriptPages.length == 0)
         {
             this.setScene(this.editor.project.getSceneByUUID(object.sceneChange)!);
             this.setPlayTestMode(true);
         }
 
-        for (let page of object.scriptPages)
+        const page = this.getFirstValidPage(object);
+
+        if (page)
         {
-            if (page.condition) continue;
-
-            for (let action of page.actions)
+            for (let change of page.variableChanges)
             {
-                if (action.type == "switch_scene")
+                const source = this.playModeVariables.find(v => v.uuid == change.source);
+                const target = this.playModeVariables.find(v => v.uuid == change.target);
+
+                if (source && target)
                 {
-                    this.setScene(this.editor.project.getSceneByUUID(action.scene)!);
-                    this.setPlayTestMode(true);
+                    if (change.action == "+=")
+                    {
+                        source.value += target.value;
+                    }
+                    else if (change.action == "-=")
+                    {
+                        source.value -= target.value;
+                    }
+                    else if (change.action == "=")
+                    {
+                        source.value = target.value;
+                    }
                 }
-                else if (action.type == "change_variable")
+                else
                 {
-                    const source = action.source;
-                    const target = action.target;
-
-                    const value = this.playModeVariables.find(variable => variable.uuid == source)!.value;
-                    let result = this.playModeVariables.find(variable => variable.uuid == target)!.value;
-
-                    if (action.action == "add")
-                    {
-                        result += value;
-                    }
-                    else if (action.action == "sub")
-                    {
-                        result -= value;
-                    }
-                    else if (action.action == "set")
-                    {
-                        result = value;
-                    }
-
-                    this.playModeVariables.find(variable => variable.uuid == source)!.value = result;
+                    console.log("Ignoring variable change, invalid variables");
                 }
+            }
+
+            if (page.dialogue.length > 0)
+            {
+                this.showDialogue(page);
+            }
+            else if (page.sceneChange)
+            {
+                this.setScene(this.editor.project.getSceneByUUID(page.sceneChange)!);
+                this.setPlayTestMode(true);
             }
         }
     }
 
     private onPointerDown(event: Pixi.interaction.InteractionEvent): void
     {
-        if (this.dialoguingObject)
+        if (this.playModeTest && this.selectedScriptPage)
         {
-            this.testRunObjectScripts(this.dialoguingObject);
+            const page = this.selectedScriptPage;
 
-            this.dialoguingObject = undefined;
+            if (page.sceneChange)
+            {
+                this.setScene(this.editor.project.getSceneByUUID(page.sceneChange)!);
+                this.setPlayTestMode(true);
+            }
+        }
+
+        if (this.previewingDialogue)
+        {
             this.hideDialogue();
             event.stopPropagation();
             return;
@@ -354,14 +493,7 @@ export default class ScenesPanel implements Panel
 
         if (this.playModeTest)
         {
-            if (object.dialogue.length > 0)
-            {
-                this.showDialogue(object);
-            }
-            else
-            {
-                this.testRunObjectScripts(object);
-            }
+            this.testRunObjectScripts(object);
         }
         else
         {
@@ -381,7 +513,8 @@ export default class ScenesPanel implements Panel
         if (object)
         {
             const interactable = object.dialogue.length > 0 
-                              || object.sceneChange;
+                              || object.sceneChange
+                              || this.getFirstValidPage(object);
 
             this.objectViews.get(object)!.hover.visible = !this.playModeTest;
             
@@ -486,6 +619,29 @@ export default class ScenesPanel implements Panel
         }, `pick the scene to got to after clicking the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`,
         this.selected);
     }
+
+    private changeScriptPageSceneChangeFromPicker(): void 
+    {
+        if (!this.selected || !this.selectedScriptPage) { return; }
+
+        const pin = this.editor.project.sceneBoards[0].pins.find(p => p.element.uuid === this.selectedScriptPage!.sceneChange);
+
+        this.editor.sceneMapsPanel.select(pin);
+        this.editor.sceneMapsPanel.show();
+        this.hide();
+        this.editor.sceneMapsPanel.pickSceneForObject(scene =>
+        {
+            if (scene && this.selected && this.selectedScriptPage)
+            {
+                this.selectedScriptPage.sceneChange = scene.uuid;
+            }
+
+            this.editor.drawingBoardsPanel.hide();
+            this.show();
+        }, `pick the scene to got to after clicking the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`,
+        this.selected);
+    }
+
 
     private createSceneObjectView(): SceneObjectView
     {

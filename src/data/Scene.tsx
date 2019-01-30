@@ -4,33 +4,29 @@ import { Drawing } from "./Drawing";
 import { FlicksyData } from "./FlicksyData";
 import { FlicksyProject } from './FlicksyProject';
 
-export interface SceneSwitchCommand 
-{
-    type: "switch_scene";
-    scene: string;
-}
+export type Comparison = ">" | "<" | "<=" | ">=" | "==" | "pass";
+export type Action = "+=" | "-=" | "=";
 
-export interface ChangeVariableCommand
+export interface VariableChange
 {
-    type: "change_variable";
     target: string;
     source: string;
-    action: "add" | "sub" | "set";
+    action: Action;
 }
-
-export type ScriptCommand = SceneSwitchCommand | ChangeVariableCommand;
 
 export interface ScriptCondition
 {
     target: string;
     source: string;
-    check: ">" | "<" | "<=" | ">=" | "=="; 
+    check: Comparison; 
 }
 
 export interface ScriptPage
 {
-    condition?: ScriptCondition;
-    actions: ScriptCommand[];
+    condition: ScriptCondition;
+    variableChanges: VariableChange[];
+    dialogue: string;
+    sceneChange?: string;
 }
 
 export interface SceneObjectData

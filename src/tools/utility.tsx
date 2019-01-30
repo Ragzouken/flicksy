@@ -171,16 +171,21 @@ interface Option
     value: string,
 }
 
+export function clearContainer(container: HTMLElement): void
+{
+    while (container.lastChild)
+    {
+        container.removeChild(container.lastChild);
+    }
+}
+
 export function repopulateSelect(select: HTMLSelectElement,
                                  options: Option[],
                                  dummy?: string)
 {
     const index = select.selectedIndex;
 
-    while (select.lastChild)
-    {
-        select.removeChild(select.lastChild);
-    }
+    clearContainer(select);
 
     if (dummy)
     {

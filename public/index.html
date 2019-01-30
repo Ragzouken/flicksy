@@ -188,14 +188,33 @@
                     <button id="object-lower" title="Lower this object further behind">lower</button>
                 </div>
 
-                <h2>
+                <h2 hidden>
                     <label id="dialogue-preview">preview <input type="checkbox" id="show-dialogue-toggle" title="Show a visual preview of the object's dialogue"></label>
                     dialogue
                 </h2>
-                <textarea id="object-dialogue-input" rows="8" title="The dialogue to show after clicking this object"></textarea>
+                <textarea hidden id="object-dialogue-input" rows="8" title="The dialogue to show after clicking this object"></textarea>
                 
+                <h2 hidden>scene change</h2>
+                <button hidden id="object-scene-change-button" title="The scene to go to after clicking this object and closing any dialogue">nothing</button>
+            
+                <h2>interaction branches</h2>
+                <select id="object-script-page-select"></select><br/><br/>
+                <button id="object-script-page-create">new branch</button>
+            </div>
+            <div class="section" id="selected-script-page">
+                <h1>interaction branch</h1>
+                <h2 id="script-page-condition-heading">condition</h2>
+                <div class="equation-row" id="script-condition-parent">
+                </div>
+                <h2>change variables</h2>
+                <div id="script-variable-parent"></div>
+                <h2>
+                    <label id="script-dialogue-preview">preview <input type="checkbox" id="script-dialogue-preview-toggle" title="Show a visual preview of this dialogue"></label>
+                    dialogue
+                </h2>
+                <textarea id="script-dialogue-input" rows="8" title="The dialogue to show after running this page"></textarea>
                 <h2>scene change</h2>
-                <button id="object-scene-change-button" title="The scene to go to after clicking this object and closing any dialogue">nothing</button>
+                <button id="script-scene-change-button" title="The scene to go to after running this page and dismissing any dialogue">nothing</button>
             </div>
         </div>
         <div id="scene-maps-sidebar" class="panel" hidden>
@@ -239,22 +258,33 @@
         <div id="variables-sidebar" hidden>
             <div class="section">
                 <h1>variables tab</h1>
-                <h2>manage available variables for scene scripts</h2>    
+                <h2>manage variables for scene interaction branches</h2>    
                 <ol>
-                    <li></li>
+                    <li>create a variable using the <em>variables</em> section below</li>
+                    <li>give it a name and a starting value</li>
+                    <li>use the variable in the <em>interaction branches</em> section in the <em>scene tab</em></scene></li>
                 </ol>
+                <h2>tips</h2>
+                <ul>
+                    <li>there are no number literals. instead create a variable called "1" with the starting value 1 and never change it</li>
+                </ul>
             </div>
             <div class="section">
-                <h1>create & inspect variables</h1>
-                <select id="select-edit-variable"></select><br/><br/>
-                <button id="create-variable-button" title="Create a new variable to use">create new variable</button>
+                <h1>variables</h1>
+                <div class="equation-row">
+                    <select id="select-edit-variable"></select>
+                    <button id="create-variable-button" title="Create a new variable to use">new variable</button>
+                </div>        
             </div>
             <div class="section" id="selected-variable" hidden>
                 <h1>selected variable</h1>
                 <h2>name</h2>
-                <input id="rename-variable" class="full-input" title="Rename the selected variable">
+                <div class="rename-delete">
+                    <input id="rename-variable" title="Rename this variable">
+                    <button id="delete-variable" class="delete" title="Delete this variable">delete</button>
+                </div>
                 <h2>value</h2>
-                <input id="revalue-variable" class="full-input" title="Change the initial value selected variable">
+                <input id="revalue-variable" class="full-input" title="Change the starting value of this variable">
             </div>
         </div>
         <div id="picker-sidebar" hidden>

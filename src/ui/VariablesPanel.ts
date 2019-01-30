@@ -34,7 +34,7 @@ export default class VariablesPanel implements Panel
         {
             if (this.selected)
             {
-                this.selected.name = this.selectedVariableName.value;
+                this.selected.name = this.selectedVariableName.value.substring(0, 8);
                 this.refresh();
             }
         });
@@ -57,7 +57,16 @@ export default class VariablesPanel implements Panel
 
             this.editor.project.variables.push(variable);
             this.selectVariable(variable);
-            this.refresh();
+        });
+
+        utility.buttonClick("delete-variable", () =>
+        {
+            if (this.selected)
+            {
+                const index = this.editor.project.variables.findIndex(v => v.uuid == this.selected!.uuid);
+                this.editor.project.variables.splice(index, 1);
+                this.selectVariable(undefined);
+            }
         });
     }
 

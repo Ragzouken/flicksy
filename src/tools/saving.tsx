@@ -42,15 +42,34 @@ export function repairProject(project: FlicksyProject): void
     {
         scene.objects.forEach(object =>
         {
-            if (object.sceneChange)
+            if (object.sceneChange || object.dialogue.length > 0)
             {
                 object.scriptPages.push({
-                    actions: [{type: "switch_scene", scene: object.sceneChange}],
+                    condition: {source:"", target: "", check: "pass"},
+                    variableChanges: [],
+                    dialogue: object.dialogue,
+                    sceneChange: object.sceneChange,
                 });
 
-                // TODO: remove this field later
-                //object.sceneChange = undefined;
+                object.sceneChange = undefined;
+                object.dialogue = "";
             }
+
+            if (!object.scriptPages.find(page => page.condition.check === "pass"))
+            {
+                object.scriptPages.push({
+                    condition: {source:"", target: "", check: "pass"},
+                    variableChanges: [],
+                    dialogue: object.dialogue,
+                    sceneChange: object.sceneChange,
+                });
+            }
+
+            object.scriptPages.forEach(page =>
+            {
+                page.condition = page.condition || {source:"", target: "", check: "=="};
+                page.dialogue = page.dialogue || "";
+            });
         });
     });
 }

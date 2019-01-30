@@ -196,6 +196,7 @@ export default class DrawingBoardsPanel implements Panel
     {
         this.container.visible = true;
         this.sidebar.hidden = false;
+
         this.refresh();
         this.reframe();
     }

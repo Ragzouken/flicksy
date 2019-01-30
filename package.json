@@ -17,7 +17,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "publish": "npm run build && butler push ./build candle/flicksy:web"
+    "publish": "npm run build && butler push ./build candle/flicksy:web",
+    "publish-beta": "npm run build && butler push ./build candle/flicksy-beta:web"
   },
   "eslintConfig": {
     "extends": "react-app"
