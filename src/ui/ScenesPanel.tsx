@@ -41,9 +41,6 @@ export default class ScenesPanel implements Panel
     private readonly objectSection: HTMLDivElement;
     private readonly objectNameInput: HTMLInputElement;
     private readonly objectDeleteButton: HTMLButtonElement;
-    private readonly objectDialogueInput: HTMLTextAreaElement;
-    private readonly objectDialogueShowToggle: HTMLInputElement;
-    private readonly objectSceneChangeButton: HTMLButtonElement;
     
     private readonly objectDialoguePreview: DialogueView;
     public previewingDialogue: boolean;
@@ -108,36 +105,15 @@ export default class ScenesPanel implements Panel
 
         this.objectNameInput = utility.getElement("object-name");
         this.objectDeleteButton = utility.getElement("delete-object-button");
-        this.objectDialogueInput = utility.getElement("object-dialogue-input");
-        this.objectDialogueShowToggle = utility.getElement("show-dialogue-toggle");
-        this.objectSceneChangeButton = utility.getElement("object-scene-change-button");
 
         this.objectNameInput.addEventListener("input", () => 
         {
             if (this.selected) { this.selected.name = this.objectNameInput.value; }
         });
 
-        this.objectSceneChangeButton.addEventListener("click", () => this.changeSelectedObjectSceneChangeFromPicker());
-        utility.getElement("script-scene-change-button").addEventListener("click", () => this.changeScriptPageSceneChangeFromPicker());
-
         this.objectDeleteButton.addEventListener("click", () =>
         {
             if (this.selected) { this.removeObject(this.selected); }
-        });
-
-        this.objectDialogueInput.addEventListener("input", () =>
-        {
-            if (this.selected)
-            {
-                this.selected.dialogue = this.objectDialogueInput.value;
-                this.objectDialoguePreview.text.text = this.selected.dialogue;
-            }
-        });
-
-        this.objectDialogueShowToggle.addEventListener("change", () =>
-        {
-            this.previewingDialogue = this.objectDialogueShowToggle.checked;
-            this.refresh();
         });
 
         this.select(undefined);
@@ -227,19 +203,6 @@ export default class ScenesPanel implements Panel
         const scenes = this.editor.project.scenes.map(scene => ({ label: `go to: ${scene.name}`, value: scene.uuid }));
         scenes.splice(0, 0, { label: "nothing", value: "" });
 
-        if (this.selected)
-        {
-            if (this.selected.sceneChange)
-            {
-                const scene = this.editor.project.getSceneByUUID(this.selected.sceneChange)!;
-                this.objectSceneChangeButton.innerText = `go to: ${scene.name}`;
-            }
-            else
-            {
-                this.objectSceneChangeButton.innerText = "nothing";
-            }
-        }
-
         this.select(this.selected);
         this.selectScriptPage(this.selectedScriptPage);
 
@@ -276,21 +239,7 @@ export default class ScenesPanel implements Panel
 
         if (object)
         {
-            if (object.sceneChange)
-            {
-                const scene = this.editor.project.getSceneByUUID(object.sceneChange)!;
-                this.objectSceneChangeButton.innerText = `go to: ${scene.name}`;
-            }
-            else
-            {
-                this.objectSceneChangeButton.innerText = "nothing";
-            }
-
             this.objectNameInput.value = object.name;
-            this.objectDialogueInput.value = object.dialogue;
-            this.objectDialoguePreview.text.text = object.dialogue;
-            this.objectDialoguePreview.container.visible = this.objectDialogueShowToggle.checked 
-                                                        && object.dialogue.length > 0;
 
             const makeLabel = (page: ScriptPage) =>
             {
@@ -619,29 +568,7 @@ export default class ScenesPanel implements Panel
         this.editor.drawingBoardsPanel.pickDrawingForScene(drawing => this.endPickingSelectedObjectDrawing(drawing), context);
     }
 
-    private changeSelectedObjectSceneChangeFromPicker(): void 
-    {
-        if (!this.selected) { return; }
-
-        const pin = this.editor.project.sceneBoards[0].pins.find(p => p.element.uuid === this.selected!.sceneChange);
-
-        this.editor.sceneMapsPanel.select(pin);
-        this.editor.sceneMapsPanel.show();
-        this.hide();
-        this.editor.sceneMapsPanel.pickSceneForObject(scene =>
-        {
-            if (scene && this.selected)
-            {
-                this.selected.sceneChange = scene.uuid;
-            }
-
-            this.editor.drawingBoardsPanel.hide();
-            this.show();
-        }, `pick the scene to got to after clicking the object <em>${this.selected.name}</em> in the scene <em>${this.scene.name}</em>`,
-        this.selected);
-    }
-
-    private changeScriptPageSceneChangeFromPicker(): void 
+    public changeScriptPageSceneChangeFromPicker(): void 
     {
         if (!this.selected || !this.selectedScriptPage) { return; }
 

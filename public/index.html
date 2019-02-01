@@ -171,7 +171,7 @@
                 <button id="create-object-drawing-picker-button" title="Add a new object to this scene by choosing visually from the drawings in this project">pick drawing</button>
             </div>
             <div class="section" id="selected-object-section">
-                <h1>selected object</h1>
+                <h1>object appearance</h1>
 
                 <h2>name</h2>
                 <div class="rename-delete">
@@ -187,24 +187,13 @@
                     <button id="object-higher" title="Raise this object further in front">raise</button>
                     <button id="object-lower" title="Lower this object further behind">lower</button>
                 </div>
-
-                <h2 hidden>
-                    <label id="dialogue-preview">preview <input type="checkbox" id="show-dialogue-toggle" title="Show a visual preview of the object's dialogue"></label>
-                    dialogue
-                </h2>
-                <textarea hidden id="object-dialogue-input" rows="8" title="The dialogue to show after clicking this object"></textarea>
-                
-                <h2 hidden>scene change</h2>
-                <button hidden id="object-scene-change-button" title="The scene to go to after clicking this object and closing any dialogue">nothing</button>
-            
-                <h2>interaction branches</h2>
+            </div>
+            <div class="section" id="selected-script-page">
+                <h1>object interaction branches</h1>
                 <div class="rename-delete">
                     <select id="object-script-page-select"></select>
                     <button id="object-script-page-create">new</button>
                 </div>
-            </div>
-            <div class="section" id="selected-script-page">
-                <h1>interaction branch</h1>
                 <h2>name</h2>
                 <div class="rename-delete">
                     <input id="branch-name" title="Rename the selected branch">
@@ -222,6 +211,7 @@
                 <textarea id="script-dialogue-input" rows="8" title="The dialogue to show after running this page"></textarea>
                 <h2>scene change</h2>
                 <button id="script-scene-change-button" title="The scene to go to after running this page and dismissing any dialogue">nothing</button>
+                <button id="remove-scene-change-button" title="No scene change" class="delete">none</button>
             </div>
         </div>
         <div id="scene-maps-sidebar" class="panel" hidden>

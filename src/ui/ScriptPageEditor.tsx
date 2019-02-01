@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ScriptPage, Comparison, ScriptCondition, VariableChange, Action } from '../data/Scene';
 import ScenesPanel from './ScenesPanel';
 import { FlicksyProject, FlicksyVariable } from '../data/FlicksyProject';
-import { getElement, repopulateSelect, clearContainer } from '../tools/utility';
+import { getElement, repopulateSelect, clearContainer, buttonClick } from '../tools/utility';
 
 export class VariableSelect
 {
@@ -174,6 +174,16 @@ export default class ScriptPageEditor
         });
 
         this.sceneChangeButton = getElement("script-scene-change-button");
+        this.sceneChangeButton.addEventListener("click", () =>
+        {
+            this.panel.changeScriptPageSceneChangeFromPicker();
+        });
+
+        buttonClick("remove-scene-change-button", () =>
+        {
+            this.page.sceneChange = undefined;
+            this.panel.refresh();
+        });
     }
 
     public setState(project: FlicksyProject, page: ScriptPage): void
@@ -234,7 +244,9 @@ export default class ScriptPageEditor
         this.dialogueInput.value = this.page.dialogue;
 
         const scene = this.project.scenes.find(s => s.uuid === this.page.sceneChange);
-        this.sceneChangeButton.innerText = scene ? scene.name : "nothing";   
+        this.sceneChangeButton.innerText = scene ? `go to: ${scene.name}` : "nothing";  
+        
+        getElement("remove-scene-change-button").hidden = !this.page.sceneChange;
     }
 
     public cancelDialoguePreview(): void
