@@ -65,6 +65,7 @@ export default class ProjectsPanel implements Panel
                         onChange={event => changeResolution(event.target.value)}>
                     <option value="160x100">160px x 100px (default)</option>
                     <option value="320x200">320px x 200px</option>
+                    <option value="256x256">256px x 256px</option>
                 </select>
             </div>
             <div className="section">

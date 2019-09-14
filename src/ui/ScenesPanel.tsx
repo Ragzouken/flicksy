@@ -11,6 +11,8 @@ import Panel from './Panel';
 import PositionedDrawingView from './PositionedDrawingView';
 import { FlicksyVariable } from '../data/FlicksyProject';
 import ScriptPageEditor from './ScriptPageEditor';
+import { DialogueRenderer } from './DialogueRenderer';
+import { createCanvas } from '../pixels/canvas';
 
 export type SceneObjectView = PositionedDrawingView<SceneObject>;
 
@@ -43,6 +45,8 @@ export default class ScenesPanel implements Panel
     private readonly objectDeleteButton: HTMLButtonElement;
     
     private readonly objectDialoguePreview: DialogueView;
+    private readonly dialogueRenderer: DialogueRenderer;
+    private readonly dialogueSprite: Pixi.Sprite;
     public previewingDialogue: boolean;
 
     // script page ui
@@ -67,7 +71,11 @@ export default class ScenesPanel implements Panel
         this.container.addChild(this.overlayContainer);
 
         this.objectDialoguePreview = new DialogueView(editor);
+        this.dialogueRenderer = new DialogueRenderer(createCanvas(1, 1),
+                                                     createCanvas(1, 1));
+        this.dialogueSprite = new Pixi.Sprite(this.dialogueRenderer.texture);
         this.overlayContainer.addChild(this.objectDialoguePreview.container);
+        this.overlayContainer.addChild(this.dialogueSprite);
 
         this.container.interactive = true;
         // set with project
@@ -357,6 +365,17 @@ export default class ScenesPanel implements Panel
         }
     }
 
+    private isObjectInteractable(object: SceneObject): boolean
+    {
+        const page = this.getFirstValidPage(object);
+        
+        if (!page) return false;
+        
+        return page.dialogue.length > 0
+            || page.sceneChange !== undefined
+            || page.variableChanges.length > 0;
+    }
+
     private getFirstValidPage(object: SceneObject): ScriptPage | undefined
     {
         type cmp = (a: number, b: number) => boolean;
@@ -482,15 +501,13 @@ export default class ScenesPanel implements Panel
 
         if (object)
         {
-            const interactable = object.dialogue.length > 0 
-                              || object.sceneChange
-                              || this.getFirstValidPage(object);
-
             this.objectViews.get(object)!.hover.visible = !this.playModeTest;
             
             if (this.playModeTest)
             {
-                this.container.cursor = interactable ? "pointer" : "initial";
+                this.container.cursor = this.isObjectInteractable(object) 
+                                      ? "pointer" 
+                                      : "initial";
             }
             else
             {

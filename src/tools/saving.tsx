@@ -74,7 +74,12 @@ export function repairProject(project: FlicksyProject): void
                     page.name = "unconditional";
                 }
 
-                page.name = page.name || "unnamed branch";
+                if (page.name === "unnamed branch")
+                {
+                    page.name = "";
+                }
+
+                page.name = page.name || "";
                 page.condition = page.condition || {source:"", target: "", check: "=="};
                 page.dialogue = page.dialogue || "";
             });
