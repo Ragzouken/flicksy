@@ -225,7 +225,7 @@ export default class ScenesPanel implements Panel
     /** Switch the currently selected object, or select nothing if undefined */
     public select(object: SceneObject | undefined): void
     {
-        const change = this.selected != object;
+        const change = this.selected !== object;
         
         this.selected = object;
 
@@ -253,8 +253,8 @@ export default class ScenesPanel implements Panel
             {
                 if (page.name.length > 0) return page.name;
 
-                const source = this.editor.project.variables.find(v => v.uuid == page.condition.source);
-                const target = this.editor.project.variables.find(v => v.uuid == page.condition.target);
+                const source = this.editor.project.variables.find(v => v.uuid === page.condition.source);
+                const target = this.editor.project.variables.find(v => v.uuid === page.condition.target);
 
                 if (source && target && page.condition.check !== "pass")
                 {
@@ -381,17 +381,17 @@ export default class ScenesPanel implements Panel
         type cmp = (a: number, b: number) => boolean;
 
         const checks: {[name: string]: cmp} = {
-            "==": (a, b) => a == b,
-            ">=": (a, b) => a >= b,
-            "<=": (a, b) => a <= b,
-            ">":  (a, b) => a >  b,
-            "<":  (a, b) => a <  b,
+            "==": (a, b) => a === b,
+            ">=": (a, b) => a >=  b,
+            "<=": (a, b) => a <=  b,
+            ">":  (a, b) => a >   b,
+            "<":  (a, b) => a <   b,
         };
 
         const checkCondition = (condition: ScriptCondition) =>
         {
-            const source = this.playModeVariables.find(v => v.uuid == condition.source);
-            const target = this.playModeVariables.find(v => v.uuid == condition.target);
+            const source = this.playModeVariables.find(v => v.uuid === condition.source);
+            const target = this.playModeVariables.find(v => v.uuid === condition.target);
 
             return !source || !target || checks[condition.check](source.value, target.value); 
         };
@@ -403,7 +403,7 @@ export default class ScenesPanel implements Panel
 
     private testRunObjectScripts(object: SceneObject): void
     {
-        if (object.sceneChange && object.scriptPages.length == 0)
+        if (object.sceneChange && object.scriptPages.length === 0)
         {
             this.setScene(this.editor.project.getSceneByUUID(object.sceneChange)!);
             this.setPlayTestMode(true);
@@ -415,20 +415,20 @@ export default class ScenesPanel implements Panel
         {
             for (let change of page.variableChanges)
             {
-                const source = this.playModeVariables.find(v => v.uuid == change.source);
-                const target = this.playModeVariables.find(v => v.uuid == change.target);
+                const source = this.playModeVariables.find(v => v.uuid === change.source);
+                const target = this.playModeVariables.find(v => v.uuid === change.target);
 
                 if (source && target)
                 {
-                    if (change.action == "+=")
+                    if (change.action === "+=")
                     {
                         source.value += target.value;
                     }
-                    else if (change.action == "-=")
+                    else if (change.action === "-=")
                     {
                         source.value -= target.value;
                     }
-                    else if (change.action == "=")
+                    else if (change.action === "=")
                     {
                         source.value = target.value;
                     }

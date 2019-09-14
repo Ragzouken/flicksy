@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { ScriptPage, Comparison, ScriptCondition, VariableChange, Action } from '../data/Scene';
+import { ScriptPage, Comparison, VariableChange, Action } from '../data/Scene';
 import ScenesPanel from './ScenesPanel';
 import { FlicksyProject, FlicksyVariable } from '../data/FlicksyProject';
 import { getElement, repopulateSelect, clearContainer, buttonClick } from '../tools/utility';

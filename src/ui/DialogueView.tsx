@@ -42,7 +42,7 @@ export default class DialogueView
         const inset = 4;
 
         const refWidth = 160;
-        const refHeight = 100;
+        //const refHeight = 100;
 
         const scale2 = width / refWidth;
         const scale = 8;

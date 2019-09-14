@@ -22,7 +22,7 @@ export function uint8ToBase64(u8Arr: Uint8ClampedArray): string
     while (index < length) 
     {
         const slice = u8Arr.subarray(index, Math.min(index + CHUNK_SIZE, length)); 
-        result += String.fromCharCode.apply(null, <any>slice);
+        result += String.fromCharCode.apply(null, slice as any);
         index += CHUNK_SIZE;
     }
 

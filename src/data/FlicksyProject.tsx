@@ -60,17 +60,17 @@ export class FlicksyProject
         this.startScene = data.startScene;
         this.variables = data.variables || [];
 
-        this.drawings = data.drawings.map(drawing => (new Drawing).fromData(drawing));
-        this.scenes = data.scenes.map(scene => (new Scene).fromData(scene, this));
+        this.drawings = data.drawings.map(drawing => (new Drawing()).fromData(drawing));
+        this.scenes = data.scenes.map(scene => (new Scene()).fromData(scene, this));
         this.palette = data.palette || [];
         
-        this.drawingBoards = data.drawingBoards.map(board => (new DrawingBoard).fromData(board, this));
+        this.drawingBoards = data.drawingBoards.map(board => (new DrawingBoard()).fromData(board, this));
 
         repairProject(this);
 
         if (data.sceneBoards)
         {
-            this.sceneBoards = data.sceneBoards.map(board => (new SceneBoard).fromData(board, this));    
+            this.sceneBoards = data.sceneBoards.map(board => (new SceneBoard()).fromData(board, this));    
         }
         else
         {

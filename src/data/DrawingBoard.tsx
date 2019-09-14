@@ -82,7 +82,7 @@ export class DrawingBoard
 
     public pinDrawing(drawing: Drawing, position: Point): PinnedDrawing
     {
-        const pin = new PinnedDrawing
+        const pin = new PinnedDrawing();
         pin.drawing = drawing;
         pin.position = position;
 

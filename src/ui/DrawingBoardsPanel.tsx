@@ -529,8 +529,8 @@ export default class DrawingBoardsPanel implements Panel
 
     private createNewDrawing(width: number, height: number): PinnedDrawing
     {
-        if (width == 0) width = this.editor.resolution[0];
-        if (height == 0) height = this.editor.resolution[1];
+        if (width === 0) width = this.editor.resolution[0];
+        if (height === 0) height = this.editor.resolution[1];
 
         // center
         const view = new Point(this.editor.pixi.view.width / 2, this.editor.pixi.view.height / 2);

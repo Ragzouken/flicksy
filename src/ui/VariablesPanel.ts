@@ -27,7 +27,7 @@ export default class VariablesPanel implements Panel
 
         this.inspectVariableSelect.addEventListener("change", () =>
         {
-            this.selectVariable(this.editor.project.variables.find(v => v.uuid == this.inspectVariableSelect.value)!);
+            this.selectVariable(this.editor.project.variables.find(v => v.uuid === this.inspectVariableSelect.value)!);
         });
 
         this.selectedVariableName.addEventListener("input", () =>
@@ -63,7 +63,7 @@ export default class VariablesPanel implements Panel
         {
             if (this.selected)
             {
-                const index = this.editor.project.variables.findIndex(v => v.uuid == this.selected!.uuid);
+                const index = this.editor.project.variables.findIndex(v => v.uuid === this.selected!.uuid);
                 this.editor.project.variables.splice(index, 1);
                 this.selectVariable(undefined);
             }
