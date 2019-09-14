@@ -25,7 +25,7 @@ export default class DialogueView
         this.text.position = new Point(4 * 8, 4 * 8);
         // this.text.texture.baseTexture.scaleMode = 1;
 
-        this.panel.addChild(this.text);
+        //this.panel.addChild(this.text);
         this.container.addChild(this.panel);
 
         this.refreshBounds();
@@ -38,7 +38,8 @@ export default class DialogueView
         // this.container.width = width;
         // this.container.height = height;
         this.container.hitArea = new Rectangle(0, 0, width, height);
-
+        /*
+        
         const inset = 4;
 
         const refWidth = 160;
@@ -67,5 +68,6 @@ export default class DialogueView
         this.panel.scale = new Point(1 / scale, 1 / scale);
 
         this.text.position = new Point(inset * scale, inset * scale);
+        */
     }
 }

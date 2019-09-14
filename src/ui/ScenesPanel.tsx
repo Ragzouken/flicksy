@@ -227,13 +227,6 @@ export default class ScenesPanel implements Panel
         this.selectScriptPage(this.selectedScriptPage);
 
         // dialogue preview
-        const page = this.selectedScriptPage;
-        const showDialogue = this.previewingDialogue
-                          && page !== undefined
-                          && page.dialogue.length > 0;
-        this.objectDialoguePreview.container.visible = false;// showDialogue;
-        this.objectDialoguePreview.text.text = page ? page.dialogue : "";
-
         this.refreshDialogue();
     }
 
@@ -258,6 +251,8 @@ export default class ScenesPanel implements Panel
 
         this.dialogueSprite.position.set(x + .5, y);
         this.dialogueSprite.visible = showDialogue;
+
+        this.objectDialoguePreview.container.visible = showDialogue;
     }
 
     /** Switch the currently selected object, or select nothing if undefined */
