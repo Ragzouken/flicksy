@@ -175,6 +175,7 @@ export default class ScenesPanel implements Panel
 
     public show(): void
     {
+        this.hideDialogue();
         this.container.visible = true;
         document.getElementById("scene-sidebar")!.hidden = false;
         this.refresh();
@@ -188,10 +189,17 @@ export default class ScenesPanel implements Panel
 
     public setPlayTestMode(on: boolean): void
     {
+        this.hideDialogue();
         this.playModeTest = on;
         this.select(undefined);
         this.selectScriptPage(undefined);
         this.refresh();
+    }
+
+    public onDialogueEnded(): void
+    {
+        this.hideDialogue();
+        this.doQueuedSceneChange();
     }
 
     public hideDialogue(): void
@@ -434,8 +442,20 @@ export default class ScenesPanel implements Panel
         return page;
     }
 
+    private queuedSceneChange: string | undefined;
+
+    private doQueuedSceneChange(): void
+    {
+        if (this.queuedSceneChange)
+        {
+            this.setScene(this.editor.project.getSceneByUUID(this.queuedSceneChange)!);
+            this.setPlayTestMode(true);
+        }
+    }
+
     private testRunObjectScripts(object: SceneObject): void
     {
+        // old style object
         if (object.sceneChange && object.scriptPages.length === 0)
         {
             this.setScene(this.editor.project.getSceneByUUID(object.sceneChange)!);
@@ -472,39 +492,29 @@ export default class ScenesPanel implements Panel
                 }
             }
 
+            this.queuedSceneChange = page.sceneChange;
+
             if (page.dialogue.length > 0)
             {
                 this.showDialogue(page);
             }
-            else if (page.sceneChange)
+            else
             {
-                this.setScene(this.editor.project.getSceneByUUID(page.sceneChange)!);
-                this.setPlayTestMode(true);
+                this.doQueuedSceneChange();
             }
         }
     }
 
     private onPointerDown(event: Pixi.interaction.InteractionEvent): void
     {
-        if (this.playModeTest && this.selectedScriptPage)
-        {
-            const page = this.selectedScriptPage;
-
-            if (page.sceneChange)
-            {
-                this.setScene(this.editor.project.getSceneByUUID(page.sceneChange)!);
-                this.setPlayTestMode(true);
-            }
-        }
-
         if (this.previewingDialogue)
         {
             if (this.dialogueRenderer.empty) {
-                this.hideDialogue();
+                this.onDialogueEnded();
             } else {
                 this.dialogueRenderer.skip();
                 this.refreshDialogue();
-                if (this.dialogueRenderer.empty) this.hideDialogue();
+                if (this.dialogueRenderer.empty) this.onDialogueEnded();
             }
 
             event.stopPropagation();

@@ -36,6 +36,10 @@ export class DialogueRenderer
         .then(response => response.text())
         .then(source => parseFont(source))
         .then(font => this.setFont(font));
+
+        const arrowImage = document.createElement("img");
+        arrowImage.src = "./dialogue-arrow.png";
+        this.arrow = arrowImage;
     }
 
     public setFont(font: Font): void
