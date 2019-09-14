@@ -4,6 +4,8 @@ import { makeVector2 } from "../pixels/sprite";
 import { SCALE_MODES, BaseTexture, Texture } from "pixi.js";
 import { randomInt } from "../tools/utility";
 
+import fontData from "../resources/font-data";
+
 export class DialogueRenderer
 {
     public readonly canvas = document.createElement("canvas");
@@ -26,27 +28,20 @@ export class DialogueRenderer
     public get empty() { return this.currentPage === undefined; }
 
     constructor(private arrow: CanvasImageSource,
-                private square: CanvasImageSource)
+                private square: CanvasImageSource,
+                private readonly lineCount = 2)
     {
         const base = new BaseTexture(this.canvas, SCALE_MODES.NEAREST);
         this.texture = new Texture(base);
-        this.setFont(this.font);
-
-        fetch("./ascii_small.bitsyfont")
-        .then(response => response.text())
-        .then(source => parseFont(source))
-        .then(font => this.setFont(font));
-
-        const arrowImage = document.createElement("img");
-        arrowImage.src = "./dialogue-arrow.png";
-        this.arrow = arrowImage;
+        this.setFont(parseFont(fontData));
     }
 
     public setFont(font: Font): void
     {
         this.font = font;
-        this.canvas.width = 208;
-        this.canvas.height = (3 * 4) + this.font.charHeight * 2 + 15;
+        this.canvas.width = 256;
+        const lines = 3;
+        this.canvas.height = ((lines + 1) * 4) + this.font.charHeight * lines + 15;
 
         this.pageRenderer = new PageRenderer(this.canvas.width,
                                              this.canvas.height);
@@ -144,7 +139,7 @@ export class DialogueRenderer
 
     public queueScript(script: string): void
     {
-        const pages = scriptToPages(script, { font: this.font, lineWidth: 192, lineCount: 2 });
+        const pages = scriptToPages(script, { font: this.font, lineWidth: 192, lineCount: this.lineCount });
         this.queuedPages.push(...pages);
         
         if (!this.currentPage)

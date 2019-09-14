@@ -72,7 +72,8 @@ export default class ScenesPanel implements Panel
 
         this.objectDialoguePreview = new DialogueView(editor);
         this.dialogueRenderer = new DialogueRenderer(createCanvas(1, 1),
-                                                     createCanvas(1, 1));
+                                                     createCanvas(1, 1),
+                                                     3);
         this.dialogueSprite = new Pixi.Sprite(this.dialogueRenderer.texture);
         this.overlayContainer.addChild(this.objectDialoguePreview.container);
         this.overlayContainer.addChild(this.dialogueSprite);
@@ -246,7 +247,7 @@ export default class ScenesPanel implements Panel
         this.dialogueRenderer.render();
 
         const [width, height] = this.editor.resolution;
-        const scale = width > 200 ? 1 : .5;
+        const scale = .5;
 
         const dw = this.dialogueSprite.texture.width * scale;
         const dh = this.dialogueSprite.texture.height * scale;
@@ -255,7 +256,7 @@ export default class ScenesPanel implements Panel
         this.dialogueSprite.height = dh;
 
         const x = (width - dw) / 2;
-        const y = (height / 2) + (height / 2 - dh) / 2;
+        const y = height - (height/2 - dh)/2 - dh;
 
         this.dialogueSprite.position.set(x + .5, y);
         this.dialogueSprite.visible = showDialogue;
