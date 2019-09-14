@@ -1,4 +1,4 @@
-import { Font } from "../text/font";
+import { Font, parseFont } from "../text/font";
 import { Page, PageRenderer, scriptToPages, Glyph } from "../text/text";
 import { makeVector2 } from "../pixels/sprite";
 import { SCALE_MODES, BaseTexture, Texture } from "pixi.js";
@@ -25,12 +25,17 @@ export class DialogueRenderer
 
     public get empty() { return this.currentPage === undefined; }
 
-    constructor(private readonly arrow: CanvasImageSource,
-                private readonly square: CanvasImageSource)
+    constructor(private arrow: CanvasImageSource,
+                private square: CanvasImageSource)
     {
         const base = new BaseTexture(this.canvas, SCALE_MODES.NEAREST);
         this.texture = new Texture(base);
         this.setFont(this.font);
+
+        fetch("./ascii_small.bitsyfont")
+        .then(response => response.text())
+        .then(source => parseFont(source))
+        .then(font => this.setFont(font));
     }
 
     public setFont(font: Font): void
@@ -85,7 +90,7 @@ export class DialogueRenderer
                                    this.canvas.width - 19, 
                                    this.canvas.height - 10);
         }
-        this.texture.requiresUpdate = true;
+        this.texture.update();
     }
 
     public revealNextChar(): void

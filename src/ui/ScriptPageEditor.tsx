@@ -111,7 +111,7 @@ export default class ScriptPageEditor
     private readonly dialoguePreviewToggle: HTMLInputElement;
     private readonly sceneChangeButton: HTMLButtonElement;
 
-    constructor(private readonly panel: ScenesPanel)
+    constructor(private readonly panel: ScenesPanel, onDialogueChange: () => void)
     {
         const conditionRoot = getElement("script-condition-parent");
         this.changeContainer = getElement("script-variable-parent");
@@ -154,6 +154,7 @@ export default class ScriptPageEditor
         this.dialogueInput.addEventListener("input", () =>
         {
             this.page.dialogue = this.dialogueInput.value;
+            onDialogueChange();
             this.panel.refresh();
         });
 

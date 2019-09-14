@@ -163,7 +163,14 @@ export default class ScenesPanel implements Panel
             }
         });
 
-        this.scriptPageEditor = new ScriptPageEditor(this);
+        this.scriptPageEditor = new ScriptPageEditor(this, () => { 
+            this.showDialogue(this.selectedScriptPage!);
+        });
+
+        this.editor.pixi.ticker.add(dt => {
+            this.dialogueRenderer.update(dt / 60);
+            this.dialogueRenderer.render();
+        });
     }
 
     public show(): void
@@ -190,6 +197,7 @@ export default class ScenesPanel implements Panel
     public hideDialogue(): void
     {
         this.previewingDialogue = false;
+        this.dialogueRenderer.cancel();
         this.refresh();
     }
 
@@ -197,6 +205,10 @@ export default class ScenesPanel implements Panel
     {
         this.selectedScriptPage = page;
         this.previewingDialogue = true;
+
+        this.dialogueRenderer.cancel();
+        this.dialogueRenderer.queueScript(page.dialogue);
+
         this.refresh();
     }
 
@@ -216,10 +228,36 @@ export default class ScenesPanel implements Panel
 
         // dialogue preview
         const page = this.selectedScriptPage;
-        this.objectDialoguePreview.container.visible = this.previewingDialogue
-                                                    && page !== undefined
-                                                    && page.dialogue.length > 0;
+        const showDialogue = this.previewingDialogue
+                          && page !== undefined
+                          && page.dialogue.length > 0;
+        this.objectDialoguePreview.container.visible = false;// showDialogue;
         this.objectDialoguePreview.text.text = page ? page.dialogue : "";
+
+        this.refreshDialogue();
+    }
+
+    private refreshDialogue(): void
+    {
+        const showDialogue = this.previewingDialogue
+                          && !this.dialogueRenderer.empty;
+
+        this.dialogueRenderer.render();
+
+        const [width, height] = this.editor.resolution;
+        const scale = width > 200 ? 1 : .5;
+
+        const dw = this.dialogueSprite.texture.width * scale;
+        const dh = this.dialogueSprite.texture.height * scale;
+
+        this.dialogueSprite.width = dw;
+        this.dialogueSprite.height = dh;
+
+        const x = (width - dw) / 2;
+        const y = (height / 2) + (height / 2 - dh) / 2;
+
+        this.dialogueSprite.position.set(x + .5, y);
+        this.dialogueSprite.visible = showDialogue;
     }
 
     /** Switch the currently selected object, or select nothing if undefined */
@@ -466,7 +504,14 @@ export default class ScenesPanel implements Panel
 
         if (this.previewingDialogue)
         {
-            this.hideDialogue();
+            if (this.dialogueRenderer.empty) {
+                this.hideDialogue();
+            } else {
+                this.dialogueRenderer.skip();
+                this.refreshDialogue();
+                if (this.dialogueRenderer.empty) this.hideDialogue();
+            }
+
             event.stopPropagation();
             return;
         }
