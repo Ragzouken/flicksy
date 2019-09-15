@@ -168,6 +168,8 @@ export class DialogueRenderer
 
     public queueScript(script: string): void
     {
+        console.log(script);
+
         const pages = scriptToPages(script, { font: this.font, lineWidth: 240, lineCount: this.lineCount });
         this.queuedPages.push(...pages);
         

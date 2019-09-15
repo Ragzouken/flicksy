@@ -222,13 +222,17 @@ export function commandsToPages(commands: Command[],
 
     let index: number | undefined;
     
-    while (index = findNextBreakIndex()) {
+    while (true) {
+        const index = findNextBreakIndex();
+        if (index === undefined) break;
         generateGlyphLine(commands.slice(0, index));
         commands = commands.slice(index);
 
         const command = commands[0];
+
         if (command.type === "break") {
             doBreak(command.target);
+            console.log("do break");
             commands.shift();
         } else {
             if (command.type === "glyph" && command.char === " ") {
