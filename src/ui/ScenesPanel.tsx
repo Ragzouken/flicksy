@@ -449,10 +449,13 @@ export default class ScenesPanel implements Panel
 
     private doQueuedSceneChange(): void
     {
+        if (!this.playModeTest) this.queuedSceneChange = undefined;
+
         if (this.queuedSceneChange)
         {
             this.setScene(this.editor.project.getSceneByUUID(this.queuedSceneChange)!);
             this.setPlayTestMode(true);
+            this.queuedSceneChange = undefined;
         }
     }
 

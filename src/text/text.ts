@@ -232,7 +232,6 @@ export function commandsToPages(commands: Command[],
 
         if (command.type === "break") {
             doBreak(command.target);
-            console.log("do break");
             commands.shift();
         } else {
             if (command.type === "glyph" && command.char === " ") {
