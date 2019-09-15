@@ -169,6 +169,8 @@ export default class ScenesPanel implements Panel
         });
 
         this.editor.pixi.ticker.add(dt => {
+            if (!this.playModeTest)
+                this.dialogueRenderer.revealAll();
             this.dialogueRenderer.update(dt / 60);
             this.dialogueRenderer.render();
         });

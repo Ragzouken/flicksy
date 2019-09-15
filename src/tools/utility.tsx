@@ -106,7 +106,8 @@ export function rgb2hex(color: [number, number, number]): string
     return `#${rs}${gs}${bs}`;
 }
 
-export function hex2rgb(color: string): [number, number, number]
+export function hex2rgb(color: string,
+                        fallback = [255, 0, 255]): number[]
 {
     const matches = color.match(/^#([0-9a-f]{6})$/i);
 
@@ -121,7 +122,7 @@ export function hex2rgb(color: string): [number, number, number]
         ];
     }
     
-    return [0, 0, 0];
+    return fallback;
 }
 
 export function swapArrayElements<TElement>(array: TElement[], 

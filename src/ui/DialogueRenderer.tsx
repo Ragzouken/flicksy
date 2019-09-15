@@ -2,9 +2,27 @@ import { Font, parseFont } from "../text/font";
 import { Page, PageRenderer, scriptToPages, Glyph } from "../text/text";
 import { makeVector2 } from "../pixels/sprite";
 import { SCALE_MODES, BaseTexture, Texture } from "pixi.js";
-import { randomInt } from "../tools/utility";
+import { randomInt, hex2rgb, rgb2num } from "../tools/utility";
 
 import fontData from "../resources/font-data";
+import { dialogueContinue, dialogueEnd } from "../resources/icon-data";
+import { createContext2D } from "../pixels/canvas";
+
+function parseIcon(data: string): CanvasImageSource
+{
+    const lines = data.split('\n').map(line => line.split(""));
+    const width = lines.map(line => line.length).reduce((a, b) => Math.max(a, b), 0);
+    const height = lines.length;
+    const context = createContext2D(width, height);
+    context.clearRect(0, 0, width, height);
+    context.fillStyle = "#FFFFFF";
+    lines.forEach((line, y) => {
+        line.forEach((pixel, x) => {
+            if (pixel === "1") context.fillRect(x, y, 1, 1);
+        });
+    })
+    return context.canvas;
+}
 
 export class DialogueRenderer
 {
@@ -34,6 +52,9 @@ export class DialogueRenderer
         const base = new BaseTexture(this.canvas, SCALE_MODES.NEAREST);
         this.texture = new Texture(base);
         this.setFont(parseFont(fontData));
+
+        this.arrow = parseIcon(dialogueContinue);
+        this.square = parseIcon(dialogueEnd);
     }
 
     public setFont(font: Font): void
@@ -107,6 +128,14 @@ export class DialogueRenderer
         }
     }
 
+    public revealAll(): void
+    {
+        if (!this.currentPage) return;
+
+        this.showGlyphCount = this.currentPage.length;
+        this.revealNextChar();
+    }
+
     public cancel(): void
     {
         this.queuedPages.length = 0;
@@ -139,7 +168,7 @@ export class DialogueRenderer
 
     public queueScript(script: string): void
     {
-        const pages = scriptToPages(script, { font: this.font, lineWidth: 192, lineCount: this.lineCount });
+        const pages = scriptToPages(script, { font: this.font, lineWidth: 240, lineCount: this.lineCount });
         this.queuedPages.push(...pages);
         
         if (!this.currentPage)
@@ -162,7 +191,11 @@ export class DialogueRenderer
 
         this.currentPage.forEach((glyph, i) => {
             if (glyph.styles.has("r")) glyph.hidden = false;
-            if (glyph.styles.has("red")) glyph.color = 0x0000FF;
+            if (glyph.styles.has("clr")) {
+                const hex = glyph.styles.get("clr") as string;
+                const rgb = hex2rgb(hex) as [number, number, number];
+                glyph.color = rgb2num(...rgb);
+            }
             if (glyph.styles.has("shk")) 
                 glyph.offset = makeVector2(randomInt(-1, 1), randomInt(-1, 1));
             if (glyph.styles.has("wvy"))

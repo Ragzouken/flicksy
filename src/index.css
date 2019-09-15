@@ -137,6 +137,11 @@ button.delete
     display: flex;
 }
 
+.code
+{
+    font-family: monospace;
+}
+
 .rename-delete > :first-child
 {
     flex: 1;
