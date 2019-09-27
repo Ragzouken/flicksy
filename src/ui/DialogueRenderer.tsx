@@ -1,12 +1,10 @@
-import { Font, parseFont } from "../text/font";
 import { Page, PageRenderer, scriptToPages, Glyph } from "../text/text";
-import { makeVector2 } from "../pixels/sprite";
 import { SCALE_MODES, BaseTexture, Texture } from "pixi.js";
 import { randomInt, hex2rgb, rgb2num } from "../tools/utility";
 
-import fontData from "../resources/font-data";
-import { dialogueContinue, dialogueEnd } from "../resources/icon-data";
-import { createContext2D } from "../pixels/canvas";
+import fontData from "../resources/unicode-european-large-font";
+import { createContext2D, EMPTY_FONT, decodeFont, Font, makeVector2, decodeTexture } from "blitsy";
+import textureData from "../resources/icon-data";
 
 function parseIcon(data: string): CanvasImageSource
 {
@@ -41,7 +39,7 @@ export class DialogueRenderer
     private showGlyphCount = 0;
     private pageGlyphCount = 0;
 
-    private font: Font = new Font("no font", 4, 4);
+    private font = EMPTY_FONT;
 
     public get empty() { return this.currentPage === undefined; }
 
@@ -51,10 +49,10 @@ export class DialogueRenderer
     {
         const base = new BaseTexture(this.canvas, SCALE_MODES.NEAREST);
         this.texture = new Texture(base);
-        this.setFont(parseFont(fontData));
+        this.setFont(decodeFont(fontData));
 
-        this.arrow = parseIcon(dialogueContinue);
-        this.square = parseIcon(dialogueEnd);
+        this.arrow = decodeTexture(textureData["dialogue-arrow"]).canvas;
+        this.square = decodeTexture(textureData["dialogue-square"]).canvas;
     }
 
     public setFont(font: Font): void
@@ -62,7 +60,7 @@ export class DialogueRenderer
         this.font = font;
         this.canvas.width = 256;
         const lines = 3;
-        this.canvas.height = ((lines + 1) * 4) + this.font.charHeight * lines + 15;
+        this.canvas.height = ((lines + 1) * 4) + this.font.lineHeight * lines + 15;
 
         this.pageRenderer = new PageRenderer(this.canvas.width,
                                              this.canvas.height);

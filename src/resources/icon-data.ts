@@ -1,15 +1,8 @@
-export const dialogueContinue =
-`00000000000
-01111111110
-00111111100
-00011111000
-00001110000
-00000100000`;
+import { TextureData } from "blitsy";
 
-export const dialogueEnd =
-`00111111000
-00111111000
-00111111000
-00111111000
-00111111000
-00111111000`;
+const textureData: {[key: string]: TextureData} = {
+    "dialogue-arrow": {"_type":"texture","format":"M1","width":11,"height":6,"data":"APAff/ABBxAA"},
+    "dialogue-square": {"_type":"texture","format":"M1","width":11,"height":6,"data":"/OAHP/jBD34A"},
+};
+
+export default textureData;

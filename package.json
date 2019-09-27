@@ -3,15 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "file-saver": "^2.0.0",
-    "jszip": "^3.1.5",
+    "blitsy": "^0.1.2",
+    "file-saver": "^2.0.2",
+    "jszip": "^3.2.2",
     "localforage": "^1.7.3",
-    "pixi.js": "^4.8.4",
+    "pixi.js": "^4.8.8",
     "raw-loader": "^3.1.0",
-    "react": "^16.7.0",
-    "react-dom": "^16.7.0",
-    "react-scripts": "^3.1.1",
-    "uuid": "^3.3.2"
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-scripts": "^3.1.2",
+    "uuid": "^3.3.3"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -31,16 +32,16 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@types/file-saver": "^2.0.0",
-    "@types/jest": "^23.3.12",
-    "@types/jszip": "^3.1.4",
+    "@types/file-saver": "^2.0.1",
+    "@types/jest": "^23.3.14",
+    "@types/jszip": "^3.1.6",
     "@types/localforage": "0.0.34",
-    "@types/node": "^10.12.18",
-    "@types/pixi.js": "^4.8.6",
-    "@types/react": "^16.7.18",
-    "@types/react-dom": "^16.0.11",
-    "@types/uuid": "^3.4.4",
-    "typescript": "^3.2.2"
+    "@types/node": "^10.14.19",
+    "@types/pixi.js": "^4.8.9",
+    "@types/react": "^16.9.3",
+    "@types/react-dom": "^16.9.1",
+    "@types/uuid": "^3.4.5",
+    "typescript": "^3.6.3"
   },
   "homepage": "."
 }

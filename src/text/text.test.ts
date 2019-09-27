@@ -1,6 +1,5 @@
 import { tokeniseScript, Token, tokensToCommands, GlyphCommand, commandsToPages, commandsBreakLongSpans, filterToSpans } from './text';
-import { Font } from './font';
-import { makeVector2, MAGENTA_SPRITE_4x4 } from '../pixels/sprite';
+import { makeVector2, MAGENTA_SPRITE_4X4, Font, FontCharacter } from 'blitsy';
 
 const font = makeTestFont();
 const tinyPage = { font, lineWidth: 12, lineCount: 2 };
@@ -94,7 +93,7 @@ describe("layout glyphs", () =>
         const [page] = commandsToPages(tokensToCommands(tokens), normalPage);
 
         test("first glyph 0,0", () => expect(page[0].position).toEqual(makeVector2(0, 0)));
-        test("next line height", () => expect(page[3].position).toEqual(makeVector2(0, font.charHeight + 4)));
+        test("next line height", () => expect(page[3].position).toEqual(makeVector2(0, font.lineHeight + 4)));
     }
 
     test("wordwrap on spaces", () =>
@@ -102,7 +101,7 @@ describe("layout glyphs", () =>
         const tokens = tokeniseScript("h lo");
         const [page] = commandsToPages(tokensToCommands(tokens), tinyPage);
 
-        expect(page[1].position).toEqual(makeVector2(0, font.charHeight + 4));
+        expect(page[1].position).toEqual(makeVector2(0, font.lineHeight + 4));
     });
 
     test("preserve unwrapped spaces", () =>
@@ -127,18 +126,23 @@ describe("layout glyphs", () =>
         const commands = tokensToCommands(tokens);
         const [page] = commandsToPages(commands, smallPage);
 
-        expect(page[5].position).toEqual(makeVector2(0, font.charHeight + 4));
+        expect(page[5].position).toEqual(makeVector2(0, font.lineHeight + 4));
     });
 });
 
 function makeTestFont(): Font
 {
-    const font = new Font("test font", 4, 4);
+    const font: Font = { 
+        name: "test font", 
+        lineHeight: 4, 
+        characters: new Map<number, FontCharacter>(),
+    };
+
     for (let i = 0; i < 256; ++i) 
     {
-        font.addCharacter({
+        font.characters.set(i, {
             codepoint: i,
-            sprite: MAGENTA_SPRITE_4x4,
+            sprite: MAGENTA_SPRITE_4X4,
             offset: makeVector2(0, 0),
             spacing: 4,
         });

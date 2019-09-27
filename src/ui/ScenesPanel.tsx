@@ -12,7 +12,7 @@ import PositionedDrawingView from './PositionedDrawingView';
 import { FlicksyVariable } from '../data/FlicksyProject';
 import ScriptPageEditor from './ScriptPageEditor';
 import { DialogueRenderer } from './DialogueRenderer';
-import { createCanvas } from '../pixels/canvas';
+import { MAGENTA_CANVAS_4X4 } from 'blitsy';
 
 export type SceneObjectView = PositionedDrawingView<SceneObject>;
 
@@ -71,8 +71,8 @@ export default class ScenesPanel implements Panel
         this.container.addChild(this.overlayContainer);
 
         this.objectDialoguePreview = new DialogueView(editor);
-        this.dialogueRenderer = new DialogueRenderer(createCanvas(1, 1),
-                                                     createCanvas(1, 1),
+        this.dialogueRenderer = new DialogueRenderer(MAGENTA_CANVAS_4X4,
+                                                     MAGENTA_CANVAS_4X4,
                                                      3);
         this.dialogueSprite = new Pixi.Sprite(this.dialogueRenderer.texture);
         this.overlayContainer.addChild(this.objectDialoguePreview.container);

@@ -455,6 +455,9 @@ export default class DrawingBoardsPanel implements Panel
 
     private onPointerMove(event: interaction.InteractionEvent): void
     {
+        if (!this.drawingBoard)
+            return;
+
         const page = utility.floor(event.data.getLocalPosition(this.pinContainer));
         const object = pageFirstObjectUnderPoint(this.drawingBoard.pinnedDrawings, page, HitPrecision.Bounds);
         

@@ -1,6 +1,4 @@
-import { Font } from "./font";
-import { Context2D, createContext2D } from "../pixels/canvas";
-import { drawSprite, Sprite, makeVector2, Vector2 } from "../pixels/sprite";
+import { drawSprite, makeVector2, Vector2, Sprite, Context2D, createContext2D, Font } from "blitsy";
 import { num2hex } from "../tools/utility";
 
 export type Page = Glyph[];
@@ -14,6 +12,18 @@ export interface Glyph
     hidden: boolean,
     styles: Map<string, unknown>,
 };
+
+export function computeLineWidth(font: Font, line: string): number {
+    let width = 0;
+    for (const char of line) {
+        const code = char.codePointAt(0)!;
+        const fontchar = font.characters.get(code);
+        if (fontchar) {
+            width += fontchar.spacing;
+        } 
+    }
+    return width;
+}
 
 export function makeGlyph(position: Vector2, 
                           sprite: Sprite,
@@ -186,7 +196,7 @@ export function commandsToPages(commands: Command[],
             if (command.type === "break") return i;
             if (command.type === "style") continue;
 
-            width += layout.font.computeLineWidth(command.char);
+            width += computeLineWidth(layout.font, command.char);
             // if we overshot, look backward for last possible breakable glyph
             if (width > layout.lineWidth) {
                 const result = find(commands, i, -1, command => command.type === "glyph" 
@@ -199,8 +209,8 @@ export function commandsToPages(commands: Command[],
 
     function addGlyph(command: GlyphCommand, offset: number): number {
         const codepoint = command.char.codePointAt(0)!;
-        const char = layout.font.getCharacter(codepoint)!;
-        const pos = makeVector2(offset, currLine * (layout.font.charHeight + 4));
+        const char = layout.font.characters.get(codepoint)!;
+        const pos = makeVector2(offset, currLine * (layout.font.lineHeight + 4));
         const glyph = makeGlyph(pos, char.sprite);
 
         glyph.styles = new Map(styles.entries());
@@ -222,14 +232,11 @@ export function commandsToPages(commands: Command[],
 
     let index: number | undefined;
     
-    while (true) {
-        const index = findNextBreakIndex();
-        if (index === undefined) break;
+    while ((index = findNextBreakIndex()) !== undefined) {
         generateGlyphLine(commands.slice(0, index));
         commands = commands.slice(index);
 
         const command = commands[0];
-
         if (command.type === "break") {
             doBreak(command.target);
             commands.shift();
@@ -261,7 +268,7 @@ export function commandsBreakLongSpans(commands: Command[],
 
     for (const span of spans) {
         const glyphs = span.filter(command => command.type === "glyph") as GlyphCommand[];
-        const charWidths = glyphs.map(command => context.font.computeLineWidth(command.char));
+        const charWidths = glyphs.map(command => computeLineWidth(context.font, command.char));
         const spanWidth = charWidths.reduce((x, y) => x + y, 0);
 
         if (spanWidth > context.lineWidth) {
