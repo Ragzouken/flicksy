@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "blitsy": "^0.1.2",
+    "blitsy": "^0.1.3",
     "file-saver": "^2.0.2",
     "jszip": "^3.2.2",
     "localforage": "^1.7.3",

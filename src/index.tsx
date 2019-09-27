@@ -49,9 +49,6 @@ function reshapeFont(data: FontDataUniform): FontDataUniform
 
 async function start()
 {
-    //console.log(JSON.stringify(reshapeFont(unicode_european_large)));
-    //if (1 === 1) throw "shit";
-
     const error = new ErrorPanel();
 
     window.addEventListener("unhandledrejection", event =>
