@@ -12,6 +12,11 @@ html, body {
   background-color: black;
 }
 
+input.file
+{
+    width: 80%;
+}
+
 canvas
 {
     margin: 0px;

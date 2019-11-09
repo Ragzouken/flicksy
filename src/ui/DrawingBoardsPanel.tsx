@@ -100,6 +100,24 @@ export default class DrawingBoardsPanel implements Panel
         bounds.alpha = .125;
         this.container.addChild(bounds);
         
+        const importInput = utility.getElement<HTMLInputElement>("import-drawing-input"); 
+        const importButton = utility.getElement<HTMLButtonElement>("import-drawing-button");
+        importButton.addEventListener("click", () => importInput.click());
+        importInput.addEventListener("change", () => {
+            const reader = new FileReader();
+            reader.onload = event => {
+                const image = document.createElement("img");
+                image.onload = () => {
+                    const drawing = this.createNewDrawing(image.width, image.height);
+                    const ctx = drawing.drawing.texture.canvas.getContext('2d')!;
+                    ctx.drawImage(image, 0, 0);
+                    drawing.drawing.texture.needsFetch = true;
+                };
+                image.src = event.target!.result as string;
+            };
+            reader.readAsDataURL(importInput.files![0]);
+        });
+
         this.drawingSectionDiv = utility.getElement("selected-drawing-section");
         const widthInput = utility.getElement<HTMLSelectElement>("create-drawing-width");
         const heightInput = utility.getElement<HTMLSelectElement>("create-drawing-height");
