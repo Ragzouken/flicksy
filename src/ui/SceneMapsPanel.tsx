@@ -322,7 +322,7 @@ export default class SceneMapsPanel implements Panel
     {
         // center
         const view = new Point(this.editor.pixi.view.width / 2, this.editor.pixi.view.height / 2);
-        const position = this.container.toLocal(view);
+        const position = this.container.toLocal(view) as Point;
 
         position.x = Math.floor(position.x - 40 / 2);
         position.y = Math.floor(position.y - 25 / 2);
@@ -490,7 +490,7 @@ export default class SceneMapsPanel implements Panel
         const pin = this.sceneMap.pins.find(p => !!p.element.objects.find(o => o === object))!;
         const pinView = this.sceneViews.get(pin)!;
         const pinWorld = pinView.container.toGlobal(utility.mul(center, scale));
-        const pinPage = this.container.toLocal(pinWorld);
+        const pinPage = this.container.toLocal(pinWorld) as Point;
 
         return pinPage;
     }

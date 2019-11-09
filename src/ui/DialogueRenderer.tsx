@@ -47,7 +47,7 @@ export class DialogueRenderer
                 private square: CanvasImageSource,
                 private readonly lineCount = 2)
     {
-        const base = new BaseTexture(this.canvas, SCALE_MODES.NEAREST);
+        const base = new BaseTexture(this.canvas, { scaleMode: SCALE_MODES.NEAREST });
         this.texture = new Texture(base);
         this.setFont(decodeFont(fontData));
 

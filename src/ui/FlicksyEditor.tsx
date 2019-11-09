@@ -38,9 +38,11 @@ export default class FlicksyEditor
         this.pixiCanvasContainer = document.getElementById("container")! as HTMLDivElement;
 
         // transparent prevents flickering on silk browser
-        this.pixi = new Pixi.Application(this.resolution[0], 
-                                         this.resolution[1], 
-                                         { transparent: true });
+        this.pixi = new Pixi.Application({ 
+            width: this.resolution[0], 
+            height: this.resolution[1], 
+            transparent: true,
+        });
         this.canvasContainer.appendChild(this.pixi.view);
         this.pixi.start();
 

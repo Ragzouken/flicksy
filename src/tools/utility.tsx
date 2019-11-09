@@ -1,5 +1,4 @@
-import { DisplayObject, Point, PointLike, Rectangle } from 'pixi.js';
-
+import { DisplayObject, Point, Rectangle, IPoint } from 'pixi.js';
 export const infiniteHitArea =
 {
     contains(x: number, y: number) { return true; }
@@ -13,7 +12,7 @@ export function rectCenter(rect: Rectangle)
 
 export function transform(point: Point, 
                           prev: DisplayObject,
-                          next: DisplayObject) : Point
+                          next: DisplayObject) : IPoint
 {
     return next.toLocal(prev.toGlobal(point));
 }
@@ -43,17 +42,17 @@ export function invLerp(v0: number, v1: number, v: number): number
     return (v - v0) / (v1 - v0);
 }
 
-export function mul(point: PointLike, factor: number): Point
+export function mul(point: IPoint, factor: number): Point
 {
     return new Point(point.x * factor, point.y * factor);
 }
 
-export function add(a: PointLike, b: PointLike)
+export function add(a: IPoint, b: IPoint)
 {
   return new Point(a.x + b.x, a.y + b.y);
 }
 
-export function sub(a: PointLike, b: PointLike)
+export function sub(a: IPoint, b: IPoint)
 {
   return new Point(a.x - b.x, a.y - b.y);
 }

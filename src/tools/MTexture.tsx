@@ -21,7 +21,7 @@ export class MTexture
         this.canvas.height = height;
     
         this.context = this.canvas.getContext("2d")!;
-        this.base = new BaseTexture(this.canvas, SCALE_MODES.NEAREST);
+        this.base = new BaseTexture(this.canvas, { scaleMode: SCALE_MODES.NEAREST });
         this.texture = new Texture(this.base);
 
         this.data = this.context.createImageData(width, height);

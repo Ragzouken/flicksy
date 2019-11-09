@@ -1,4 +1,4 @@
-import { drawSprite, makeVector2, Vector2, Sprite, Context2D, createContext2D, Font } from "blitsy";
+import { drawSprite, makeVector2, Vector2, Sprite, createContext2D, Font } from "blitsy";
 import { num2hex } from "../tools/utility";
 
 export type Page = Glyph[];
@@ -40,8 +40,8 @@ export function makeGlyph(position: Vector2,
 export class PageRenderer
 {
     public readonly pageImage: CanvasImageSource;
-    private readonly pageContext: Context2D;
-    private readonly bufferContext: Context2D;
+    private readonly pageContext: CanvasRenderingContext2D;
+    private readonly bufferContext: CanvasRenderingContext2D;
 
     constructor(private readonly width: number, private readonly height: number)
     {

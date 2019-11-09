@@ -537,7 +537,7 @@ export default class DrawingBoardsPanel implements Panel
 
         // center
         const view = new Point(this.editor.pixi.view.width / 2, this.editor.pixi.view.height / 2);
-        const position = this.container.toLocal(view);
+        const position = this.container.toLocal(view) as Point;
 
         position.x = Math.floor(position.x - width / 2);
         position.y = Math.floor(position.y - height / 2);
