@@ -60,7 +60,7 @@ export default class ScenesPanel implements Panel
     {
         this.objectViews = new ModelViewMapping<SceneObject, SceneObjectView>(
             () => this.createSceneObjectView(),
-            (view, active) => view.sprite.visible = active  
+            (view, active) => view.root.visible = active  
         );
 
         this.container = new Pixi.Container();
@@ -405,7 +405,7 @@ export default class ScenesPanel implements Panel
             const position = utility.round(utility.add(this.dragOrigin, event.data.getLocalPosition(this.overlayContainer)));
 
             this.draggedObject.object.position = position;
-            this.draggedObject.sprite.position = position;
+            this.draggedObject.root.position = position;
         }
     }
 
@@ -667,9 +667,9 @@ export default class ScenesPanel implements Panel
     private createSceneObjectView(): SceneObjectView
     {
         const view = new PositionedDrawingView<SceneObject>();
-        view.sprite.interactive = false;
+        view.root.interactive = false;
 
-        this.objectContainer.addChild(view.sprite);
+        this.objectContainer.addChild(view.root);
 
         return view;
     }
@@ -683,7 +683,7 @@ export default class ScenesPanel implements Panel
         // reorder the sprites
         this.scene.objects.forEach((object, index) => 
         {
-            this.objectContainer.setChildIndex(this.objectViews.get(object)!.sprite, index);
+            this.objectContainer.setChildIndex(this.objectViews.get(object)!.root, index);
         });
     }
 
@@ -697,7 +697,7 @@ export default class ScenesPanel implements Panel
         this.stopDragging();
 
         this.draggedObject = view;
-        this.dragOrigin = utility.sub(view.sprite.position, event.data.getLocalPosition(this.overlayContainer));
+        this.dragOrigin = utility.sub(view.root.position, event.data.getLocalPosition(this.overlayContainer));
 
         this.select(view.object);
     }

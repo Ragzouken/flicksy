@@ -3,8 +3,7 @@ import { findProject, jsonToProject } from './tools/saving';
 import * as utility from './tools/utility';
 import ErrorPanel from './ui/ErrorPanel';
 import FlicksyEditor from './ui/FlicksyEditor';
-import { Font, FontDataUniform, createContext2D, decodeFont, drawSprite, encodeTexture, TextureData, formats } from 'blitsy';
-import unicode_european_large from './resources/unicode-european-large-font';
+import { FontDataUniform, createContext2D, encodeTexture, TextureData, formats } from 'blitsy';
 import { base64ToUint8 } from './tools/base64';
 
 function reshapeFont(data: FontDataUniform): FontDataUniform
@@ -12,11 +11,7 @@ function reshapeFont(data: FontDataUniform): FontDataUniform
     const side = Math.ceil(Math.sqrt(data.index.length));
     const [width, height] = [side * data.charWidth, side * data.charHeight];
     
-    //const oldFont = decodeFont(data);
-    //const oldAtlas = oldFont.characters.get("a".codePointAt(0)!)!.sprite.image as HTMLCanvasElement;
-
     const context = createContext2D(width, height);
-    //context.drawImage(oldAtlas, 0, 0);
     context.globalAlpha = 1;
     context.fillStyle = '#FF00FF';
     context.fillRect(0, 0, 100, 100);
@@ -26,8 +21,6 @@ function reshapeFont(data: FontDataUniform): FontDataUniform
     formats['M1'].decode(bytes, pixels);
 
     const glyph = context.createImageData(data.charWidth, data.charHeight);
-    //context.putImageData(image, 0, 0);
-
     const glyphSize = data.charWidth * data.charHeight * 4;
 
     data.index.forEach((codepoint, index) => {
@@ -39,7 +32,6 @@ function reshapeFont(data: FontDataUniform): FontDataUniform
         context.putImageData(glyph, x, y);
     });
 
-    //document.getElementsByTagName("body")[0].appendChild(oldAtlas);
     document.getElementsByTagName("body")[0].appendChild(context.canvas);
 
     data.atlas = encodeTexture(context, 'M1') as TextureData;

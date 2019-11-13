@@ -8,7 +8,7 @@ import { randomisePalette } from '../tools/saving';
 import * as utility from '../tools/utility';
 import FlicksyEditor from './FlicksyEditor';
 import Panel from './Panel';
-import PositionedDrawingView from './PositionedDrawingView';
+import PositionedDrawingView, { setPalette, paletteFilter } from './PositionedDrawingView';
 
 export type PinnedDrawingView = PositionedDrawingView<PinnedDrawing>;
 
@@ -67,7 +67,7 @@ export default class DrawingBoardsPanel implements Panel
 
         this.pinViews = new ModelViewMapping<PinnedDrawing, PinnedDrawingView>(
             () => this.createPinView(),
-            (view, active) => view.sprite.visible = active,
+            (view, active) => view.root.visible = active,
         ); 
 
         // containers
@@ -205,6 +205,7 @@ export default class DrawingBoardsPanel implements Panel
         this.cursorSprite = new Sprite();
         this.cursorSprite.visible = true;
         this.cursorSprite.interactive = false;
+        this.cursorSprite.filters = [paletteFilter];
         this.container.addChild(this.cursorSprite);
 
         this.select(undefined);
@@ -344,8 +345,10 @@ export default class DrawingBoardsPanel implements Panel
         this.erasing = (index === 0);
         this.brushColor = (index === 0) ? 0xFFFFFFFF : this.editor.project.palette[index];
 
+        const palettisedColor = utility.rgb2num(index, 0, 0, 255);
+
         this.brush = new MTexture(this.brushSize, this.brushSize);
-        this.brush.circleTest(this.brushColor === 0 ? 0xFFFFFFFF : this.brushColor);
+        this.brush.circleTest(this.brushColor === 0 ? 0xFFFFFFFF : palettisedColor);
 
         const input = utility.getElement<HTMLInputElement>("color-input");
         input.hidden = (index === 0);
@@ -357,6 +360,8 @@ export default class DrawingBoardsPanel implements Panel
     public refreshPalette(): void
     {
         if (!this.editor.project) { return; }
+
+        setPalette(this.editor.project.palette);
 
         const palette = document.getElementById("palette")!;
 
@@ -399,7 +404,7 @@ export default class DrawingBoardsPanel implements Panel
             else if (drag.type === "draw")
             {
                 const localPrev = drag.current || drag.start;
-                const localNext = event.data.getLocalPosition(drag.view!.sprite);
+                const localNext = event.data.getLocalPosition(drag.view!.root);
 
                 this.draw(localPrev, localNext, drag.view!.model.drawing.texture);
 
@@ -446,7 +451,7 @@ export default class DrawingBoardsPanel implements Panel
             const view = this.pinViews.get(object)!;
             const drag = new DragState("move", 
                                        event.data.identifier, 
-                                       event.data.getLocalPosition(view.sprite), 
+                                       event.data.getLocalPosition(view.root), 
                                        view);
             this.drags.set(event.data.identifier, drag);
 
@@ -461,7 +466,7 @@ export default class DrawingBoardsPanel implements Panel
             const view = this.pinViews.get(object)!;
             const drag = new DragState("draw", 
                                        event.data.identifier, 
-                                       event.data.getLocalPosition(view.sprite), 
+                                       event.data.getLocalPosition(view.root), 
                                        view);
             this.drags.set(event.data.identifier, drag);
 
@@ -544,7 +549,7 @@ export default class DrawingBoardsPanel implements Panel
         // reorder the sprites so 
         this.drawingBoard.pinnedDrawings.forEach((pin, index) => 
         {
-            this.pinContainer.setChildIndex(this.pinViews.get(pin)!.sprite, index);
+            this.pinContainer.setChildIndex(this.pinViews.get(pin)!.root, index);
         });
     }
 
@@ -574,7 +579,7 @@ export default class DrawingBoardsPanel implements Panel
     {
         const view = new PositionedDrawingView<PinnedDrawing>();
 
-        this.pinContainer.addChild(view.sprite);
+        this.pinContainer.addChild(view.root);
         
         return view;
     }
