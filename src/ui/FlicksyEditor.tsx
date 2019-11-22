@@ -12,6 +12,8 @@ import SceneMapsPanel from './SceneMapsPanel';
 import ScenesPanel from './ScenesPanel';
 import VariablesPanel from './VariablesPanel';
 
+Pixi.settings.FAIL_IF_MAJOR_PERFORMANCE_CAVEAT = false;
+
 export default class FlicksyEditor
 {
     public readonly pixi: Pixi.Application;

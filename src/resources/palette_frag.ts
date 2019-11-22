@@ -6,6 +6,7 @@ uniform float uAlpha;
 
 void main(void)
 {
+    //gl_FragColor = texture2D(uSampler, vTextureCoord) * uAlpha;
     float index = texture2D(uSampler, vTextureCoord).r;
     gl_FragColor = texture2D(uPalette, vec2(index, .5)) * uAlpha;
 }`;

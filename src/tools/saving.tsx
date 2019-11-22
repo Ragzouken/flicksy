@@ -4,10 +4,11 @@ import { v4 as uuid4 } from 'uuid';
 import { FlicksyProject, FlicksyProjectData } from "../data/FlicksyProject";
 import { base64ToUint8, uint8ToBase64 } from "./base64";
 import * as utility from './utility';
+import { fitColorsToPalette } from '../draw';
 
 //localForage.config({name: "flicksy"});
 
-const flicksyVersion = "alpha-1";
+const flicksyVersion = "alpha-2";
 
 export function repairProject(project: FlicksyProject): void
 {
@@ -35,6 +36,16 @@ export function repairProject(project: FlicksyProject): void
     if (project.sceneBoards.length === 0)
     {
         project.createSceneBoard();
+    }
+
+    // paletteMode
+    if (!project.paletteMode) {
+        project.drawings.forEach(drawing => {
+            fitColorsToPalette(drawing.texture.context, project.palette);
+            drawing.texture.update();
+            drawing.texture.needsFetch = true;
+        });
+        project.paletteMode = true;
     }
 
     // scripts

@@ -22,6 +22,7 @@ export interface FlicksyProjectData
 
     flicksyVersion: string;
     resolution: [number, number];
+    paletteMode?: boolean;
     startScene: string;
     variables: FlicksyVariable[];
 
@@ -40,6 +41,7 @@ export class FlicksyProject
     
     public flicksyVersion: string;
     public resolution: [number, number] = [160, 100];
+    public paletteMode?: boolean = false;
 
     public drawings: Drawing[] = [];
     public drawingBoards: DrawingBoard[] = [];
@@ -57,6 +59,7 @@ export class FlicksyProject
         
         this.flicksyVersion = data.flicksyVersion;
         this.resolution = data.resolution || [160, 100];
+        this.paletteMode = data.paletteMode || false;
         this.startScene = data.startScene;
         this.variables = data.variables || [];
 
@@ -100,6 +103,7 @@ export class FlicksyProject
             resolution: this.resolution,
             startScene: this.startScene,
             variables: this.variables,
+            paletteMode: this.paletteMode,
 
             drawings: this.drawings.map(drawing => drawing.toData()),
             drawingBoards: this.drawingBoards.map(board => board.toData()),

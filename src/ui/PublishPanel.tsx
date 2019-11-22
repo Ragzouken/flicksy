@@ -4,6 +4,7 @@ import { exportPlayable, filesafeName, playableHTMLBlob, projectToJson } from '.
 import { buttonClick, getElement } from "../tools/utility";
 import FlicksyEditor from "./FlicksyEditor";
 import Panel from './Panel';
+import { convertIndexed } from '../draw';
 
 async function fileToBlob(file: File): Promise<Blob>
 {
@@ -46,10 +47,13 @@ export default class PublishPanel implements Panel
             const zip = new JSZip();
             const drawings = zip.folder("drawings");
             
+            editor.project.palette[0] = 0;
+
             for (const drawing of editor.project.drawings)
             {
                 const name = drawing.name + ".png";
-                const url = drawing.texture.canvas.toDataURL("image/png");
+                const converted = convertIndexed(drawing.texture.context, editor.project.palette);
+                const url = converted.canvas.toDataURL("image/png");
                 const data = url.substring(22);
 
                 drawings.file(name, data, {base64: true});

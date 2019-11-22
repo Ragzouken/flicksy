@@ -9,6 +9,7 @@ import * as utility from '../tools/utility';
 import FlicksyEditor from './FlicksyEditor';
 import Panel from './Panel';
 import PositionedDrawingView, { setPalette, paletteFilter } from './PositionedDrawingView';
+import { fitColorsToPalette } from '../draw';
 
 export type PinnedDrawingView = PositionedDrawingView<PinnedDrawing>;
 
@@ -111,6 +112,7 @@ export default class DrawingBoardsPanel implements Panel
                     const drawing = this.createNewDrawing(image.width, image.height);
                     const ctx = drawing.drawing.texture.canvas.getContext('2d')!;
                     ctx.drawImage(image, 0, 0);
+                    fitColorsToPalette(ctx, editor.project.palette);
                     drawing.drawing.texture.needsFetch = true;
                 };
                 image.src = event.target!.result as string;
