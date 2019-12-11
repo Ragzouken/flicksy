@@ -16,6 +16,23 @@ import { MAGENTA_CANVAS_4X4 } from 'blitsy';
 
 export type SceneObjectView = PositionedDrawingView<SceneObject>;
 
+
+function preprocessVariablesHack(
+    variables: FlicksyVariable[], 
+    script: string
+): string {
+    const pattern = /{=([^}]+)}/;
+
+    while (script.match(pattern)) {
+        script = script.replace(pattern, (_: string, name: string) => {
+            const variable = variables.find(v => v.name === name);
+            return variable ? variable.value.toString() : "UNSET VARIABLE";
+        });
+    }
+
+    return script;
+}
+
 export default class ScenesPanel implements Panel
 {
     public get activeScene(): Scene { return this.scene }
@@ -217,8 +234,10 @@ export default class ScenesPanel implements Panel
         this.selectedScriptPage = page;
         this.previewingDialogue = true;
 
+        const script = preprocessVariablesHack(this.playModeVariables, page.dialogue);
+
         this.dialogueRenderer.cancel();
-        this.dialogueRenderer.queueScript(page.dialogue);
+        this.dialogueRenderer.queueScript(script);
 
         this.refresh();
     }
@@ -381,8 +400,11 @@ export default class ScenesPanel implements Panel
         object.name = `object ${this.activeScene.objects.length}`;
         object.dialogue = "";
         object.drawing = drawing;
-        object.position = new Pixi.Point(80 - drawing.width / 2, 
-                                         50 - drawing.height / 2);
+
+        const cx = Math.floor(drawing.width / 2);
+        const cy = Math.floor(drawing.height / 2);
+
+        object.position = new Pixi.Point(80 - cx, 50 - cy);
         object.scriptPages.push({
             name: "unconditional", 
             condition: {check:"pass", source:"", target:""},

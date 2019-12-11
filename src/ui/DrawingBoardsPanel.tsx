@@ -78,7 +78,7 @@ export default class DrawingBoardsPanel implements Panel
         this.container.addChild(this.pinContainer);
 
         this.container.interactive = true;
-        this.container.hitArea = new Rectangle(-1000, -1000, 2000, 2000);
+        this.container.hitArea = utility.infiniteHitArea;
 
         // modes
         this.selectModeButton = utility.getElement("drawing-select-button");

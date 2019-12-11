@@ -48,6 +48,14 @@ export function repairProject(project: FlicksyProject): void
         project.paletteMode = true;
     }
 
+    // object integer positions
+    project.scenes.forEach(scene => {
+        scene.objects.forEach(object => {
+            object.position.x = Math.floor(object.position.x);
+            object.position.y = Math.floor(object.position.y);
+        });
+    });
+    
     // scripts
     project.scenes.forEach(scene =>
     {

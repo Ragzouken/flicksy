@@ -41,7 +41,7 @@ export class FlicksyProject
     
     public flicksyVersion: string;
     public resolution: [number, number] = [160, 100];
-    public paletteMode?: boolean = false;
+    public paletteMode?: boolean = true;
 
     public drawings: Drawing[] = [];
     public drawingBoards: DrawingBoard[] = [];

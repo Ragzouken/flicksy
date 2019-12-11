@@ -7,6 +7,7 @@ import ModelViewMapping, { View } from "../tools/ModelViewMapping";
 import * as utility from '../tools/utility';
 import FlicksyEditor from "./FlicksyEditor";
 import Panel from "./Panel";
+import { paletteFilter } from "./PositionedDrawingView";
 
 class DragState
 {
@@ -45,6 +46,8 @@ class PinnedSceneView implements View<PinnedScene>
         sprite.scale.set(1 / 4);
         this.container.addChild(sprite);
         
+        sprite.filters = [paletteFilter];
+
         this.border = new Graphics();
         this.border.lineStyle(1, 0xFFFFFFFF, 1);
         this.border.drawRect(-.5, -.5, 40 + 1, 25 + 1);
