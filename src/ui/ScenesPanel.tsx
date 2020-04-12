@@ -276,10 +276,10 @@ export default class ScenesPanel implements Panel
         this.dialogueSprite.width = dw;
         this.dialogueSprite.height = dh;
 
-        const x = (width - dw) / 2;
-        const y = height - (height/2 - dh)/2 - dh;
+        const x = Math.floor((width - dw) / 2);
+        const y = Math.floor(height - (height/2 - dh)/2 - dh);
 
-        this.dialogueSprite.position.set(x + .5, y);
+        this.dialogueSprite.position.set(x, y);
         this.dialogueSprite.visible = showDialogue;
 
         this.objectDialoguePreview.container.visible = showDialogue;

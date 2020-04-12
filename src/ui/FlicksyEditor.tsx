@@ -248,7 +248,7 @@ export default class FlicksyEditor
         this.pixi.renderer.resize(w,h);
 
         const [referenceWidth, referenceHeight] = this.resolution;
-        const margin = 4;
+        const margin = 0;
 
         const scale = Math.min(w / (referenceWidth  + margin), 
                                 h / (referenceHeight + margin));
