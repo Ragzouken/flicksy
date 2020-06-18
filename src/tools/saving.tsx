@@ -361,7 +361,12 @@ export async function playableHTMLBlob(project: FlicksyProject,
     {
         const jsScript = jsScripts[i];
 
-        if (jsScript.src)
+        // remove itch.io injected code if present
+        if (jsScript.src === "https://static.itch.io/htmlgame.js")
+        {
+            jsScript.parentElement!.removeChild(jsScript);
+        } 
+        else if (jsScript.src)
         {
             const jsText = await fetch(jsScript.src).then(response => response.text());
             
